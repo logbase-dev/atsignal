@@ -1,0 +1,59 @@
+/**
+ * Admin-mode CSS overrides.
+ *
+ * apps/web has a global `apps/web/app/globals.css` that defines `.header`, `.logo`, `.badge`, etc.
+ * That conflicts with the NiceAdmin template classes used by the Admin UI.
+ *
+ * We scope fixes under `body.admin-mode` which is toggled by `components/admin-template/ConditionalLayout.tsx`.
+ */
+
+body.admin-mode {
+  background: #f6f9ff;
+  color: #444444;
+  font-family: "Open Sans", sans-serif;
+}
+
+/* Restore NiceAdmin header look/positioning */
+body.admin-mode .header {
+  background-color: #fff !important;
+  box-shadow: 0px 2px 20px rgba(1, 41, 112, 0.1) !important;
+  height: 60px !important;
+  padding-left: 20px !important;
+  border-bottom: 0 !important;
+}
+
+body.admin-mode .logo {
+  height: auto !important;
+  line-height: 1 !important;
+  text-decoration: none !important;
+}
+
+body.admin-mode .logo img {
+  max-height: 26px !important;
+  margin-right: 6px !important;
+  width: auto !important;
+}
+
+body.admin-mode .header-nav .nav-icon {
+  margin-right: 25px !important;
+  position: relative !important;
+}
+
+body.admin-mode .header-nav .badge-number {
+  position: absolute !important;
+  inset: -2px -5px auto auto !important;
+  font-weight: normal !important;
+  font-size: 12px !important;
+  padding: 3px 6px !important;
+}
+
+body.admin-mode .header-nav .nav-profile img {
+  max-height: 36px !important;
+}
+
+body.admin-mode .header-nav .nav-profile span {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+}
+
+

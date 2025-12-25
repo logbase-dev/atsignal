@@ -1,0 +1,88 @@
+{
+  "header": {
+    "contactCta": "Contact Sales"
+  },
+  "home": {
+    "rollingTexts": [
+      "Understand your users",
+      "Understand your data",
+      "Discuss with data"
+    ]
+  },
+  "footer": {
+    "description": "An integrated behavioral data platform that condenses Nethru's data analysis technology and experience."
+  },
+  "newsletter": {
+    "title": "Subscribe to Newsletter",
+    "description": "Receive the latest news and updates.",
+    "nameLabel": "Name",
+    "namePlaceholder": "Enter your name",
+    "companyLabel": "Company/Organization",
+    "companyPlaceholder": "Enter your company or organization",
+    "emailLabel": "Email",
+    "emailPlaceholder": "example@email.com",
+    "phoneLabel": "Phone Number",
+    "phonePlaceholder": "010-1234-5678",
+    "privacyConsent": "I agree to the privacy policy.",
+    "privacyLink": "Learn more",
+    "submitButton": "Subscribe",
+    "submitting": "Processing...",
+    "successMessage": "Subscription completed successfully!",
+    "errorMessage": "An error occurred. Please try again.",
+    "closeButton": "Close"
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "intro": "AtSignal establishes provisions regarding the items of personal information collected, the purpose of collection and use of personal information, the retention and use period of personal information, and the procedures and methods for destruction of personal information in accordance with the Personal Information Protection Act.",
+    "lastUpdated": "Last Updated: January 00, 2025",
+    "home": "Home",
+    "sections": {
+      "collectedInfo": {
+        "title": "Personal Information Collected",
+        "content": "AtSignal collects the following personal information for newsletter services.",
+        "items": ["Name", "Company/Organization", "Email Address", "Phone Number"]
+      },
+      "purpose": {
+        "title": "Purpose of Collection and Use of Personal Information",
+        "content": "AtSignal uses personal information for the following purposes.",
+        "items": ["Sending AI News Digest Newsletter", "Service-related notices and important information", "Providing personalized services"]
+      },
+      "retention": {
+        "title": "Retention and Use Period of Personal Information",
+        "content": "Collected personal information is retained and used for the period necessary to achieve the purpose of providing services.",
+        "subContent": "Personal information is destroyed in the following cases:",
+        "items": ["When the user requests cancellation of newsletter subscription", "When the user requests deletion of personal information", "When the service is terminated"]
+      },
+      "protection": {
+        "title": "Measures for Protection of Personal Information",
+        "content": "AtSignal takes the following measures to protect users' personal information.",
+        "items": ["SSL encrypted communication", "Access control and permission management", "Regular security updates and vulnerability checks", "Management of access records to personal information processing systems"]
+      },
+      "thirdParty": {
+        "title": "Provision of Personal Information to Third Parties",
+        "content": "AtSignal does not provide personal information to third parties without the user's consent.",
+        "subContent": "However, exceptions are made in the following cases:",
+        "items": ["When required by law", "When the user has given prior consent", "When provided to contractors (newsletter delivery services, etc.) for service provision"]
+      },
+      "rights": {
+        "title": "User Rights",
+        "content": "Users have the following rights regarding personal information.",
+        "items": ["Request to access personal information", "Request to correct or delete personal information", "Request to suspend processing of personal information", "Withdraw consent for use and provision of personal information"],
+        "footer": "To exercise these rights, please send an email to info@atsignal.io."
+      },
+      "officer": {
+        "title": "Personal Information Protection Officer",
+        "items": ["Name: [Name]", "Position: Chief Technology Officer", "Email: info@atsignal.io"]
+      },
+      "changes": {
+        "title": "Changes to Privacy Policy",
+        "content": "This privacy policy may be changed in accordance with laws and policies, and when changed, it will be announced through the website or email."
+      },
+      "inquiry": {
+        "title": "Inquiries Regarding Personal Information",
+        "content": "If you have any questions about personal information protection, please contact us at any time.",
+        "footer": "info@atsignal.io"
+      }
+    }
+  }
+}

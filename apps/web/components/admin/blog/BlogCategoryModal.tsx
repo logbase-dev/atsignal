@@ -1,0 +1,586 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import type { BlogCategory, LocalizedField } from '@/lib/admin/types';
+import { createBlogCategory, deleteBlogCategory, getBlogCategories, updateBlogCategory } from '@/lib/admin/blogCategoryService';
+import { isValidSlug, slugify } from '@/lib/utils/slug';
+
+interface BlogCategoryModalProps {
+  open: boolean;
+  onClose: () => void;
+  onSelect?: (category: BlogCategory) => void;
+}
+
+const emptyLocalized = (): LocalizedField => ({ ko: '', en: '' });
+
+export function BlogCategoryModal({ open, onClose, onSelect }: BlogCategoryModalProps) {
+  const [categories, setCategories] = useState<BlogCategory[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [editingCategory, setEditingCategory] = useState<BlogCategory | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [formData, setFormData] = useState({
+    nameKo: '',
+    nameEn: '',
+    descriptionKo: '',
+    descriptionEn: '',
+    slug: '',
+    order: 0,
+    enabled: { ko: true, en: true },
+  });
+  const [submitting, setSubmitting] = useState(false);
+  const [slugTouched, setSlugTouched] = useState(false);
+
+  useEffect(() => {
+    if (open) void loadCategories();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  useEffect(() => {
+    if (!open || slugTouched) return;
+    const base = formData.nameEn?.trim() ? formData.nameEn.trim() : formData.nameKo.trim();
+    const next = slugify(base);
+    if (next) setFormData((prev) => ({ ...prev, slug: next }));
+  }, [formData.nameKo, formData.nameEn, open, slugTouched]);
+
+  const loadCategories = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const list = await getBlogCategories();
+      setCategories(list);
+    } catch (err: any) {
+      console.error('Failed to load categories:', err);
+      setError(err.message || '카테고리를 불러오는데 실패했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddClick = () => {
+    setEditingCategory(null);
+    // 최신 카테고리 목록을 기반으로 다음 정렬 순서 계산
+    const nextOrder = categories.length > 0 ? Math.max(...categories.map((c) => c.order || 0)) + 1 : 1;
+    setFormData({
+      nameKo: '',
+      nameEn: '',
+      descriptionKo: '',
+      descriptionEn: '',
+      slug: '',
+      order: nextOrder,
+      enabled: { ko: true, en: true },
+    });
+    setSlugTouched(false);
+  };
+
+  const handleEditClick = (category: BlogCategory) => {
+    setEditingCategory(category);
+    setFormData({
+      nameKo: category.name?.ko || '',
+      nameEn: category.name?.en || '',
+      descriptionKo: category.description?.ko || '',
+      descriptionEn: category.description?.en || '',
+      slug: category.slug || '',
+      order: category.order || 0,
+      enabled: category.enabled || { ko: true, en: true },
+    });
+    setSlugTouched(true);
+  };
+
+  const handleCancel = () => {
+    setEditingCategory(null);
+    // 최신 카테고리 목록을 기반으로 다음 정렬 순서 계산
+    const nextOrder = categories.length > 0 ? Math.max(...categories.map((c) => c.order || 0)) + 1 : 1;
+    setFormData({
+      nameKo: '',
+      nameEn: '',
+      descriptionKo: '',
+      descriptionEn: '',
+      slug: '',
+      order: nextOrder,
+      enabled: { ko: true, en: true },
+    });
+    setSlugTouched(false);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.nameKo.trim()) {
+      alert('카테고리명(한국어)을 입력해주세요.');
+      return;
+    }
+    if (!formData.slug.trim() || !isValidSlug(formData.slug.trim())) {
+      alert('slug는 영문 소문자/숫자/하이픈만 허용됩니다.');
+      return;
+    }
+
+    setSubmitting(true);
+    setError(null);
+    try {
+      const categoryData = {
+        name: {
+          ko: formData.nameKo.trim(),
+          ...(formData.nameEn.trim() ? { en: formData.nameEn.trim() } : {}),
+        },
+        description:
+          formData.descriptionKo.trim() || formData.descriptionEn.trim()
+            ? {
+                ko: formData.descriptionKo.trim(),
+                ...(formData.descriptionEn.trim() ? { en: formData.descriptionEn.trim() } : {}),
+              }
+            : undefined,
+        slug: formData.slug.trim(),
+        order: formData.order,
+        enabled: formData.enabled,
+      };
+
+      if (editingCategory?.id) {
+        await updateBlogCategory(editingCategory.id, categoryData);
+      } else {
+        await createBlogCategory(categoryData);
+      }
+
+      // 카테고리 목록을 새로고침한 후 폼 초기화 (최신 order 값 반영)
+      await loadCategories();
+      
+      // 최신 카테고리 목록을 기반으로 다음 정렬 순서 계산
+      const updatedCategories = await getBlogCategories();
+      const nextOrder = updatedCategories.length > 0 ? Math.max(...updatedCategories.map((c) => c.order || 0)) + 1 : 1;
+      
+      // 폼 초기화 (다음 번호로 자동 설정)
+      setEditingCategory(null);
+      setFormData({
+        nameKo: '',
+        nameEn: '',
+        descriptionKo: '',
+        descriptionEn: '',
+        slug: '',
+        order: nextOrder,
+        enabled: { ko: true, en: true },
+      });
+      setSlugTouched(false);
+    } catch (err: any) {
+      console.error('Failed to save category:', err);
+      setError(err.message || '카테고리 저장에 실패했습니다.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (category: BlogCategory) => {
+    if (!category.id) return;
+    if (!confirm(`정말 "${category.name?.ko || category.slug}" 카테고리를 삭제하시겠습니까?`)) return;
+
+    try {
+      await deleteBlogCategory(category.id);
+      await loadCategories();
+      if (editingCategory?.id === category.id) handleCancel();
+    } catch (err) {
+      console.error('Failed to delete category:', err);
+      alert('카테고리 삭제에 실패했습니다.');
+    }
+  };
+
+  const filteredCategories = categories.filter((category) => {
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      (category.name?.ko && category.name.ko.toLowerCase().includes(query)) ||
+      (category.name?.en && category.name.en.toLowerCase().includes(query)) ||
+      (category.slug && category.slug.toLowerCase().includes(query)) ||
+      (category.description?.ko && category.description.ko.toLowerCase().includes(query)) ||
+      (category.description?.en && category.description.en.toLowerCase().includes(query))
+    );
+  });
+
+  if (!open) return null;
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
+      }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: '#fff',
+          padding: '2rem',
+          borderRadius: '0.5rem',
+          width: '90%',
+          maxWidth: '950px',
+          maxHeight: '95vh',
+          overflowY: 'auto',
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <h2 style={{ margin: 0 }}>카테고리 관리</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              padding: '0.5rem 1rem',
+              backgroundColor: '#6c757d',
+              color: 'white',
+              border: 'none',
+              borderRadius: '0.25rem',
+              cursor: 'pointer',
+            }}
+          >
+            닫기
+          </button>
+        </div>
+
+        {error && (
+          <div style={{ padding: '1rem', backgroundColor: '#fff3cd', border: '1px solid #ffc107', borderRadius: '0.25rem', marginBottom: '1rem', color: '#856404' }}>
+            <strong>경고:</strong> {error}
+          </div>
+        )}
+
+        {/* 카테고리 추가 버튼 */}
+        <div style={{ marginBottom: '1.5rem' }}>
+          <button
+            type="button"
+            onClick={handleAddClick}
+            style={{
+              padding: '0.5rem 1rem',
+              backgroundColor: '#0070f3',
+              color: 'white',
+              border: 'none',
+              borderRadius: '0.25rem',
+              cursor: 'pointer',
+            }}
+          >
+            카테고리 추가
+          </button>
+        </div>
+
+        {/* 카테고리 추가/수정 폼 */}
+        {(!editingCategory || editingCategory.id) && (
+          <form
+            onSubmit={handleSubmit}
+            style={{ marginBottom: '2rem', padding: '1.5rem', backgroundColor: '#f9fafb', borderRadius: '0.5rem' }}
+          >
+            <h3 style={{ marginTop: 0, marginBottom: '1rem' }}>
+              {editingCategory ? '카테고리 수정' : '카테고리 추가'}
+            </h3>
+
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                카테고리명 <span style={{ color: '#dc3545' }}>*</span>
+              </label>
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ flex: 1 }}>
+                  <input
+                    type="text"
+                    value={formData.nameKo}
+                    onChange={(e) => setFormData({ ...formData, nameKo: e.target.value })}
+                    required
+                    placeholder="한국어 (예: 기술)"
+                    style={{ width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '0.25rem' }}
+                  />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <input
+                    type="text"
+                    value={formData.nameEn}
+                    onChange={(e) => setFormData({ ...formData, nameEn: e.target.value })}
+                    placeholder="영어 (예: Technology)"
+                    style={{ width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '0.25rem' }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                Slug <span style={{ color: '#dc3545' }}>*</span>
+              </label>
+              <input
+                type="text"
+                value={formData.slug}
+                onChange={(e) => {
+                  setSlugTouched(true);
+                  setFormData({ ...formData, slug: e.target.value });
+                }}
+                required
+                placeholder="example-category"
+                style={{ width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '0.25rem' }}
+              />
+              <small style={{ color: '#666', fontSize: '0.875rem' }}>영문 소문자, 숫자, 하이픈만 사용 가능합니다.</small>
+            </div>
+
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                설명 (선택사항)
+              </label>
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ flex: 1 }}>
+                  <input
+                    type="text"
+                    value={formData.descriptionKo}
+                    onChange={(e) => setFormData({ ...formData, descriptionKo: e.target.value })}
+                    placeholder="한국어 설명"
+                    style={{ width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '0.25rem' }}
+                  />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <input
+                    type="text"
+                    value={formData.descriptionEn}
+                    onChange={(e) => setFormData({ ...formData, descriptionEn: e.target.value })}
+                    placeholder="영어 설명"
+                    style={{ width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '0.25rem' }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                정렬 순서
+              </label>
+              <input
+                type="number"
+                value={formData.order}
+                onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
+                min="0"
+                style={{ width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '0.25rem' }}
+              />
+              <small style={{ color: '#666', fontSize: '0.875rem' }}>낮은 숫자가 먼저 표시됩니다.</small>
+            </div>
+
+            <div style={{ marginBottom: '1rem' }}>
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                    <input
+                      type="checkbox"
+                      checked={formData.enabled.ko}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          enabled: { ...formData.enabled, ko: e.target.checked },
+                        })
+                      }
+                      style={{ marginRight: '0.5rem', width: '1rem', height: '1rem' }}
+                    />
+                    한글 카테고리 활성화
+                  </label>
+                  <small style={{ color: '#666', display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>
+                    한글 사이트에 카테고리를 표시합니다.
+                  </small>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                    <input
+                      type="checkbox"
+                      checked={formData.enabled.en}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          enabled: { ...formData.enabled, en: e.target.checked },
+                        })
+                      }
+                      style={{ marginRight: '0.5rem', width: '1rem', height: '1rem' }}
+                    />
+                    영문 카테고리 활성화
+                  </label>
+                  <small style={{ color: '#666', display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>
+                    영문 사이트에 카테고리를 표시합니다.
+                  </small>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1.5rem' }}>
+              {editingCategory && (
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    backgroundColor: '#6c757d',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '0.25rem',
+                    cursor: 'pointer',
+                  }}
+                >
+                  취소
+                </button>
+              )}
+              <button
+                type="submit"
+                disabled={submitting}
+                style={{
+                  padding: '0.5rem 1rem',
+                  backgroundColor: '#28a745',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '0.25rem',
+                  cursor: submitting ? 'not-allowed' : 'pointer',
+                  opacity: submitting ? 0.6 : 1,
+                }}
+              >
+                {submitting ? '저장 중...' : editingCategory ? '수정' : '저장'}
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* 카테고리 목록 */}
+        {loading ? (
+          <p>로딩 중...</p>
+        ) : categories.length === 0 ? (
+          <p style={{ color: '#666' }}>카테고리가 없습니다. 위의 "카테고리 추가" 버튼으로 카테고리를 생성하세요.</p>
+        ) : (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3 style={{ margin: 0 }}>카테고리 목록 ({filteredCategories.length}개)</h3>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="카테고리 검색..."
+                style={{
+                  padding: '0.5rem 1rem',
+                  border: '1px solid #ddd',
+                  borderRadius: '0.25rem',
+                  fontSize: '0.9rem',
+                  width: '250px',
+                }}
+              />
+            </div>
+            <div
+              style={{
+                maxHeight: '400px',
+                overflowY: 'auto',
+                border: '1px solid #e5e5e5',
+                borderRadius: '0.5rem',
+              }}
+            >
+              <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: '#fff' }}>
+                <thead style={{ position: 'sticky', top: 0, backgroundColor: '#f5f5f5', zIndex: 1 }}>
+                  <tr>
+                    <th style={{ padding: '0.75rem 1rem', textAlign: 'left', borderBottom: '1px solid #e5e5e5', fontSize: '0.875rem', fontWeight: 600 }}>카테고리명</th>
+                    <th style={{ padding: '0.75rem 1rem', textAlign: 'left', borderBottom: '1px solid #e5e5e5', fontSize: '0.875rem', fontWeight: 600 }}>Slug</th>
+                    <th style={{ padding: '0.75rem 1rem', textAlign: 'left', borderBottom: '1px solid #e5e5e5', fontSize: '0.875rem', fontWeight: 600 }}>설명</th>
+                    <th style={{ padding: '0.75rem 1rem', textAlign: 'left', borderBottom: '1px solid #e5e5e5', fontSize: '0.875rem', fontWeight: 600 }}>순서</th>
+                    <th style={{ padding: '0.75rem 1rem', textAlign: 'left', borderBottom: '1px solid #e5e5e5', fontSize: '0.875rem', fontWeight: 600 }}>활성화</th>
+                    <th style={{ padding: '0.75rem 1rem', textAlign: 'left', borderBottom: '1px solid #e5e5e5', fontSize: '0.875rem', fontWeight: 600 }}>작업</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredCategories.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>
+                        검색 결과가 없습니다.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredCategories.map((category) => (
+                      <tr key={category.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                        <td style={{ padding: '0.75rem 1rem' }}>
+                          <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>
+                            <div>{category.name?.ko || '-'}</div>
+                            {category.name?.en && (
+                              <div style={{ color: '#666', marginTop: '0.25rem', fontSize: '0.85rem' }}>
+                                {category.name.en}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                        <td style={{ padding: '0.75rem 1rem', fontSize: '0.875rem', color: '#666' }}>
+                          {category.slug || '-'}
+                        </td>
+                        <td style={{ padding: '0.75rem 1rem', fontSize: '0.875rem', color: '#666' }}>
+                          {category.description?.ko || category.description?.en || '-'}
+                        </td>
+                        <td style={{ padding: '0.75rem 1rem', fontSize: '0.875rem' }}>{category.order || 0}</td>
+                        <td style={{ padding: '0.75rem 1rem' }}>
+                          <div style={{ fontSize: '0.8rem' }}>
+                            {category.enabled?.ko && <span style={{ color: '#28a745' }}>KO</span>}
+                            {category.enabled?.ko && category.enabled?.en && <span style={{ margin: '0 0.25rem' }}>/</span>}
+                            {category.enabled?.en && <span style={{ color: '#28a745' }}>EN</span>}
+                            {!category.enabled?.ko && !category.enabled?.en && <span style={{ color: '#dc3545' }}>비활성화</span>}
+                          </div>
+                        </td>
+                        <td style={{ padding: '0.75rem 1rem' }}>
+                          {onSelect && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                onSelect(category);
+                                onClose();
+                              }}
+                              style={{
+                                marginRight: '0.5rem',
+                                padding: '0.25rem 0.5rem',
+                                backgroundColor: '#0070f3',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '0.25rem',
+                                cursor: 'pointer',
+                                fontSize: '0.85rem',
+                              }}
+                            >
+                              선택
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleEditClick(category)}
+                            style={{
+                              marginRight: '0.5rem',
+                              padding: '0.25rem 0.5rem',
+                              backgroundColor: '#666',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '0.25rem',
+                              cursor: 'pointer',
+                              fontSize: '0.85rem',
+                            }}
+                          >
+                            수정
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void handleDelete(category)}
+                            style={{
+                              padding: '0.25rem 0.5rem',
+                              backgroundColor: '#dc3545',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '0.25rem',
+                              cursor: 'pointer',
+                              fontSize: '0.85rem',
+                            }}
+                          >
+                            삭제
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

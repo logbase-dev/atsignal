@@ -1,0 +1,26 @@
+{
+  "name": "atsignal",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "functions"
+  ],
+  "scripts": {
+    "build:web": "cd apps/web && npm run build",
+    "build:docs": "cd apps/docs && npm run build",
+    "build:admin": "cd apps/admin && npm run build",
+    "build:support": "cd apps/support && npm run build",
+    "build:app": "cd apps/app && npm run build",
+    "build:functions": "cd functions && npm run build",
+    "deploy:web": "firebase deploy --only hosting:web",
+    "deploy:docs": "firebase deploy --only hosting:docs",
+    "deploy:support": "firebase deploy --only hosting:support,functions",
+    "deploy:app": "firebase deploy --only hosting:app",
+    "deploy:all": "npm run build:web && npm run build:docs && npm run build:support && npm run build:app && firebase deploy"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
+
