@@ -41,3 +41,6 @@ build/
 reflog-all.txt
 restore-latest-files.py
 *.py.bak
+
+# Large video files (use Google Drive or CDN instead)
+apps/web/public/videos/UF 시스템 아키텍처.mp4
