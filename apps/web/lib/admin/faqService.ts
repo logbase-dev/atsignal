@@ -3,13 +3,23 @@
 import type { FAQ } from './types';
 import { adminFetch } from './api';
 
+export interface GetFAQsResponse {
+  faqs: FAQ[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export async function getFAQs(options?: {
   categoryId?: string;
   tags?: string[];
   search?: string;
   orderBy?: 'level' | 'isTop' | 'createdAt';
   orderDirection?: 'asc' | 'desc';
-}): Promise<FAQ[]> {
+  page?: number;
+  limit?: number;
+}): Promise<GetFAQsResponse> {
   const params = new URLSearchParams();
   if (options?.categoryId) params.append('categoryId', options.categoryId);
   if (options?.tags?.length) {
@@ -18,6 +28,8 @@ export async function getFAQs(options?: {
   if (options?.search) params.append('search', options.search);
   if (options?.orderBy) params.append('orderBy', options.orderBy);
   if (options?.orderDirection) params.append('orderDirection', options.orderDirection);
+  if (options?.page) params.append('page', String(options.page));
+  if (options?.limit) params.append('limit', String(options.limit));
 
   const qs = params.toString();
   const response = await adminFetch(`faqs${qs ? `?${qs}` : ''}`);
@@ -25,7 +37,13 @@ export async function getFAQs(options?: {
     throw new Error(`Failed to fetch FAQs: ${response.statusText}`);
   }
   const data = await response.json().catch(() => ({}));
-  return (data.faqs || []) as FAQ[];
+  return {
+    faqs: (data.faqs || []) as FAQ[],
+    total: data.total || 0,
+    page: data.page || 1,
+    limit: data.limit || 20,
+    totalPages: data.totalPages || 1,
+  };
 }
 
 export async function getFAQById(id: string): Promise<FAQ | null> {
@@ -77,9 +95,9 @@ export async function deleteFAQ(id: string): Promise<void> {
 
 export async function getAllTags(): Promise<string[]> {
   // No dedicated endpoint; fetch FAQs and aggregate tags client-side.
-  const faqs = await getFAQs();
+  const result = await getFAQs();
   const tags = new Set<string>();
-  for (const faq of faqs) {
+  for (const faq of result.faqs) {
     (faq.tags || []).forEach((t) => {
       if (typeof t === 'string' && t.trim()) tags.add(t.trim());
     });

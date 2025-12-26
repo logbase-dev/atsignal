@@ -14,6 +14,24 @@ const translations = {
   en: enMessages,
 } as const;
 
+// SVG 아이콘 상수화
+const ChevronRightIcon = (
+  <svg 
+    fill="none" 
+    stroke="currentColor" 
+    viewBox="0 0 24 24"
+    style={{ width: '1rem', height: '1rem', display: 'inline-block', marginLeft: '0.5rem', verticalAlign: 'middle' }}
+  >
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+  </svg>
+);
+
+const ChevronDownIcon = (
+  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+  </svg>
+);
+
 interface HeaderProps {
   menuTree: MenuNode[];
 }
@@ -22,8 +40,21 @@ export default function Header({ menuTree }: HeaderProps) {
   const pathname = usePathname();
   const locale = getLocaleFromPath(pathname);
   const contactCta = translations[locale]?.header?.contactCta ?? translations.ko.header.contactCta;
+  const notchPathD = `
+    M 0 0
+    C 11 0 22 15.5 34.13 40.5
+    C 46.8 65.5 61.02 72 72 72
+    L 1368 72
+    C 1378.98 72 1393.2 65.5 1405.87 40.5
+    C 1418.04 15.5 1429.02 0 1440 0
+    Z
+  `;
   const [openDropdowns, setOpenDropdowns] = useState<Set<string>>(new Set());
   const timeoutRefs = useRef<Map<string, NodeJS.Timeout>>(new Map());
+  const [isHeaderHidden, setIsHeaderHidden] = useState(false);
+  const lastScrollY = useRef(0);
+  const ticking = useRef(false);
+  const [notchAnimStyle, setNotchAnimStyle] = useState<React.CSSProperties>({});
 
   const handleMouseEnter = (path: string) => {
     const existingTimeout = timeoutRefs.current.get(path);
@@ -31,12 +62,7 @@ export default function Header({ menuTree }: HeaderProps) {
       clearTimeout(existingTimeout);
       timeoutRefs.current.delete(path);
     }
-    
-    setOpenDropdowns((prev) => {
-      const next = new Set(prev);
-      next.add(path);
-      return next;
-    });
+    setOpenDropdowns((prev) => new Set(prev).add(path));
   };
 
   const handleMouseLeave = (path: string) => {
@@ -47,8 +73,7 @@ export default function Header({ menuTree }: HeaderProps) {
         return next;
       });
       timeoutRefs.current.delete(path);
-    }, 200);
-    
+    }, 90); // quicker hide while keeping show timing intact
     timeoutRefs.current.set(path, timeout);
   };
 
@@ -59,14 +84,62 @@ export default function Header({ menuTree }: HeaderProps) {
     };
   }, []);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      if (ticking.current) return;
+      ticking.current = true;
+      window.requestAnimationFrame(() => {
+        const currentY = window.scrollY;
+        const isScrollingDown = currentY > lastScrollY.current;
+        const pastThreshold = currentY > 120;
+        setIsHeaderHidden(isScrollingDown && pastThreshold);
+        lastScrollY.current = currentY;
+        ticking.current = false;
+      });
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  useEffect(() => {
+    const duration = 6 + Math.random() * 3; // 6s to 9s
+    const stroke = 4 + Math.random() * 2; // 4 to 6
+    const distance = 1000 + Math.random() * 300; // 1000 to 1300
+    setNotchAnimStyle({
+      ['--notch-drop-duration' as any]: `${duration}s`,
+      ['--notch-drop-stroke' as any]: stroke,
+      ['--notch-drop-distance' as any]: distance,
+    });
+  }, []);
+  useEffect(() => {
+    // randomize droplet speed/stroke per mount
+    const duration = 7 + Math.random() * 4; // 7s to 11s
+    const stroke = 4 + Math.random() * 2; // 4 to 6
+    const distance = 2800 + Math.random() * 800; // travel distance
+    setNotchAnimStyle({
+      ['--notch-drop-duration' as any]: `${duration}s`,
+      ['--notch-drop-stroke' as any]: stroke,
+      ['--notch-drop-distance' as any]: distance,
+    });
+  }, []);
+
   const getNodeHref = (node: MenuNode): string => {
-    if (node.isExternal && node.url) {
-      return node.url;
+    if (node.pageType === 'links') {
+      const externalUrl = node.url || node.path;
+      if (!externalUrl) return '';
+      
+      if (externalUrl.startsWith('http://') || externalUrl.startsWith('https://')) {
+        return externalUrl;
+      }
+      
+      return `https://${externalUrl}`;
     }
     return pathToUrl(node.path, locale);
   };
 
-  // 공통 링크 렌더링 함수
   const renderLink = (
     node: MenuNode,
     href: string,
@@ -77,20 +150,11 @@ export default function Header({ menuTree }: HeaderProps) {
     const linkContent = (
       <>
         {node.name}
-        {showArrow && (
-          <svg 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-            style={{ width: '1rem', height: '1rem', display: 'inline-block', marginLeft: '0.5rem', verticalAlign: 'middle' }}
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        )}
+        {showArrow && ChevronRightIcon}
       </>
     );
 
-    if (node.isExternal) {
+    if (node.pageType === 'links') {
       return (
         <a
           href={href}
@@ -111,15 +175,12 @@ export default function Header({ menuTree }: HeaderProps) {
     );
   };
 
-  // Cascading Dropdown을 위한 재귀 렌더링 함수
   const renderCascadingMenu = (node: MenuNode, level: number = 0): React.ReactNode => {
-      const hasChildren = node.children && node.children.length > 0;
+    const hasChildren = node.children && node.children.length > 0;
     const isOpen = openDropdowns.has(node.path);
-    const isExternal = node.isExternal || false;
     const href = getNodeHref(node);
 
-      if (hasChildren) {
-      // level 0 (depth1)은 nav-item으로 렌더링
+    if (hasChildren) {
       if (level === 0) {
         return (
           <div key={node.path} className="nav-item">
@@ -129,9 +190,7 @@ export default function Header({ menuTree }: HeaderProps) {
               className="nav-button"
             >
               {node.name}
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
+              {ChevronDownIcon}
             </button>
             {isOpen && (
               <div
@@ -146,7 +205,6 @@ export default function Header({ menuTree }: HeaderProps) {
         );
       }
 
-      // level 1 이상은 dropdown-item으로 렌더링 (하위 메뉴가 있으면 링크 없음)
       return (
         <div key={node.path} className="dropdown-item-wrapper">
           <div
@@ -154,17 +212,9 @@ export default function Header({ menuTree }: HeaderProps) {
             onMouseEnter={() => handleMouseEnter(node.path)}
             onMouseLeave={() => handleMouseLeave(node.path)}
           >
-            {/* 하위 메뉴가 있으면 링크 없이 텍스트만 표시 */}
             <span className="dropdown-link" style={{ display: 'block', width: '100%', cursor: 'default', pointerEvents: 'none' }}>
-          {node.name}
-              <svg 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-                style={{ width: '1rem', height: '1rem', display: 'inline-block', marginLeft: '0.5rem', verticalAlign: 'middle' }}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
+              {node.name}
+              {ChevronRightIcon}
             </span>
           </div>
           {isOpen && node.children && node.children.length > 0 && (
@@ -180,7 +230,6 @@ export default function Header({ menuTree }: HeaderProps) {
       );
     }
 
-    // children이 없는 경우 (가장 깊은 depth) - 링크 표시
     if (level === 0) {
       return (
         <div key={node.path}>
@@ -199,30 +248,34 @@ export default function Header({ menuTree }: HeaderProps) {
   };
 
   return (
-    <header className="header">
-      <div className="header-container">
-        <div className="header-content">
-          <Link href={`/${locale}`} className="logo">
+    <header className={`header header--notch ${isHeaderHidden ? 'header--hidden' : ''}`}>
+      <div className="notch-shell">
+        <svg className="notch-bg" viewBox="0 0 1440 72" preserveAspectRatio="none" aria-hidden="true">
+          <path className="notch-fill" d={notchPathD} />
+          {/* Droplet animation disabled */}
+        </svg>
+        <nav className="notch-nav" aria-label="Top navigation">
+          <Link href={`/${locale}`} className="logo notch-logo">
             <img
               src="/images/logo.svg"
               alt="AtSignal"
               className="logo-image"
             />
           </Link>
-          
-          <nav className="nav">
-            {menuTree.map((node) => renderCascadingMenu(node, 0))}
-          </nav>
 
-          <div>
-            <Link
-              href={pathToUrl("/Pricing/Contact Sales", locale)}
-              className="cta-button"
-            >
-              {contactCta}
+          <div className="nav-menu-items notch-nav-menu-items">
+            {menuTree.map((node) => renderCascadingMenu(node, 0))}
+          </div>
+
+          <div className="nav-actions">
+            <Link href={pathToUrl("/Pricing/Contact Sales", locale)} className="cta-button">
+              Get Demo
+            </Link>
+            <Link href={pathToUrl("/Pricing/Contact Sales", locale)} className="cta-button">
+              Contact Sales
             </Link>
           </div>
-        </div>
+        </nav>
       </div>
     </header>
   );

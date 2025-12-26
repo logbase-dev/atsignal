@@ -2,14 +2,13 @@ import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import Splash from "@/components/Splash";
 import { getMenusByLocale } from "@/lib/cms/getMenus";
 import { buildMenuTreeFromFirestore } from "@/utils/menuTree";
 import { defaultLocale } from "@/lib/i18n/getLocale";
 import { buildMenuTree } from "@/utils/menu";
 import { menuData } from "@/data/menu";
+import WebLayoutWrapper from "@/components/WebLayoutWrapper";
 
 export const metadata: Metadata = {
   title: "atsignal - 통합 행동데이터 플랫폼",
@@ -98,13 +97,9 @@ export default async function RootLayout({
         className={`${GeistSans.variable} ${GeistMono.variable} antialiased`}
       >
         <Splash />
-        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-          <Header menuTree={menuTree} />
-          <main className="min-h-screen bg-gray-50 dark:bg-gray-900" style={{ flex: 1 }}>
-            {children}
-          </main>
-          <Footer menus={footerMenus} />
-        </div>
+        <WebLayoutWrapper menuTree={menuTree} footerMenus={footerMenus}>
+          {children}
+        </WebLayoutWrapper>
       </body>
     </html>
   );

@@ -1,22 +1,26 @@
 import { notFound } from 'next/navigation';
 import { draftMode } from 'next/headers';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import PageRenderer from '@/components/cms/PageRenderer';
 import { Sidebar } from '@/components/cms/Sidebar';
 import { getPageById, getPageBySlug } from '@/lib/cms/getPage';
 import { getMenusByLocale } from '@/lib/cms/getMenus';
+import { db } from '@/lib/firebase';
 
 interface PageProps {
   params: Promise<{
     locale: string;
     slug: string[];
   }>;
-  searchParams?: Promise<{
-    draftId?: string;
-    preview?: string;
-  }>;
+  // 정적 사이트 생성 모드에서는 searchParams 사용 불가
+  // searchParams?: Promise<{
+  //   draftId?: string;
+  //   preview?: string;
+  // }>;
 }
 
-export const dynamic = 'force-dynamic';
+// 정적 사이트 생성을 위해 force-dynamic 제거
+// export const dynamic = 'force-dynamic';
 
 // 메뉴 트리 구조 생성 헬퍼 함수
 function buildMenuTree(menus: any[]): any[] {
@@ -72,17 +76,45 @@ function buildMenuTree(menus: any[]): any[] {
   return roots;
 }
 
-export default async function DynamicPage({ params, searchParams }: PageProps) {
-  const { locale, slug } = await params;
-  const resolvedSearchParams = await searchParams;
-  const slugPath = slug.map(decodeURIComponent).join('/');
-  // draftId가 있으면 미리보기 모드로 간주 (draftMode 쿠키가 없어도 작동)
-  const preview = (draftMode().isEnabled || resolvedSearchParams?.draftId) && resolvedSearchParams?.draftId;
+// 정적 사이트 생성을 위한 경로 생성
+export async function generateStaticParams() {
+  if (!db) {
+    return [];
+  }
 
-  let page =
-    preview && resolvedSearchParams?.draftId
-      ? await getPageById(resolvedSearchParams.draftId)
-      : await getPageBySlug('docs', slugPath);
+  try {
+    const pagesRef = collection(db, 'pages');
+    const q = query(pagesRef, where('site', '==', 'docs'));
+    const snapshot = await getDocs(q);
+    
+    const params: Array<{ locale: string; slug: string[] }> = [];
+    
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      const slug = data.slug || '';
+      if (slug) {
+        const slugArray = slug.split('/').filter(Boolean);
+        // ko와 en 두 locale 모두 생성
+        params.push({ locale: 'ko', slug: slugArray });
+        params.push({ locale: 'en', slug: slugArray });
+      }
+    });
+    
+    return params;
+  } catch (error) {
+    console.error('generateStaticParams 에러:', error);
+    return [];
+  }
+}
+
+export default async function DynamicPage({ params }: PageProps) {
+  const { locale, slug } = await params;
+  const slugPath = slug.map(decodeURIComponent).join('/');
+  // 정적 사이트 생성 모드에서는 preview 비활성화
+  const preview = false;
+
+  // 정적 사이트 생성 모드에서는 항상 slug로 페이지 가져오기
+  let page = await getPageBySlug('docs', slugPath);
 
   if (!page) {
     notFound();

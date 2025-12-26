@@ -24,6 +24,16 @@ export default function Home({ locale }: HomeProps) {
   
   // ko.json은 항상 있으므로 fallback으로 사용 (en.json에 없을 수 있음)
   const rollingTexts = translation.home?.rollingTexts ?? translations.ko.home.rollingTexts;
+  const rollingAnnouncements = [
+    '[1.공지] atsignal 베타 서비스 오픈 안내',
+    '[2.이벤트] atsignal 무료 데모 체험 이벤트',
+    '[3.이벤트] 로그 진단 무료 컨설팅 이벤트 (선착순 10개 기업)',
+    '[4.공지] atsignal admin / CMS 업데이트 안내',
+    '[5.이벤트] atsignal 뉴스레터 구독 이벤트',
+  ];
+  const rollingBannerText = rollingAnnouncements.join('                         '); // 25 spaces
+  const [isBannerPaused, setIsBannerPaused] = useState(false);
+  const [isBannerCollapsed, setIsBannerCollapsed] = useState(false);
   
   const homeMenu = getMenuByPath('/Direct link');
   
@@ -38,6 +48,7 @@ export default function Home({ locale }: HomeProps) {
   const hasAnimatedRef = useRef(false);
   const [activeFeature, setActiveFeature] = useState<string>('log-collecting');
   const featureRefs = useRef<{ [key: string]: HTMLElement | null }>({});
+  const featuresContentRef = useRef<HTMLDivElement>(null);
   const [isNewsletterModalOpen, setIsNewsletterModalOpen] = useState(false);
   const [emailInput, setEmailInput] = useState('');
 
@@ -178,71 +189,134 @@ export default function Home({ locale }: HomeProps) {
     };
   }, []);
 
-  // Scroll spy for features section
-  useEffect(() => {
-    const observerOptions = {
-      root: null,
-      rootMargin: '-20% 0px -60% 0px',
-      threshold: 0,
-    };
-
-    const observerCallback = (entries: IntersectionObserverEntry[]) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const id = entry.target.getAttribute('data-feature-id');
-          if (id) {
-            setActiveFeature(id);
-          }
-        }
-      });
-    };
-
-    const observer = new IntersectionObserver(observerCallback, observerOptions);
-
-    // Use setTimeout to ensure refs are set
-    const timeoutId = setTimeout(() => {
-      Object.values(featureRefs.current).forEach((ref) => {
-        if (ref) {
-          observer.observe(ref);
-        }
-      });
-    }, 100);
-
-    return () => {
-      clearTimeout(timeoutId);
-      observer.disconnect();
-    };
-  }, []);
-
   const features = [
     {
       id: 'log-collecting',
       title: 'Log Collecting',
       description: '다양한 디지털 채널에서 발생하는 사용자 행동 로그를 안정적으로 수집하고 표준화합니다. 웹, 모바일, 서버 등 모든 채널을 지원합니다.',
-      link: pathToUrl("/Product/Product@signal/Log Collecting", currentLocale),
+      link: pathToUrl("/product/product-atsignal/log-collecting", currentLocale),
       number: 1,
     },
     {
       id: 'analytics',
       title: 'Analytics',
       description: '사용자 여정, 퍼널, 리텐션, 캠페인 효과 등 다양한 관점에서 분석 리포트를 제공합니다. 실시간 대시보드로 즉각적인 인사이트를 확인하세요.',
-      link: pathToUrl("/Product/Product@signal/Analytics", currentLocale),
+      link: pathToUrl("/product/product-atsignal/analytics", currentLocale),
       number: 2,
     },
     {
       id: 'integrations',
       title: 'Integrations',
       description: '외부 BI, CDP, MMP, CRM 등 다양한 플랫폼과 연동하여 데이터 활용의 확장성을 높입니다. 50개 이상의 주요 플랫폼을 지원합니다.',
-      link: pathToUrl("/Product/Product@signal/Integration", currentLocale),
+      link: pathToUrl("/product/product-atsignal/integrations", currentLocale),
       number: 3,
     },
   ];
+
+
+  // 마우스 드래그로 좌우 스크롤
+  useEffect(() => {
+    const featuresContent = featuresContentRef.current;
+    if (!featuresContent) return;
+
+    let isDragging = false;
+    let startX = 0;
+    let scrollLeft = 0;
+
+    // 초기 스크롤 위치를 0으로 설정 (1번 카드가 좌측 끝에 오도록)
+    featuresContent.scrollLeft = 0;
+
+    // 마우스 다운 이벤트
+    const handleMouseDown = (e: MouseEvent) => {
+      isDragging = true;
+      startX = e.pageX - featuresContent.offsetLeft;
+      scrollLeft = featuresContent.scrollLeft;
+      featuresContent.style.cursor = 'grabbing';
+      featuresContent.style.userSelect = 'none';
+    };
+
+    // 마우스 이동 이벤트
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging) return;
+      e.preventDefault();
+      const x = e.pageX - featuresContent.offsetLeft;
+      const walk = (x - startX) * 1.5; // 드래그 속도 조절 (1.5배)
+      
+      // 스크롤 가능한 범위 계산
+      const maxScrollLeft = featuresContent.scrollWidth - featuresContent.clientWidth;
+      
+      // 스크롤 위치를 0과 최대값 사이로 제한
+      const newScrollLeft = scrollLeft - walk;
+      featuresContent.scrollLeft = Math.max(0, Math.min(newScrollLeft, maxScrollLeft));
+    };
+
+    // 마우스 업 이벤트
+    const handleMouseUp = () => {
+      isDragging = false;
+      featuresContent.style.cursor = 'grab';
+      featuresContent.style.userSelect = 'auto';
+    };
+
+    // 마우스가 영역을 벗어날 때
+    const handleMouseLeave = () => {
+      isDragging = false;
+      featuresContent.style.cursor = 'grab';
+      featuresContent.style.userSelect = 'auto';
+    };
+
+    featuresContent.addEventListener('mousedown', handleMouseDown);
+    featuresContent.addEventListener('mousemove', handleMouseMove);
+    featuresContent.addEventListener('mouseup', handleMouseUp);
+    featuresContent.addEventListener('mouseleave', handleMouseLeave);
+
+    // 초기 cursor 스타일 설정
+    featuresContent.style.cursor = 'grab';
+
+    return () => {
+      featuresContent.removeEventListener('mousedown', handleMouseDown);
+      featuresContent.removeEventListener('mousemove', handleMouseMove);
+      featuresContent.removeEventListener('mouseup', handleMouseUp);
+      featuresContent.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, []);
 
   return (
     <div className="main dark-mode">
       {/* Hero Section */}
       <section className="hero">
         <div className="hero-container">
+          <a
+            className={`rolling-banner ${isBannerCollapsed ? 'collapsed' : ''}`}
+            aria-label="Announcements"
+            href="/404"
+            onClick={(e) => {
+              if (isBannerCollapsed) e.preventDefault();
+            }}
+          >
+            <div
+              className="rolling-track"
+              data-paused={isBannerPaused}
+              onMouseEnter={() => setIsBannerPaused(true)}
+              onMouseLeave={() => setIsBannerPaused(false)}
+              style={{ ['--rolling-state' as any]: isBannerPaused ? 'paused' : 'running' }}
+            >
+              <span>{rollingBannerText}</span>
+              <span aria-hidden="true">{rollingBannerText}</span>
+              <span aria-hidden="true">{rollingBannerText}</span>
+            </div>
+            <button
+              type="button"
+              className="rolling-toggle"
+              aria-label={isBannerCollapsed ? '공지 펼치기' : '공지 접기'}
+              onClick={(e) => {
+                e.preventDefault();
+                setIsBannerCollapsed((prev) => !prev);
+                setIsBannerPaused((prev) => !prev);
+              }}
+            >
+              {isBannerCollapsed ? '▼ 공지 펼치기' : '▲ 공지 접기'}
+            </button>
+          </a>
           <div>
             <h1 className="hero-title">
               <span className="rolling-text-container">
@@ -262,21 +336,16 @@ export default function Home({ locale }: HomeProps) {
               </span>
             </h1>
             <p className="hero-description">
-              {homeMenu?.description || '핵심 가치의 전달에 집중, 제품의 기능보다 문제 해결과 가치 중심으로 기술'}
+              {homeMenu?.description || 'atsignal (aka @signal) 의 @은 커뮤니케이션과 소스의 의미입니다.\nsignal은 고객의 행동 log에 담긴 고객의 intention과 insight입니다.\nWe Highlight Signal !'}
             </p>
             <div className="hero-buttons">
-              <Link
-                href="/Pricing/Contact Sales"
+              <button
+                type="button"
                 className="btn-primary"
+                onClick={() => setIsNewsletterModalOpen(true)}
               >
-                Get Demo
-              </Link>
-              <Link
-                href="/Pricing/Information"
-                className="btn-secondary"
-              >
-                Free Trial
-              </Link>
+                뉴스레터 신청
+              </button>
             </div>
           </div>
         </div>
@@ -345,8 +414,27 @@ export default function Home({ locale }: HomeProps) {
                   className={`feature-nav-item ${activeFeature === feature.id ? 'active' : ''}`}
                   onClick={() => {
                     const element = featureRefs.current[feature.id];
-                    if (element) {
-                      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    const container = featuresContentRef.current;
+                    
+                    if (element && container) {
+                      // 좌측 메뉴 활성화
+                      setActiveFeature(feature.id);
+                      
+                      // getBoundingClientRect를 사용하여 정확한 위치 계산
+                      const containerRect = container.getBoundingClientRect();
+                      const elementRect = element.getBoundingClientRect();
+                      
+                      // 카드의 왼쪽 끝이 컨테이너의 왼쪽 끝에 오도록 계산
+                      // 현재 scrollLeft + (카드의 화면상 위치 - 컨테이너의 화면상 위치)
+                      const currentScrollLeft = container.scrollLeft;
+                      const relativeLeft = elementRect.left - containerRect.left;
+                      const targetScrollLeft = currentScrollLeft + relativeLeft;
+                      
+                      // 부드러운 스크롤
+                      container.scrollTo({
+                        left: targetScrollLeft,
+                        behavior: 'smooth'
+                      });
                     }
                   }}
                 >
@@ -356,7 +444,8 @@ export default function Home({ locale }: HomeProps) {
             </div>
 
             {/* Right Content - Scrollable */}
-            <div className="features-content">
+            <div ref={featuresContentRef} className="features-content">
+              {/* 원본 카드만 표시 */}
               {features.map((feature) => (
                 <div
                   key={feature.id}
@@ -395,6 +484,14 @@ export default function Home({ locale }: HomeProps) {
                   </Link>
                 </div>
               ))}
+              {/* 마지막 카드 뒤에 여백 추가 - 마지막 카드가 컨테이너 왼쪽에 정렬될 수 있도록 */}
+              <div style={{ 
+                minWidth: typeof window !== 'undefined' && window.innerWidth < 768 
+                ? '100px'  // 모바일
+                : '200px', // 데스크톱
+                flexShrink: 0,
+                height: '1px' 
+              }} />
             </div>
           </div>
         </div>
@@ -457,36 +554,36 @@ export default function Home({ locale }: HomeProps) {
       <section className="section section-white">
         <div className="section-container">
           <h2 className="section-title">
-            AtSignal을 선택하는 이유
+            atsignal을 선택하는 이유
           </h2>
           <div style={{ 
             display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
             gap: '1.5rem' 
           }}>
             <div className="benefit-item">
               <div className="benefit-icon">✓</div>
-              <span className="benefit-text">실시간 데이터 처리 및 분석</span>
+              <span className="benefit-text">App/Web Behavior Log 분석 특화</span>
             </div>
             <div className="benefit-item">
               <div className="benefit-icon">✓</div>
-              <span className="benefit-text">엔터프라이즈급 보안 및 규정 준수</span>
+              <span className="benefit-text">자체 고성능 데이터 처리 엔진</span>
             </div>
             <div className="benefit-item">
               <div className="benefit-icon">✓</div>
-              <span className="benefit-text">확장 가능한 아키텍처</span>
+              <span className="benefit-text">유연한 최적 요금제 (MTU, Event 모두 지원)</span>
             </div>
             <div className="benefit-item">
               <div className="benefit-icon">✓</div>
-              <span className="benefit-text">24/7 기술 지원</span>
+              <span className="benefit-text">MetaData 관리/탐색 편의성</span>
             </div>
             <div className="benefit-item">
               <div className="benefit-icon">✓</div>
-              <span className="benefit-text">직관적인 대시보드 및 리포트</span>
+              <span className="benefit-text">데이터 권한/보안 그룹 공유 기능</span>
             </div>
             <div className="benefit-item">
               <div className="benefit-icon">✓</div>
-              <span className="benefit-text">빠른 도입 및 온보딩</span>
+              <span className="benefit-text">General BI: 포괄적인 분석 기능</span>
             </div>
           </div>
         </div>
@@ -575,4 +672,3 @@ export default function Home({ locale }: HomeProps) {
     </div>
   );
 }
-

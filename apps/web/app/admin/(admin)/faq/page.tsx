@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getFAQs, deleteFAQ, getAllTags } from '@/lib/admin/faqService';
+import { getFAQs, deleteFAQ, getAllTags, type GetFAQsResponse } from '@/lib/admin/faqService';
 import { getFAQCategories } from '@/lib/admin/faqCategoryService';
 import { FAQCategoryModal } from '@/components/admin/faq/FAQCategoryModal';
 import type { FAQ, FAQCategory } from '@/lib/admin/types';
@@ -14,7 +14,8 @@ import { getAdminApiUrl } from '@/lib/admin/api';
 
 const ToastViewer = dynamic(() => import('@toast-ui/react-editor').then((mod) => mod.Viewer), { ssr: false });
 
-const ITEMS_PER_PAGE = 20;
+const DEFAULT_ITEMS_PER_PAGE = 20;
+const ITEMS_PER_PAGE_OPTIONS = [10, 20, 50, 100];
 
 export default function AdminFAQPage() {
   const router = useRouter();
@@ -31,9 +32,10 @@ export default function AdminFAQPage() {
   const [expandedFAQId, setExpandedFAQId] = useState<string | null>(null);
   const [admins, setAdmins] = useState<Map<string, { name: string; username: string }>>(new Map());
   const [showAllTags, setShowAllTags] = useState(false);
-  const [hasMore, setHasMore] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [allFilteredFAQs, setAllFilteredFAQs] = useState<FAQ[]>([]);
+  const [itemsPerPage, setItemsPerPage] = useState(DEFAULT_ITEMS_PER_PAGE);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     void loadCategories();
@@ -44,21 +46,15 @@ export default function AdminFAQPage() {
 
   useEffect(() => {
     setCurrentPage(1);
-    setAllFilteredFAQs([]);
     void loadFAQs();
     void loadAllTags();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCategoryId, searchQuery, selectedTags]);
+  }, [selectedCategoryId, searchQuery, selectedTags, itemsPerPage]);
 
   useEffect(() => {
-    if (searchQuery && allFilteredFAQs.length > 0) {
-      const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-      const endIndex = startIndex + ITEMS_PER_PAGE;
-      setFaqs(allFilteredFAQs.slice(startIndex, endIndex));
-    } else if (searchQuery && allFilteredFAQs.length === 0) {
-      setFaqs([]);
-    }
-  }, [currentPage, allFilteredFAQs, searchQuery]);
+    void loadFAQs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -104,11 +100,11 @@ export default function AdminFAQPage() {
     }
   };
 
-  const loadFAQs = async (loadMore: boolean = false) => {
+  const loadFAQs = async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await getFAQs({
+      const result: GetFAQsResponse = await getFAQs({
         categoryId:
           selectedCategoryId === '__no_category__'
             ? '__no_category__'
@@ -117,16 +113,13 @@ export default function AdminFAQPage() {
         tags: selectedTags.length > 0 ? selectedTags : undefined,
         orderBy: 'isTop',
         orderDirection: 'desc',
+        page: currentPage,
+        limit: itemsPerPage,
       });
 
-      if (loadMore) {
-        setFaqs((prev) => [...prev, ...data.slice(prev.length, prev.length + ITEMS_PER_PAGE)]);
-        setHasMore(data.length > faqs.length + ITEMS_PER_PAGE);
-      } else {
-        setFaqs(data.slice(0, ITEMS_PER_PAGE));
-        setHasMore(data.length > ITEMS_PER_PAGE);
-        setAllFilteredFAQs(data);
-      }
+      setFaqs(result.faqs);
+      setTotalItems(result.total);
+      setTotalPages(result.totalPages);
     } catch (err: any) {
       console.error('Failed to load FAQs:', err);
       setError(err.message || 'FAQ를 불러오는데 실패했습니다.');
@@ -139,8 +132,6 @@ export default function AdminFAQPage() {
     if (!confirm('정말 삭제하시겠습니까?')) return;
     try {
       await deleteFAQ(id);
-      setCurrentPage(1);
-      setAllFilteredFAQs([]);
       await loadFAQs();
       await loadAllTags();
     } catch (err) {
@@ -149,28 +140,15 @@ export default function AdminFAQPage() {
     }
   };
 
-  const handleLoadMore = () => {
-    if (!hasMore) return;
-    const nextPageStart = faqs.length;
-    const nextPageEnd = nextPageStart + ITEMS_PER_PAGE;
-    const nextPageData = allFilteredFAQs.slice(nextPageStart, nextPageEnd);
-    setFaqs((prev) => [...prev, ...nextPageData]);
-    setHasMore(nextPageEnd < allFilteredFAQs.length);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleResetPagination = async () => {
-    setFaqs(allFilteredFAQs.slice(0, ITEMS_PER_PAGE));
-    setHasMore(allFilteredFAQs.length > ITEMS_PER_PAGE);
-    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
-  };
-
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const totalPages = searchQuery ? Math.ceil(allFilteredFAQs.length / ITEMS_PER_PAGE) : 0;
+  const handleItemsPerPageChange = (value: number) => {
+    setItemsPerPage(value);
+    setCurrentPage(1);
+  };
 
   const handleEdit = (faq: FAQ) => {
     if (faq.id) router.push(`/admin/faq/${faq.id}`);
@@ -303,36 +281,45 @@ export default function AdminFAQPage() {
         </div>
       ) : null}
 
-      {(faqs.length > 0 || loading) && (
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', padding: '0.75rem', backgroundColor: '#f9fafb', borderRadius: '0.25rem' }}>
-          <div style={{ fontSize: '0.875rem', color: '#666' }}>
-            {searchQuery ? (
-              <>
-                전체 {allFilteredFAQs.length}개 중 {Math.min((currentPage - 1) * ITEMS_PER_PAGE + 1, allFilteredFAQs.length)}-{Math.min(currentPage * ITEMS_PER_PAGE, allFilteredFAQs.length)}개 표시
-                {totalPages > 0 && ` (페이지 ${currentPage}/${totalPages})`}
-              </>
-            ) : (
-              <>
-                {faqs.length}개 표시
-                {hasMore && ' (더 많은 FAQ가 있습니다)'}
-              </>
-            )}
-          </div>
-          {searchQuery && totalPages > 1 ? (
-            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-              <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} style={{ padding: '0.375rem 0.75rem', backgroundColor: currentPage === 1 ? '#e5e7eb' : '#fff', color: currentPage === 1 ? '#9ca3af' : '#374151', border: '1px solid #d1d5db', borderRadius: '0.25rem', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', fontSize: '0.875rem' }}>
-                이전
-              </button>
-              <span style={{ fontSize: '0.875rem', color: '#666' }}>
-                {currentPage} / {totalPages}
-              </span>
-              <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage >= totalPages} style={{ padding: '0.375rem 0.75rem', backgroundColor: currentPage >= totalPages ? '#e5e7eb' : '#fff', color: currentPage >= totalPages ? '#9ca3af' : '#374151', border: '1px solid #d1d5db', borderRadius: '0.25rem', cursor: currentPage >= totalPages ? 'not-allowed' : 'pointer', fontSize: '0.875rem' }}>
-                다음
-              </button>
-            </div>
-          ) : null}
+      {/* 총 항목 수 표시 및 페이지당 표시 - 상단 */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '1rem',
+        }}
+      >
+        <div
+          style={{
+            fontSize: '0.875rem',
+            color: '#666',
+          }}
+        >
+          총 {totalItems}개의 FAQ (페이지 {currentPage} / {Math.max(1, totalPages)})
         </div>
-      )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <label style={{ fontSize: '0.875rem', color: '#666', fontWeight: 'normal' }}>페이지당 표시:</label>
+          <select
+            value={itemsPerPage}
+            onChange={(e) => {
+              handleItemsPerPageChange(Number(e.target.value));
+            }}
+            style={{
+              padding: '0.375rem 0.5rem',
+              border: '1px solid #ddd',
+              borderRadius: '0.25rem',
+              fontSize: '0.875rem',
+            }}
+          >
+            {ITEMS_PER_PAGE_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}개
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
 
       {faqs.length === 0 && !loading ? (
         <div style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>
@@ -427,18 +414,85 @@ export default function AdminFAQPage() {
             })}
           </div>
 
-          {!searchQuery ? (
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2rem', gap: '1rem' }}>
-              <button onClick={() => void handleResetPagination()} disabled={!hasMore} style={{ padding: '0.5rem 1rem', backgroundColor: !hasMore ? '#9ca3af' : '#6c757d', color: 'white', border: 'none', borderRadius: '0.25rem', cursor: !hasMore ? 'not-allowed' : 'pointer', fontSize: '0.875rem' }}>
-                처음으로 (총 {faqs.length}개)
-              </button>
-              {hasMore ? (
-                <button onClick={handleLoadMore} disabled={loading} style={{ padding: '0.5rem 1rem', backgroundColor: loading ? '#9ca3af' : '#0070f3', color: 'white', border: 'none', borderRadius: '0.25rem', cursor: loading ? 'not-allowed' : 'pointer', fontSize: '0.875rem' }}>
-                  {loading ? '로딩 중...' : '20개 더 보기'}
-                </button>
-              ) : null}
-            </div>
-          ) : null}
+          {/* 페이지네이션 - 항상 표시 */}
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '0.5rem',
+              marginTop: '2rem',
+            }}
+          >
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1 || totalPages <= 1}
+              style={{
+                padding: '0.5rem 1rem',
+                backgroundColor: currentPage === 1 || totalPages <= 1 ? '#e5e7eb' : '#fff',
+                color: currentPage === 1 || totalPages <= 1 ? '#9ca3af' : '#374151',
+                border: '1px solid #d1d5db',
+                borderRadius: '0.25rem',
+                cursor: currentPage === 1 || totalPages <= 1 ? 'not-allowed' : 'pointer',
+                fontSize: '0.875rem',
+              }}
+            >
+              이전
+            </button>
+
+            {Array.from({ length: Math.max(1, totalPages) }, (_, i) => i + 1).map((page) => {
+              // 현재 페이지 주변 2페이지씩만 표시
+              if (
+                totalPages <= 1 ||
+                page === 1 ||
+                page === totalPages ||
+                (page >= currentPage - 2 && page <= currentPage + 2)
+              ) {
+                return (
+                  <button
+                    key={page}
+                    onClick={() => totalPages > 1 && handlePageChange(page)}
+                    disabled={totalPages <= 1}
+                    style={{
+                      padding: '0.5rem 1rem',
+                      backgroundColor: page === currentPage ? '#0070f3' : totalPages <= 1 ? '#e5e7eb' : '#fff',
+                      color: page === currentPage ? '#fff' : totalPages <= 1 ? '#9ca3af' : '#374151',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '0.25rem',
+                      cursor: totalPages <= 1 ? 'not-allowed' : 'pointer',
+                      fontSize: '0.875rem',
+                      fontWeight: page === currentPage ? 'bold' : 'normal',
+                    }}
+                  >
+                    {page}
+                  </button>
+                );
+              } else if (page === currentPage - 3 || page === currentPage + 3) {
+                return (
+                  <span key={page} style={{ padding: '0.5rem', color: '#666' }}>
+                    ...
+                  </span>
+                );
+              }
+              return null;
+            })}
+
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage >= totalPages || totalPages <= 1}
+              style={{
+                padding: '0.5rem 1rem',
+                backgroundColor: currentPage >= totalPages || totalPages <= 1 ? '#e5e7eb' : '#fff',
+                color: currentPage >= totalPages || totalPages <= 1 ? '#9ca3af' : '#374151',
+                border: '1px solid #d1d5db',
+                borderRadius: '0.25rem',
+                cursor: currentPage >= totalPages || totalPages <= 1 ? 'not-allowed' : 'pointer',
+                fontSize: '0.875rem',
+              }}
+            >
+              다음
+            </button>
+          </div>
         </>
       )}
 

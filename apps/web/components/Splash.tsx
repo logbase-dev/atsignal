@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 
 export default function Splash() {
+  const ENABLE_SPLASH = false; // disable splash overlay while video is removed
   const [isVisible, setIsVisible] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
   const pathname = usePathname();
@@ -32,6 +33,10 @@ export default function Splash() {
 
   useEffect(() => {
     if (!isMounted) return;
+    if (!ENABLE_SPLASH) {
+      setIsVisible(false);
+      return;
+    }
     
     // 홈페이지(/ 또는 /ko, /en)에서만 스플래시 표시
     // 정규식으로 홈페이지 경로 확인: /, /ko, /en, /ko/, /en/
@@ -49,6 +54,10 @@ export default function Splash() {
     return null;
   }
 
+  if (!ENABLE_SPLASH) {
+    return null;
+  }
+
   return (
     <div 
       className="splash-screen" 
@@ -59,7 +68,8 @@ export default function Splash() {
       onClick={handleClick}
     >
       <div className="splash-content">
-        <video
+        {/* Splash video temporarily disabled for replacement */}
+        {/* <video
           ref={videoRef}
           className="splash-video"
           autoPlay
@@ -70,9 +80,8 @@ export default function Splash() {
         >
           <source src="/videos/main_splash.mp4" type="video/mp4" />
           <source src="/videos/main_splash.mov" type="video/quicktime" />
-        </video>
+        </video> */}
       </div>
     </div>
   );
 }
-

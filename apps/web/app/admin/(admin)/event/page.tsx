@@ -24,13 +24,24 @@ export default function EventPage() {
   const [ctaButtonFilter, setCtaButtonFilter] = useState<string>('all');
   const [searchText, setSearchText] = useState<string>('');
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
-  const limit = 20;
+  const [itemsPerPage, setItemsPerPage] = useState(20);
+  const ITEMS_PER_PAGE_OPTIONS = [10, 20, 50, 100];
 
   useEffect(() => {
     void loadAdmins();
-    void loadEvents();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+    void loadEvents();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [publishedFilter, bannerFilter, ctaButtonFilter, searchText, itemsPerPage]);
+
+  useEffect(() => {
+    void loadEvents();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage]);
 
   const loadAdmins = async () => {
     try {
@@ -80,7 +91,7 @@ export default function EventPage() {
 
       const options: { page: number; limit: number; published?: boolean; showInBanner?: boolean; hasCtaButton?: boolean; search?: string } = {
         page: effectivePage,
-        limit,
+        limit: itemsPerPage,
       };
       if (effectivePublishedFilter !== 'all') {
         options.published = effectivePublishedFilter === 'published';
@@ -361,22 +372,57 @@ export default function EventPage() {
         </div>
       ) : null}
 
-      <div style={{ marginBottom: '1rem', color: '#666', fontSize: '0.9rem' }}>
-        총 {total}개의 이벤트
-        {(mainEvent || subEvents.length > 0 || normalEvents.length > 0) && (
+      {/* 총 항목 수 표시 및 페이지당 표시 - 상단 */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '1rem',
+        }}
+      >
+        <div
+          style={{
+            fontSize: '0.875rem',
+            color: '#666',
+          }}
+        >
+          총 {total}개의 이벤트
+          {(mainEvent || subEvents.length > 0 || normalEvents.length > 0) && (
+            <span style={{ marginLeft: '0.5rem' }}>
+              ({mainEvent && '메인: 1개'}
+              {mainEvent && subEvents.length > 0 && ', '}
+              {subEvents.length > 0 && `서브: ${subEvents.length}개`}
+              {(mainEvent || subEvents.length > 0) && normalEvents.length > 0 && ', '}
+              {normalEvents.length > 0 && `일반: ${normalEvents.length}개`})
+            </span>
+          )}
           <span style={{ marginLeft: '0.5rem' }}>
-            ({mainEvent && '메인: 1개'}
-            {mainEvent && subEvents.length > 0 && ', '}
-            {subEvents.length > 0 && `서브: ${subEvents.length}개`}
-            {(mainEvent || subEvents.length > 0) && normalEvents.length > 0 && ', '}
-            {normalEvents.length > 0 && `일반: ${normalEvents.length}개`})
+            (페이지 {currentPage} / {Math.max(1, totalPages)})
           </span>
-        )}
-        {totalPages > 1 && (
-          <span style={{ marginLeft: '0.5rem' }}>
-            (페이지 {currentPage} / {totalPages})
-          </span>
-        )}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <label style={{ fontSize: '0.875rem', color: '#666', fontWeight: 'normal' }}>페이지당 표시:</label>
+          <select
+            value={itemsPerPage}
+            onChange={(e) => {
+              setItemsPerPage(Number(e.target.value));
+              setCurrentPage(1);
+            }}
+            style={{
+              padding: '0.375rem 0.5rem',
+              border: '1px solid #ddd',
+              borderRadius: '0.25rem',
+              fontSize: '0.875rem',
+            }}
+          >
+            {ITEMS_PER_PAGE_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}개
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* 메인 이벤트 카드 */}
@@ -642,84 +688,62 @@ export default function EventPage() {
         )}
       </div>
 
-      {totalPages > 1 && (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', marginTop: '1.5rem' }}>
-          <button
-            type="button"
-            onClick={() => {
-              setCurrentPage((p) => Math.max(1, p - 1));
-              void loadEvents({ page: Math.max(1, currentPage - 1) });
-            }}
-            disabled={currentPage === 1}
-            style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: currentPage === 1 ? '#e5e5e5' : '#0070f3',
-              color: currentPage === 1 ? '#999' : 'white',
-              border: 'none',
-              borderRadius: '0.25rem',
-              cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-            }}
-          >
-            이전
-          </button>
+      {/* 페이지네이션 - 항상 표시 */}
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', marginTop: '1.5rem' }}>
+        <button
+          type="button"
+          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+          disabled={currentPage === 1 || totalPages <= 1}
+          style={{
+            padding: '0.5rem 1rem',
+            backgroundColor: currentPage === 1 || totalPages <= 1 ? '#e5e7eb' : '#0070f3',
+            color: currentPage === 1 || totalPages <= 1 ? '#999' : 'white',
+            border: 'none',
+            borderRadius: '0.25rem',
+            cursor: currentPage === 1 || totalPages <= 1 ? 'not-allowed' : 'pointer',
+          }}
+        >
+          이전
+        </button>
 
-          <div style={{ display: 'flex', gap: '0.25rem' }}>
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              let pageNum: number;
-              if (totalPages <= 5) {
-                pageNum = i + 1;
-              } else if (currentPage <= 3) {
-                pageNum = i + 1;
-              } else if (currentPage >= totalPages - 2) {
-                pageNum = totalPages - 4 + i;
-              } else {
-                pageNum = currentPage - 2 + i;
-              }
-
-              return (
-                <button
-                  key={pageNum}
-                  type="button"
-                  onClick={() => {
-                    setCurrentPage(pageNum);
-                    void loadEvents({ page: pageNum });
-                  }}
-                  style={{
-                    padding: '0.5rem 0.75rem',
-                    backgroundColor: currentPage === pageNum ? '#0070f3' : '#fff',
-                    color: currentPage === pageNum ? 'white' : '#333',
-                    border: '1px solid #ddd',
-                    borderRadius: '0.25rem',
-                    cursor: 'pointer',
-                    minWidth: '2.5rem',
-                  }}
-                >
-                  {pageNum}
-                </button>
-              );
-            })}
-          </div>
-
-          <button
-            type="button"
-            onClick={() => {
-              setCurrentPage((p) => Math.min(totalPages, p + 1));
-              void loadEvents({ page: Math.min(totalPages, currentPage + 1) });
-            }}
-            disabled={currentPage === totalPages}
-            style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: currentPage === totalPages ? '#e5e5e5' : '#0070f3',
-              color: currentPage === totalPages ? '#999' : 'white',
-              border: 'none',
-              borderRadius: '0.25rem',
-              cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
-            }}
-          >
-            다음
-          </button>
+        <div style={{ display: 'flex', gap: '0.25rem' }}>
+          {Array.from({ length: Math.max(1, totalPages) }, (_, i) => i + 1).map((page) => (
+            <button
+              key={page}
+              type="button"
+              onClick={() => setCurrentPage(page)}
+              disabled={totalPages <= 1}
+              style={{
+                padding: '0.5rem 0.75rem',
+                backgroundColor: page === currentPage ? '#0070f3' : totalPages <= 1 ? '#e5e7eb' : '#fff',
+                color: page === currentPage ? 'white' : totalPages <= 1 ? '#999' : '#333',
+                border: '1px solid #ddd',
+                borderRadius: '0.25rem',
+                cursor: totalPages <= 1 ? 'not-allowed' : 'pointer',
+                minWidth: '2.5rem',
+              }}
+            >
+              {page}
+            </button>
+          ))}
         </div>
-      )}
+
+        <button
+          type="button"
+          onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+          disabled={currentPage >= totalPages || totalPages <= 1}
+          style={{
+            padding: '0.5rem 1rem',
+            backgroundColor: currentPage >= totalPages || totalPages <= 1 ? '#e5e7eb' : '#0070f3',
+            color: currentPage >= totalPages || totalPages <= 1 ? '#999' : 'white',
+            border: 'none',
+            borderRadius: '0.25rem',
+            cursor: currentPage >= totalPages || totalPages <= 1 ? 'not-allowed' : 'pointer',
+          }}
+        >
+          다음
+        </button>
+      </div>
     </div>
   );
 }

@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>atsignal (Docs)</title>
+    <script>
+      // Redirect Hosting → App Hosting (SSR)
+      // Keep /api/** handled by Hosting rewrites (Functions).
+      (function () {
+        var targetBase = "https://docs-ssr--atsignal.asia-east1.hosted.app";
+        var path = window.location.pathname || "/";
+        var search = window.location.search || "";
+        var hash = window.location.hash || "";
+        // Avoid redirect loops (in case this HTML is ever served from hosted.app)
+        if (window.location.hostname.indexOf("hosted.app") !== -1) return;
+        window.location.replace(targetBase + path + search + hash);
+      })();
+    </script>
+  </head>
+  <body>
+    <h1>atsignal (Docs)</h1>
+    <p>This Firebase Hosting site is used as a gateway (e.g., /api/** → Functions).</p>
+  </body>
+</html>
+

@@ -8,21 +8,18 @@
   },
   "hosting": [
     {
-      "target": "web",
       "site": "atsignal-main",
       "public": "apps/web/out",
       "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
       "rewrites": [{ "source": "**", "destination": "/index.html" }]
     },
     {
-      "target": "docs",
       "site": "atsignal-docs",
-      "public": "apps/docs/out",
+      "public": "apps/docs/hosting",
       "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
       "rewrites": [{ "source": "**", "destination": "/index.html" }]
     },
     {
-      "target": "support",
       "site": "atsignal-support",
       "public": "apps/support/out",
       "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
@@ -32,7 +29,6 @@
       ]
     },
     {
-      "target": "app",
       "site": "atsignal-app",
       "public": "apps/app/out",
       "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],

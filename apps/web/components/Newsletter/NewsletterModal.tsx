@@ -32,6 +32,7 @@ export default function NewsletterModal({
   initialEmail = '',
 }: NewsletterModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
   const currentLocale = locale || defaultLocale;
   const t = translations[currentLocale as keyof typeof translations]?.newsletter ?? 
             translations.ko.newsletter;
@@ -59,6 +60,10 @@ export default function NewsletterModal({
           email: initialEmail,
         }));
       }
+      // 모달이 완전히 렌더링된 후 성함 입력 필드에 포커스
+      setTimeout(() => {
+        nameInputRef.current?.focus();
+      }, 100);
       // ESC 키로 닫기 (기본 동작)
     } else {
       dialogRef.current?.close();
@@ -100,13 +105,14 @@ export default function NewsletterModal({
     setIsSubmitting(true);
     setSubmitStatus('idle');
     setErrorMessage('');
-
+  
     try {
-      // Firebase Functions 엔드포인트 URL
-      // 환경변수로 관리하거나 설정 파일에서 가져오기
-      const apiUrl = process.env.NEXT_PUBLIC_SUBSCRIBE_API_URL || 
-                     'https://asia-northeast3-atsignal.cloudfunctions.net/subscribeNewsletterApi';
-
+      // 로컬 개발 환경에서는 Next.js API Route 프록시 사용 (같은 origin)
+      const apiUrl = process.env.NODE_ENV === 'development'
+        ? '/api/subscribe'  // ← 프록시 사용
+        : process.env.NEXT_PUBLIC_SUBSCRIBE_API_URL || 
+          'https://asia-northeast3-atsignal.cloudfunctions.net/subscribeNewsletterApi';
+  
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
@@ -129,7 +135,40 @@ export default function NewsletterModal({
         setTimeout(() => {
           onClose();
         }, 2000);
+      } else if (response.status === 409 && data.error === 'ALREADY_SUBSCRIBED') {
+        // ✅ 이미 구독 중인 경우 특별 처리
+        setSubmitStatus('error');
+        setErrorMessage(
+          data.message || '이미 구독 중인 이메일입니다.'
+        );
+      } else if (response.status === 502 && data.error === 'STIBEE_SYNC_FAILED') {
+        // ✅ Stibee API 에러 처리 (이미 존재하는 이메일 포함)
+        let detail: any = null;
+        try {
+          detail = typeof data.detail === 'string' ? JSON.parse(data.detail) : data.detail;
+        } catch {
+          detail = null;
+        }
+
+        // ✅ 이미 존재하는 이메일인 경우
+        if (
+          detail?.code === 'Errors.List.AlreadyExistEmail' ||
+          detail?.message?.includes('이미 존재하는 이메일') ||
+          data.detail?.includes('AlreadyExistEmail')
+        ) {
+          setSubmitStatus('error');
+          setErrorMessage(
+            detail?.message || '이미 구독 중인 이메일입니다.'
+          );
+        } else {
+          // 기타 Stibee 에러
+          setSubmitStatus('error');
+          setErrorMessage(
+            data.message || data.error || t.errorMessage || '구독 신청 중 오류가 발생했습니다.'
+          );
+        }
       } else {
+        // 기타 에러 처리
         setSubmitStatus('error');
         setErrorMessage(
           data.message || data.error || t.errorMessage || '오류가 발생했습니다.'
@@ -197,6 +236,7 @@ export default function NewsletterModal({
                 {t.nameLabel || '성함'} <span className="required">*</span>
               </label>
               <input
+                ref={nameInputRef}
                 id="newsletter-name"
                 type="text"
                 required

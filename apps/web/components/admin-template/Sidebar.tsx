@@ -68,9 +68,30 @@ export default function Sidebar() {
         </li>
 
         <li className="nav-item">
+          <Link href="/admin/event" className={`nav-link ${pathname?.startsWith('/admin/event') ? '' : 'collapsed'}`}>
+            <i className="bi bi-calendar-event"></i>
+            <span>이벤트</span>
+            </Link>
+        </li>
+
+        <li className="nav-item">
+          <Link href="/admin/whatsnew" className={`nav-link ${pathname?.startsWith('/admin/whatsnew') ? '' : 'collapsed'}`}>
+            <i className="bi bi-newspaper"></i>
+            <span>What's New</span>
+            </Link>
+        </li>
+
+        <li className="nav-item">
           <Link href="/admin/faq" className={`nav-link ${pathname?.startsWith('/admin/faq') ? '' : 'collapsed'}`}>
             <i className="bi bi-question-circle"></i>
             <span>FAQ</span>
+            </Link>
+        </li>
+
+        <li className="nav-item">
+          <Link href="/admin/glossary" className={`nav-link ${pathname?.startsWith('/admin/glossary') ? '' : 'collapsed'}`}>
+            <i className="bi bi-book"></i>
+            <span>용어사전</span>
             </Link>
         </li>
 

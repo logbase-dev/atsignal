@@ -21,7 +21,8 @@ export default function BlogPage() {
   const [searchCategoryId, setSearchCategoryId] = useState<string>('');
   const [searchText, setSearchText] = useState<string>('');
   const [searchPublished, setSearchPublished] = useState<boolean | undefined>(undefined);
-  const limit = 20;
+  const [itemsPerPage, setItemsPerPage] = useState(20);
+  const ITEMS_PER_PAGE_OPTIONS = [10, 20, 50, 100];
 
   useEffect(() => {
     void loadCategories();
@@ -32,12 +33,12 @@ export default function BlogPage() {
   useEffect(() => {
     setCurrentPage(1); // 검색 조건 변경 시 첫 페이지로 이동
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchCategoryId, searchText, searchPublished]);
+  }, [searchCategoryId, searchText, searchPublished, itemsPerPage]);
 
   useEffect(() => {
     void loadPosts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, searchCategoryId, searchText, searchPublished]);
+  }, [currentPage, searchCategoryId, searchText, searchPublished, itemsPerPage]);
 
   const loadCategories = async () => {
     try {
@@ -70,7 +71,7 @@ export default function BlogPage() {
     try {
       const data = await getBlogPosts({ 
         page: currentPage, 
-        limit,
+        limit: itemsPerPage,
         categoryId: searchCategoryId && searchCategoryId.trim() ? searchCategoryId.trim() : undefined,
         search: searchText && searchText.trim() ? searchText.trim() : undefined,
         published: searchPublished,
@@ -297,8 +298,45 @@ export default function BlogPage() {
         </div>
       ) : null}
 
-      <div style={{ marginBottom: '1rem', color: '#666', fontSize: '0.9rem' }}>
-        총 {total}개의 포스트 {totalPages > 0 && `(페이지 ${currentPage} / ${totalPages})`}
+      {/* 총 항목 수 표시 및 페이지당 표시 - 상단 */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '1rem',
+        }}
+      >
+        <div
+          style={{
+            fontSize: '0.875rem',
+            color: '#666',
+          }}
+        >
+          총 {total}개의 포스트 (페이지 {currentPage} / {Math.max(1, totalPages)})
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <label style={{ fontSize: '0.875rem', color: '#666', fontWeight: 'normal' }}>페이지당 표시:</label>
+          <select
+            value={itemsPerPage}
+            onChange={(e) => {
+              setItemsPerPage(Number(e.target.value));
+              setCurrentPage(1);
+            }}
+            style={{
+              padding: '0.375rem 0.5rem',
+              border: '1px solid #ddd',
+              borderRadius: '0.25rem',
+              fontSize: '0.875rem',
+            }}
+          >
+            {ITEMS_PER_PAGE_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}개
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
       <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: '#fff', borderRadius: '0.5rem', overflow: 'hidden', marginBottom: '1rem' }}>
         <thead>
@@ -405,75 +443,62 @@ export default function BlogPage() {
         </tbody>
       </table>
       
-      {totalPages > 1 && (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', marginTop: '1.5rem' }}>
-              <button
-                type="button"
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                style={{
-                  padding: '0.5rem 1rem',
-                  backgroundColor: currentPage === 1 ? '#e5e5e5' : '#0070f3',
-                  color: currentPage === 1 ? '#999' : 'white',
-                  border: 'none',
-                  borderRadius: '0.25rem',
-                  cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-                }}
-              >
-                이전
-              </button>
-              
-              <div style={{ display: 'flex', gap: '0.25rem' }}>
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  let pageNum: number;
-                  if (totalPages <= 5) {
-                    pageNum = i + 1;
-                  } else if (currentPage <= 3) {
-                    pageNum = i + 1;
-                  } else if (currentPage >= totalPages - 2) {
-                    pageNum = totalPages - 4 + i;
-                  } else {
-                    pageNum = currentPage - 2 + i;
-                  }
-                  
-                  return (
-                    <button
-                      key={pageNum}
-                      type="button"
-                      onClick={() => setCurrentPage(pageNum)}
-                      style={{
-                        padding: '0.5rem 0.75rem',
-                        backgroundColor: currentPage === pageNum ? '#0070f3' : '#fff',
-                        color: currentPage === pageNum ? 'white' : '#333',
-                        border: '1px solid #ddd',
-                        borderRadius: '0.25rem',
-                        cursor: 'pointer',
-                        minWidth: '2.5rem',
-                      }}
-                    >
-                      {pageNum}
-                    </button>
-                  );
-                })}
-              </div>
-              
-              <button
-                type="button"
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                disabled={currentPage === totalPages}
-                style={{
-                  padding: '0.5rem 1rem',
-                  backgroundColor: currentPage === totalPages ? '#e5e5e5' : '#0070f3',
-                  color: currentPage === totalPages ? '#999' : 'white',
-                  border: 'none',
-                  borderRadius: '0.25rem',
-                  cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
-                }}
-              >
-                다음
-              </button>
-            </div>
-          )}
+      {/* 페이지네이션 - 항상 표시 */}
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', marginTop: '1.5rem' }}>
+        <button
+          type="button"
+          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+          disabled={currentPage === 1 || totalPages <= 1}
+          style={{
+            padding: '0.5rem 1rem',
+            backgroundColor: currentPage === 1 || totalPages <= 1 ? '#e5e7eb' : '#0070f3',
+            color: currentPage === 1 || totalPages <= 1 ? '#999' : 'white',
+            border: 'none',
+            borderRadius: '0.25rem',
+            cursor: currentPage === 1 || totalPages <= 1 ? 'not-allowed' : 'pointer',
+          }}
+        >
+          이전
+        </button>
+
+        <div style={{ display: 'flex', gap: '0.25rem' }}>
+          {Array.from({ length: Math.max(1, totalPages) }, (_, i) => i + 1).map((page) => (
+            <button
+              key={page}
+              type="button"
+              onClick={() => setCurrentPage(page)}
+              disabled={totalPages <= 1}
+              style={{
+                padding: '0.5rem 0.75rem',
+                backgroundColor: page === currentPage ? '#0070f3' : totalPages <= 1 ? '#e5e7eb' : '#fff',
+                color: page === currentPage ? 'white' : totalPages <= 1 ? '#999' : '#333',
+                border: '1px solid #ddd',
+                borderRadius: '0.25rem',
+                cursor: totalPages <= 1 ? 'not-allowed' : 'pointer',
+                minWidth: '2.5rem',
+              }}
+            >
+              {page}
+            </button>
+          ))}
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+          disabled={currentPage >= totalPages || totalPages <= 1}
+          style={{
+            padding: '0.5rem 1rem',
+            backgroundColor: currentPage >= totalPages || totalPages <= 1 ? '#e5e7eb' : '#0070f3',
+            color: currentPage >= totalPages || totalPages <= 1 ? '#999' : 'white',
+            border: 'none',
+            borderRadius: '0.25rem',
+            cursor: currentPage >= totalPages || totalPages <= 1 ? 'not-allowed' : 'pointer',
+          }}
+        >
+          다음
+        </button>
+      </div>
 
       <BlogCategoryModal
         open={showCategoryModal}

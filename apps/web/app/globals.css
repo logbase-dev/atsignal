@@ -34,7 +34,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
+    --background: #111111; /* slightly brighter */
     --foreground: #ededed;
   }
 }
@@ -62,6 +62,7 @@ body {
   background: transparent;
   border-bottom: none;
   box-shadow: none;
+  transition: transform 0.25s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
 .header-container {
@@ -80,6 +81,10 @@ body {
   .header-container {
     padding: 0.75rem 2rem;
   }
+}
+
+.header--hidden {
+  transform: translateY(-110%);
 }
 
 .header-content {
@@ -110,17 +115,33 @@ body {
 }
 
 .nav {
-  display: none;
+  display: flex;
   align-items: center;
-  gap: 2rem;
+  justify-content: space-between;
+  width: 100%;
   background: #0b0f14; /* deep navy-black */
   padding: 0.75rem 1.25rem;
   border-radius: 9999px; /* pill */
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06), 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
+/* Admin mode에서 .nav 스타일 제외 */
+body.admin-mode .nav,
+body.admin-mode .header-nav .nav {
+  background: transparent !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.nav-menu-items {
+  display: none; /* 모바일에서는 숨김 */
+  align-items: center;
+  gap: 2rem;
+}
+
 @media (min-width: 768px) {
-  .nav {
+  .nav-menu-items {
     display: flex;
   }
 }
@@ -168,18 +189,40 @@ body {
   color: #ffffff;
 }
 
+/* Admin mode에서 .nav-link 스타일 제외 */
+body.admin-mode .header-nav .nav-link,
+body.admin-mode .header-nav .nav-link.nav-icon,
+body.admin-mode .header-nav .nav-link.nav-profile {
+  background: transparent !important;
+  background-color: transparent !important;
+  padding: 4px 6px !important;
+  color: #012970 !important;
+  font-weight: normal !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 4px !important;
+}
+
+body.admin-mode .header-nav .nav-link:hover {
+  color: #012970 !important;
+  background: transparent !important;
+}
+
 .dropdown {
   position: absolute;
   top: 100%;
   left: 0;
   margin-top: 0.25rem;
-  width: 16rem;
-  background: white;
-  border: 1px solid var(--gray-200);
+  min-width: 16rem;
+  background: #1a1a1a; /* 어두운 배경색으로 변경 */
+  border: 1px solid rgba(255, 255, 255, 0.1); /* 테두리 색상 변경 */
   border-radius: 0.5rem;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   z-index: 50;
-  padding: 0.5rem 0;
+  padding: 0.5rem;
+  transform-origin: top center;
+  animation: dropdownFade 180ms ease both;
+  will-change: opacity, transform;
 }
 
 .dropdown-section {
@@ -202,33 +245,29 @@ body {
   display: block;
   padding: 0.375rem 0.5rem;
   font-size: 0.875rem;
-  color: var(--gray-700);
+  color: #d1d5db; /* 밝은 회색으로 변경 (gray-300) */
   text-decoration: none;
   border-radius: 0.25rem;
   transition: background 0.2s;
 }
 
 .dropdown-link:hover {
-  background: var(--gray-100);
+  background: rgba(255, 255, 255, 0.1); /* hover 시 배경색 변경 */
+  color: #ffffff; /* hover 시 폰트 색상 변경 */
 }
 
 .dropdown-item-wrapper {
-  position: relative;
+  /* position 속성을 제거하여 자식 요소가 기준을 잡지 않도록 합니다. */
 }
 
 .dropdown-item {
   display: block;
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  color: var(--gray-700);
-  text-decoration: none;
-  transition: background 0.2s, border-left 0.2s;
-  border-left: 3px solid transparent; /* 기본값: 투명한 border */
+  position: relative; /* 하위 메뉴의 위치 기준점이 되도록 설정합니다. */
+  /* .dropdown-link에서 스타일을 처리하므로 여기서는 제거합니다. */
 }
 
 .dropdown-item:hover {
-  background: var(--gray-100);
-  border-left: 3px solid var(--blue-600); /* hover 시 파란 세로줄 */
+  /* .dropdown-link:hover에서 처리하므로 여기서는 제거합니다. */
 }
 
 .cta-button {
@@ -249,6 +288,34 @@ body {
 .cta-button:hover {
   transform: translateY(-1px);
   box-shadow: 0 12px 22px rgba(0, 125, 199, 0.45);
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: auto;
+}
+
+.nav-toggle {
+  padding: 0.55rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+}
+
+.nav-toggle:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.nav-toggle:active {
+  transform: translateY(1px);
 }
 
 /* Main Content */
@@ -306,6 +373,110 @@ body {
   color: var(--text-primary);
 }
 
+/* Notch nav experiment (toggle-able) */
+.header--notch {
+  --notch-header-h: 72px;
+  --notch-body-width: min(1280px, calc(100% - 120px));
+  --notch-side-span: calc(1440px * 0.05);
+  --notch-side-depth: 9px;
+  --notch-bg: #0e0e0e;
+  --notch-text: #ffffff;
+  --notch-border: rgba(255, 255, 255, 0.1);
+  --notch-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+}
+
+.header--notch .header-container {
+  padding: 0;
+}
+
+.notch-shell {
+  position: relative;
+  width: 100%;
+  height: var(--notch-header-h);
+  pointer-events: none;
+}
+
+.notch-bg {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: var(--notch-body-width);
+  height: var(--notch-header-h);
+  display: block;
+  transform: translateX(-50%);
+  filter: drop-shadow(var(--notch-shadow));
+}
+
+.notch-fill {
+  fill: var(--notch-bg);
+}
+
+/* Droplet animation temporarily disabled for performance */
+.notch-shimmer,
+.notch-drop {
+  display: none;
+}
+
+.notch-nav {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: var(--notch-body-width);
+  height: var(--notch-header-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 22px;
+  box-sizing: border-box;
+  color: var(--notch-text);
+  pointer-events: auto;
+  transform: translateX(-50%);
+}
+
+.nav {
+  position: relative;
+}
+
+.notch-nav-menu-items .nav-button,
+.notch-nav-menu-items .nav-link {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.notch-nav-menu-items .nav-button:hover,
+.notch-nav-menu-items .nav-link:hover {
+  color: #ffffff;
+}
+
+.notch-logo .logo-image {
+  filter: drop-shadow(0 0 0.25rem rgba(0, 0, 0, 0.25));
+}
+
+.notch-nav-menu-items {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+}
+
+.logo.notch-logo {
+  margin-left: 25px; /* shifted further right */
+}
+
+.header--notch .nav-actions {
+  margin-right: 40px; /* shifted further left */
+  transform: none;
+}
+
+@media (max-width: 767px) {
+  .notch-nav {
+    padding: 0 16px;
+  }
+
+  .nav-actions {
+    gap: 0.5rem;
+  }
+}
+
 .dark-mode .form-input {
   background: var(--card-bg);
   border-color: var(--border-color);
@@ -324,6 +495,28 @@ body {
 
 .dark-mode .stat-label {
   color: var(--text-secondary);
+}
+
+/* AtSignal overview side gradient (10% tint on left/right) */
+.page-bg-atsignal {
+  background: #e1f6ff; /* keep wing color, remove gradient */
+}
+
+.page-bg-atsignal .page-renderer-wrapper {
+  background: linear-gradient(
+    90deg,
+    #e1f6ff 0%,
+    #e1f6ff 0.03%,
+    #ffffff 5%,
+    #ffffff 95%,
+    #e1f6ff 99.97%,
+    #e1f6ff 100%
+  );
+  padding-left: 48px;
+  padding-right: 48px;
+  max-width: 1180px; /* tighter width to keep content off the wings */
+  border-radius: 0;
+  box-shadow: none;
 }
 
 /* Benefit Item */
@@ -416,7 +609,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(to bottom right, rgba(10, 10, 10, 0.7), rgba(26, 26, 26, 0.7), rgba(15, 15, 15, 0.7));
+  background: linear-gradient(to bottom, rgba(0, 92, 165, 0.6) 0%, rgba(0, 78, 135, 0.7) 50%, rgba(15, 15, 15, 1) 95%);
   z-index: 0;
 }
 
@@ -428,15 +621,15 @@ body {
 .hero-container {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 8rem 1rem;
-  padding-top: 12rem;
+  padding: 4rem 1rem;
+  padding-top: 5.2rem;
   text-align: center;
 }
 
 @media (min-width: 640px) {
   .hero-container {
-    padding: 10rem 1.5rem;
-    padding-top: 14rem;
+    padding: 4.5rem 1.5rem;
+    padding-top: 6rem;
   }
 }
 
@@ -528,9 +721,106 @@ body {
   font-size: 1.25rem;
   margin-bottom: 2rem;
   color: rgba(255, 255, 255, 0.9);
-  max-width: 48rem;
+  max-width: 72rem;
   margin-left: auto;
   margin-right: auto;
+  white-space: pre-line;
+}
+
+.rolling-banner {
+  display: block;
+  overflow: visible;
+  width: 100vw; /* span full viewport */
+  margin: -1.1rem 0 0.75rem; /* pull even closer to the notch bar */
+  margin-left: calc(50% - 50vw); /* align full-width band with viewport edges */
+  position: relative;
+  height: 2.5em; /* reserve space so layout doesn't shift */
+  min-height: 2.5em;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.4));
+  border-radius: 0;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  text-decoration: none;
+  color: inherit;
+  transition: max-height 0.2s ease, opacity 0.2s ease, padding 0.2s ease;
+  padding: 0.2em 0;
+}
+
+.rolling-banner.collapsed {
+  max-height: 2.5em; /* keep space reserved */
+  height: 2.5em;
+  opacity: 1; /* keep toggle visible even when collapsed */
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible; /* keep toggle visible */
+}
+
+.rolling-banner.collapsed::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.35); /* thin line above toggle */
+}
+
+.rolling-banner.collapsed .rolling-track {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.rolling-track {
+  display: inline-flex;
+  align-items: center;
+  gap: 48px;
+  white-space: pre;
+  position: absolute;
+  --roll-start-offset: 96px; /* distance from right edge to start point (aligns just left of toggle) */
+  left: calc(100vw - var(--roll-start-offset)); /* start just left of the toggle on the right */
+  top: 50%;
+  animation: rollingTicker 38s linear infinite;
+  font-size: 1.25rem;
+  color: #0a0a0a;
+  min-width: max-content;
+  animation-play-state: var(--rolling-state, running);
+}
+
+.rolling-track span {
+  padding-right: 48px;
+}
+
+.rolling-toggle {
+  position: absolute;
+  right: 8px; /* align close to rolling start */
+  top: 50%; /* vertically center inside the band */
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  color: #0b0b0b;
+  border-radius: 8px;
+  padding: 2px 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+}
+
+@media (prefers-color-scheme: dark) {
+  .rolling-toggle {
+    background: rgba(0, 0, 0, 0.65);
+    border-color: rgba(255, 255, 255, 0.35);
+    color: #f7f7f7;
+  }
+}
+
+@keyframes rollingTicker {
+  from {
+    transform: translateY(-50%) translateX(0); /* anchored at right edge */
+  }
+  to {
+    transform: translateY(-50%) translateX(calc(-100% - 100vw + var(--roll-start-offset))); /* travel past viewport plus own width */
+  }
 }
 
 @media (min-width: 640px) {
@@ -556,7 +846,8 @@ body {
   padding: 0.75rem 2rem;
   background: white;
   color: var(--blue-600);
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 1.1rem;
   border-radius: 9999px;
   text-decoration: none;
   display: inline-block;
@@ -979,11 +1270,6 @@ body {
     color: white;
   }
 
-  .dropdown {
-    background: var(--gray-800);
-    border-color: var(--gray-700);
-  }
-
   .dropdown-link:hover {
     background: var(--gray-700);
   }
@@ -1065,6 +1351,8 @@ body {
   color: var(--gray-white);
   padding: 4rem 0 2rem;
   margin-top: auto;
+  position: relative;
+  z-index: 10;
 }
 
 .footer-container {
@@ -1235,7 +1523,7 @@ body {
 
 @media (min-width: 1024px) {
   .features-layout {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 0.7fr 1.3fr;
     gap: 4rem;
   }
 }
@@ -1274,7 +1562,7 @@ body {
 }
 
 .feature-nav-item {
-  padding: 0.75rem 1rem;
+  padding: 1.6rem 1rem;
   text-align: center;
   background: transparent;
   border: none;
@@ -1294,7 +1582,7 @@ body {
     text-align: left;
     font-size: 2.5rem;
     white-space: normal;
-    padding: 1rem 1.5rem;
+    padding: 1.6rem 1.5rem;
   }
 }
 
@@ -1358,16 +1646,40 @@ body {
 /* Features Content */
 .features-content {
   display: flex;
-  flex-direction: column;
-  gap: 3rem;
+  flex-direction: row;
+  gap: 2rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 1rem;
+}
+
+.features-content::-webkit-scrollbar {
+  display: none;
 }
 
 .feature-card {
   padding: 2rem;
   background: var(--gray-50);
   border-radius: 0.5rem;
-  min-height: 400px;
+  min-height: 200px;
   scroll-margin-top: 2rem;
+  width: 500px;
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .feature-card {
+    min-height: 200px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .feature-card {
+    width: 500px;
+  }
 }
 
 .dark-mode .feature-card {
@@ -1380,12 +1692,6 @@ body {
   background-clip: padding-box, border-box;
 }
 
-@media (min-width: 768px) {
-  .feature-card {
-    min-height: 500px;
-  }
-}
-
 /* Splash Screen */
 .splash-screen {
   position: fixed;
@@ -1393,7 +1699,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: #0a0a0a;
+  background: #111111; /* slightly brighter */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1429,7 +1735,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: #0a0a0a;
+  background: #111111; /* slightly brighter */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2156,16 +2462,20 @@ body {
 /* Cascading Dropdown 스타일 */
 .cascading-dropdown {
   position: absolute;
-  top: 0;
+  top: -0.5rem; /* 부모 드롭다운의 패딩(0.5rem)만큼 위치를 보정합니다. */
   left: 100%;
   margin-left: 0.25rem;
+  /* .dropdown 스타일과 일치시키기 위해 아래 속성들로 변경합니다. */
   min-width: 16rem;
-  background: white;
-  border: 1px solid var(--gray-200);
+  background: #1a1a1a; /* 어두운 배경색으로 변경 */
+  border: 1px solid rgba(255, 255, 255, 0.1); /* 테두리 색상 변경 */
   border-radius: 0.5rem;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   z-index: 50;
-  padding: 0.5rem 0;
+  padding: 0.5rem;
+  transform-origin: top center;
+  animation: dropdownFade 180ms ease both;
+  will-change: opacity, transform;
 }
 
 .cascading-dropdown-nested {
@@ -2183,4 +2493,102 @@ body {
   position: relative;
 }
 
+@keyframes dropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* 기존 mega-dropdown 관련 스타일은 제거하거나 주석 처리 */
+
+/* Company About Us - History Section Styles */
+.history-item {
+  position: relative;
+  padding: 12px 0;
+  cursor: pointer;
+  border-radius: 8px;
+  margin: 10px 0;
+  background: transparent;
+  transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.15s ease;
+  overflow: visible;
+}
+
+.history-item::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 18px;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #4f46e5;
+}
+
+.history-year {
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding-left: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.history-year::after {
+  content: '﹀';
+  font-size: 0.7rem;
+  opacity: 0.4;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.history-body {
+  max-height: 0;
+  overflow: hidden;
+  padding-left: 28px;
+  padding-right: 8px;
+  transition: max-height 0.35s ease, opacity 0.25s ease, margin-top 0.25s ease;
+  opacity: 0;
+  margin-top: 0;
+}
+
+.history-body ul {
+  margin: 8px 0 10px;
+  padding-left: 14px;
+  font-size: 0.86rem;
+  line-height: 1.6;
+  color: #4b5563;
+}
+
+.history-body li + li {
+  margin-top: 4px;
+}
+
+.history-item:hover {
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.06);
+  transform: translateY(-1px);
+}
+
+.history-item:hover .history-body {
+  max-height: 260px;
+  opacity: 1;
+  margin-top: 6px;
+}
+
+.history-item:hover .history-year::after {
+  transform: rotate(180deg);
+  opacity: 0.7;
+}
+
+@media (max-width: 640px) {
+  .history-item {
+    margin: 6px 0;
+    padding: 8px 0;
+  }
+  .history-body ul {
+    font-size: 0.8rem;
+  }
+}

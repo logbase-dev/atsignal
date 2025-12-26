@@ -216,4 +216,68 @@ export interface Notice {
   updatedBy?: string; // 수정한 관리자 ID
 }
 
+export interface Event {
+  id?: string;
+  title: LocalizedField;
+  description?: LocalizedField;
+  content?: LocalizedField;
+  oneLiner?: LocalizedField;
+  startDate?: Date;
+  endDate?: Date;
+  eventStartAt?: Date;
+  eventEndAt?: Date;
+  displayStartAt?: Date;
+  displayEndAt?: Date;
+  location?: LocalizedField;
+  imageUrl?: string;
+  featuredImage?: string;
+  thumbnailImage?: string;
+  editorType?: 'nextra' | 'toast';
+  saveFormat?: 'markdown' | 'html';
+  enabled: {
+    ko: boolean;
+    en: boolean;
+  };
+  published: boolean;
+  publishedAt?: Date;
+  showInBanner?: boolean;
+  bannerPriority?: number;
+  isMainEvent?: boolean;
+  subEventOrder?: number;
+  hasCtaButton?: boolean;
+  ctaButtonText?: LocalizedField;
+  views?: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+  createdBy?: string;
+  updatedBy?: string;
+}
+
+export interface WhatsNew {
+  id?: string;
+  title: LocalizedField;
+  content: LocalizedField;
+  oneLiner?: LocalizedField;
+  imageUrl?: string;
+  linkUrl?: string;
+  editorType?: 'nextra' | 'toast';
+  saveFormat?: 'markdown' | 'html';
+  enabled: {
+    ko: boolean;
+    en: boolean;
+  };
+  published: boolean;
+  publishedAt?: Date;
+  showInBanner?: boolean;
+  bannerPriority?: number;
+  isTop?: boolean;
+  displayStartAt?: Date;
+  displayEndAt?: Date;
+  views?: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+  createdBy?: string;
+  updatedBy?: string;
+}
+
 
