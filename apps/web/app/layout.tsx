@@ -13,6 +13,9 @@ import WebLayoutWrapper from "@/components/WebLayoutWrapper";
 export const metadata: Metadata = {
   title: "atsignal - 통합 행동데이터 플랫폼",
   description: "Nethru가 보유한 데이터 분석 기술력과 경험을 집약한 통합 행동데이터 플랫폼",
+  icons: {
+    icon: '/assets/img/favicon.png', // 또는 '/images/favicon.png'
+  },
 };
 
 export default async function RootLayout({
@@ -98,7 +101,7 @@ export default async function RootLayout({
       >
         <Splash />
         <WebLayoutWrapper menuTree={menuTree} footerMenus={footerMenus}>
-          {children}
+            {children}
         </WebLayoutWrapper>
       </body>
     </html>

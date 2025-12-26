@@ -1,14 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export', // Firebase Hosting 배포를 위한 정적 사이트 생성
+  // Firebase App Hosting은 서버 사이드 렌더링 지원하므로 output: 'export' 제거
   images: {
     unoptimized: true,
   },
   typescript: {
     ignoreBuildErrors: false,
   },
-  // 정적 사이트 생성 시 API 라우트 제외
   distDir: '.next',
+  trailingSlash: false,
 };
 
 module.exports = nextConfig;

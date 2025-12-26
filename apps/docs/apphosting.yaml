@@ -1,0 +1,9 @@
+# Firebase App Hosting configuration for docs app
+runtime: nodejs20
+
+buildCommand: cd apps/docs && npm run build
+runCommand: cd apps/docs && npm start
+
+env:
+  - variable: NODE_ENV
+    value: production

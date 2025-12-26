@@ -94,21 +94,54 @@ body {
   min-height: 4rem;
 }
 
-.logo {
+/* Admin mode에서는 .logo 스타일 적용 안 함 */
+/* 관리자 헤더(#header) 내부의 로고는 제외 */
+#header .logo,
+.header .logo {
+  /* 관리자 헤더 로고는 globals.css 스타일 적용 안 함 */
+  display: initial !important;
+  align-items: initial !important;
+  text-decoration: initial !important;
+  height: auto !important;
+}
+
+#header .logo-image,
+.header .logo-image {
+  height: auto !important;
+  width: auto !important;
+  max-height: none !important;
+  object-fit: initial !important;
+}
+
+.notch-logo .logo-image {
+  height: 3rem !important;
+  max-height: 3rem !important;
+  width: auto !important;
+  object-fit: contain !important;
+}
+
+#header .logo-text,
+.header .logo-text {
+  font-size: initial !important;
+  font-weight: initial !important;
+  color: initial !important;
+}
+
+body:not(.admin-mode) .logo:not(#header .logo):not(.header .logo) {
   display: flex;
   align-items: center;
   text-decoration: none;
   height: 3rem;
 }
 
-.logo-image {
+body:not(.admin-mode) .logo-image:not(#header .logo-image):not(.header .logo-image) {
   height: 100%;
   width: auto;
   max-height: 3rem;
   object-fit: contain;
 }
 
-.logo-text {
+body:not(.admin-mode) .logo-text:not(#header .logo-text):not(.header .logo-text) {
   font-size: 1.25rem;
   font-weight: bold;
   color: var(--gray-900);
@@ -147,6 +180,11 @@ body.admin-mode .header-nav .nav {
 }
 
 .nav-item {
+  position: relative;
+}
+
+/* Admin mode에서 .nav-item 스타일 제외 */
+body:not(.admin-mode) .nav-item {
   position: relative;
 }
 
@@ -208,7 +246,8 @@ body.admin-mode .header-nav .nav-link:hover {
   background: transparent !important;
 }
 
-.dropdown {
+/* Admin mode에서는 .dropdown 스타일 적용 안 함 */
+body:not(.admin-mode) .dropdown {
   position: absolute;
   top: 100%;
   left: 0;
@@ -225,7 +264,8 @@ body.admin-mode .header-nav .nav-link:hover {
   will-change: opacity, transform;
 }
 
-.dropdown-section {
+/* Admin mode에서는 .dropdown-section 스타일 적용 안 함 */
+body:not(.admin-mode) .dropdown-section {
   padding: 0.5rem 1rem;
 }
 
@@ -260,13 +300,15 @@ body.admin-mode .header-nav .nav-link:hover {
   /* position 속성을 제거하여 자식 요소가 기준을 잡지 않도록 합니다. */
 }
 
-.dropdown-item {
+/* Admin mode에서는 .dropdown-item 스타일 적용 안 함 */
+body:not(.admin-mode) .dropdown-item {
   display: block;
   position: relative; /* 하위 메뉴의 위치 기준점이 되도록 설정합니다. */
   /* .dropdown-link에서 스타일을 처리하므로 여기서는 제거합니다. */
 }
 
-.dropdown-item:hover {
+/* Admin mode에서는 .dropdown-item:hover 스타일 적용 안 함 */
+body:not(.admin-mode) .dropdown-item:hover {
   /* .dropdown-link:hover에서 처리하므로 여기서는 제거합니다. */
 }
 

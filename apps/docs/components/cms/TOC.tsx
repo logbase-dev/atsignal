@@ -74,10 +74,6 @@ export function TOC({ content }: TOCProps) {
     };
   }, [headings]);
 
-  if (headings.length === 0) {
-    return null;
-  }
-
   const handleClick = (id: string, e: React.MouseEvent) => {
     e.preventDefault();
     const element = document.getElementById(id);
@@ -98,22 +94,28 @@ export function TOC({ content }: TOCProps) {
       <div className="toc-header">
         <span className="toc-title">On this page</span>
       </div>
-      <ul className="toc-list">
-        {headings.map((heading, index) => (
-          <li
-            key={`${heading.id}-${index}`}
-            className={`toc-item toc-level-${heading.level} ${activeId === heading.id ? 'toc-active' : ''}`}
-          >
-            <a
-              href={`#${heading.id}`}
-              onClick={(e) => handleClick(heading.id, e)}
-              className="toc-link"
+      {headings.length === 0 ? (
+        <div style={{ color: '#6b7280', fontSize: '0.875rem', padding: '0.5rem 0' }}>
+          No headings
+        </div>
+      ) : (
+        <ul className="toc-list">
+          {headings.map((heading, index) => (
+            <li
+              key={`${heading.id}-${index}`}
+              className={`toc-item toc-level-${heading.level} ${activeId === heading.id ? 'toc-active' : ''}`}
             >
-              {heading.text}
-            </a>
-          </li>
-        ))}
-      </ul>
+              <a
+                href={`#${heading.id}`}
+                onClick={(e) => handleClick(heading.id, e)}
+                className="toc-link"
+              >
+                {heading.text}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
     </nav>
   );
 }

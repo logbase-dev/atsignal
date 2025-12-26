@@ -19,10 +19,83 @@ body {
   padding: 0;
 }
 
-/* Navigation hover effects */
-.nav-item-link:hover {
+/* Navigation hover effects - depth1 메뉴 */
+.nav-item-link {
+  background-color: #ffffff !important;
+  border-bottom: 2px solid transparent !important;
+}
+
+.nav-item-link:hover,
+.nav-item-link.has-dropdown-open {
   color: #111827 !important;
-  background-color: #f3f4f6 !important;
+  background-color: #ffffff !important;
+  border-bottom-color: #2563eb !important;
+}
+
+/* 하위 메뉴가 열려있을 때 파란 배경과 하단 파란줄 유지 */
+.nav-item-link.has-dropdown-open {
+  background-color: #eff6ff !important; /* 파란 배경 */
+  border-bottom-color: #2563eb !important; /* 하단 파란줄 */
+}
+
+/* button 요소에도 동일한 스타일 적용 (depth2가 있는 depth1 메뉴) */
+button.nav-item-link {
+  background-color: #ffffff !important;
+  border-bottom: 2px solid transparent !important;
+}
+
+button.nav-item-link:hover,
+button.nav-item-link.has-dropdown-open {
+  color: #111827 !important;
+  background-color: #ffffff !important;
+  border-bottom-color: #2563eb !important;
+}
+
+/* button 요소에 하위 메뉴가 열려있을 때 파란 배경과 하단 파란줄 유지 */
+button.nav-item-link.has-dropdown-open {
+  background-color: #eff6ff !important; /* 파란 배경 */
+  border-bottom-color: #2563eb !important; /* 하단 파란줄 */
+}
+
+/* Dropdown menu item hover - 왼쪽 파란 세로줄만 표시 */
+.dropdown-item-wrapper {
+  position: relative;
+}
+
+.dropdown-item {
+  position: relative;
+}
+
+.dropdown-item:hover {
+  background-color: #f3f4f6 !important; /* 회색 배경 */
+  border-radius: 0.375rem !important; /* 둥근 모서리 */
+  border-left: 3px solid #2563eb !important; /* 왼쪽 파란 border */
+  margin-left: -3px !important; /* 드롭다운 컨테이너의 padding-left를 상쇄 */
+  padding-left: calc(0.75rem - 3px) !important; /* border 너비만큼 padding 조정 */
+}
+
+/* active 상태일 때 연한 파란 배경 */
+.dropdown-item.active {
+  background-color: #eff6ff !important; /* 연한 파란 배경 */
+  border-radius: 0.375rem !important; /* 둥근 모서리 */
+  border-left: 3px solid #2563eb !important; /* 왼쪽 파란 border */
+  margin-left: -3px !important; /* 드롭다운 컨테이너의 padding-left를 상쇄 */
+  padding-left: calc(0.75rem - 3px) !important; /* border 너비만큼 padding 조정 */
+}
+
+/* wrapper에 마우스가 있으면 (자식 포함) 파란줄 표시 - depth3에 마우스를 올려도 부모(depth2) 파란줄 유지 */
+.dropdown-item-wrapper:hover > .dropdown-item {
+  border-left: 3px solid #2563eb !important;
+  margin-left: -3px !important;
+  padding-left: calc(0.75rem - 3px) !important;
+}
+
+/* nested dropdown 내부의 아이템에도 파란줄 표시 */
+.nested-dropdown .dropdown-item-wrapper:hover > .dropdown-item,
+.nested-dropdown .dropdown-item:hover {
+  border-left: 3px solid #2563eb !important;
+  margin-left: -3px !important;
+  padding-left: calc(0.75rem - 3px) !important;
 }
 
 /* Card hover effects */
@@ -136,18 +209,48 @@ body {
 @media (min-width: 1024px) {
   .page-renderer-wrapper {
     grid-template-columns: 240px 1fr 240px;
-    gap: 4rem;
+    gap: 1rem; /* 4rem에서 2rem으로 줄임 */
   }
   
   .page-renderer-wrapper.no-toc {
     grid-template-columns: 240px 1fr;
+    gap: 1rem; /* 4rem에서 2rem으로 줄임 */
   }
 }
 
 .page-renderer-content {
-  max-width: 720px;
-  margin: 0 auto;
-  width: 100%;
+  width: 720px;
+  max-width: 100%;
+  padding: 0 1.5rem;
+}
+
+/* 반응형 width 조정 */
+@media (min-width: 640px) {
+  .page-renderer-content {
+    max-width: 600px;
+    padding: 0 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .page-renderer-content {
+    max-width: 720px;
+    padding: 0 2.5rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .page-renderer-content {
+    max-width: 800px;
+    padding: 0 3rem;
+  }
+}
+
+@media (min-width: 1536px) {
+  .page-renderer-content {
+    max-width: 900px;
+    padding: 0 4rem;
+  }
 }
 
 /* 사이드바 스타일 */
@@ -300,5 +403,18 @@ body {
     color: #60a5fa;
     background-color: #1e3a8a;
   }
+}
+
+/* 404 Page Button Styles */
+.not-found-primary-button:hover {
+  background-color: #1d4ed8 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3) !important;
+}
+
+.not-found-secondary-button:hover {
+  background-color: #f9fafb !important;
+  border-color: #9ca3af !important;
+  color: #111827 !important;
 }
 

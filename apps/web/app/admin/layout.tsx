@@ -6,11 +6,7 @@ import ConditionalLayout from '@/components/admin-template/ConditionalLayout';
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
     <>
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-      <link
-        href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i"
-        rel="stylesheet"
-      />
+      {/* Google Fonts 제거 - GeistSans 사용 */}
 
       <link href="/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
       <link href="/assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet" />

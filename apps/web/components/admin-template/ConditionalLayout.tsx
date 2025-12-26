@@ -13,9 +13,14 @@ export default function ConditionalLayout({ children }: { children: React.ReactN
 
   useEffect(() => {
     // Scope NiceAdmin fixes to admin pages only.
-    document.body.classList.add('admin-mode');
+    // 즉시 추가하여 FOUC 방지
+    if (typeof document !== 'undefined') {
+      document.body.classList.add('admin-mode');
+    }
     return () => {
-      document.body.classList.remove('admin-mode');
+      if (typeof document !== 'undefined') {
+        document.body.classList.remove('admin-mode');
+      }
     };
   }, []);
 
@@ -32,6 +37,16 @@ export default function ConditionalLayout({ children }: { children: React.ReactN
 
   return (
     <>
+      {/* FOUC 방지를 위한 인라인 스크립트 - 초기 렌더링 시 즉시 실행 */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+            if (typeof document !== 'undefined' && !document.body.classList.contains('admin-mode')) {
+              document.body.classList.add('admin-mode');
+            }
+          `,
+        }}
+      />
       <Header />
       <Sidebar />
       <main id="main" className="main">

@@ -75,19 +75,24 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
   // 검색 인덱스 가져오기
   const searchIndex = await getSearchIndex('docs');
   
-  // 최상위 메뉴만 추출하고 하위 메뉴 정보 포함
-  const navItems = menuTree.map((menu: any) => ({
-    label: menu.label || menu.labels?.[locale] || menu.labels?.ko || '',
-    href: menu.isExternal ? menu.path : `/${locale}/${menu.path || ''}`,
-    isExternal: menu.isExternal,
-    children: menu.children && menu.children.length > 0 
-      ? menu.children.map((child: any) => ({
-          label: child.label || child.labels?.[locale] || child.labels?.ko || '',
-          href: child.isExternal ? child.path : `/${locale}/${child.path || ''}`,
-          isExternal: child.isExternal,
-        }))
-      : undefined,
-  }));
+  // 재귀적으로 모든 depth의 메뉴를 변환하는 함수
+  const convertMenuToNavItem = (menu: any): any => {
+    const navItem: any = {
+      label: menu.label || menu.labels?.[locale] || menu.labels?.ko || '',
+      href: menu.isExternal ? menu.path : `/${locale}/${menu.path || ''}`,
+      isExternal: menu.isExternal,
+    };
+
+    // 자식 메뉴가 있으면 재귀적으로 변환
+    if (menu.children && menu.children.length > 0) {
+      navItem.children = menu.children.map((child: any) => convertMenuToNavItem(child));
+    }
+
+    return navItem;
+  };
+
+  // 최상위 메뉴부터 모든 depth까지 변환
+  const navItems = menuTree.map((menu: any) => convertMenuToNavItem(menu));
 
   return (
     <>

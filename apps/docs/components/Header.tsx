@@ -18,6 +18,166 @@ interface HeaderProps {
   searchIndex: SearchIndexItem[];
 }
 
+// 재귀적으로 메뉴 아이템을 렌더링하는 컴포넌트
+function NavMenuItem({ item, pathname, level = 0 }: { item: NavItem; pathname: string | null; level?: number }) {
+  const [hoveredSubMenu, setHoveredSubMenu] = useState<string | null>(null);
+  const hasChildren = item.children && item.children.length > 0;
+
+  return (
+    <div
+      className="dropdown-item-wrapper"
+      style={{
+        ...dropdownItemWrapperStyle,
+        position: hasChildren ? 'relative' : 'static',
+      }}
+      onMouseEnter={() => hasChildren && setHoveredSubMenu(item.href)}
+      onMouseLeave={(e) => {
+        // nested dropdown으로 마우스가 이동하면 hover 상태 유지
+        const relatedTarget = e.relatedTarget as HTMLElement;
+        if (relatedTarget) {
+          // 현재 wrapper 내부의 nested dropdown으로 이동 중이면 hover 상태 유지
+          const currentWrapper = e.currentTarget as HTMLElement;
+          const nestedDropdown = currentWrapper.querySelector('.nested-dropdown');
+          if (nestedDropdown && (nestedDropdown.contains(relatedTarget) || nestedDropdown === relatedTarget)) {
+            return; // nested dropdown으로 이동 중이면 hover 상태 유지
+          }
+          // 같은 레벨의 다른 wrapper로 이동하는 경우는 제외
+          if (relatedTarget.closest('.dropdown-item-wrapper') && !currentWrapper.contains(relatedTarget)) {
+            // 다른 메뉴 아이템으로 이동하는 경우는 숨기기
+            setHoveredSubMenu(null);
+            return;
+          }
+        }
+        // 완전히 아웃되었을 때는 즉시 숨기기
+        setHoveredSubMenu(null);
+      }}
+    >
+      {hasChildren ? (
+        <>
+          <div 
+            className={`dropdown-item ${pathname?.startsWith(item.href) ? 'active' : ''}`}
+            style={{
+              ...dropdownItemStyle,
+              ...(pathname?.startsWith(item.href) ? { backgroundColor: '#eff6ff' } : {}),
+            }}
+          >
+            {item.isExternal ? (
+              <a
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  ...dropdownItemLinkStyle,
+                  ...(pathname?.startsWith(item.href) ? { color: '#2563eb' } : {}),
+                }}
+              >
+                {item.label}
+              </a>
+            ) : (
+              <Link
+                href={item.href}
+                style={{
+                  ...dropdownItemLinkStyle,
+                  ...(pathname?.startsWith(item.href) ? { color: '#2563eb' } : {}),
+                }}
+              >
+                {item.label}
+              </Link>
+            )}
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 12 12"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              style={chevronIconStyle}
+            >
+              <path
+                d="M4.5 3L7.5 6L4.5 9"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+          {hoveredSubMenu === item.href && (
+            <div
+              className="nested-dropdown"
+              style={{
+                ...nestedDropdownStyle,
+                top: 0,
+              }}
+              onMouseEnter={() => setHoveredSubMenu(item.href)}
+              onMouseLeave={(e) => {
+                // 부모 wrapper로 마우스가 이동하면 hover 상태 유지
+                const relatedTarget = e.relatedTarget as HTMLElement;
+                if (relatedTarget) {
+                  // 부모 wrapper로 이동 중이면 hover 상태 유지
+                  const currentDropdown = e.currentTarget as HTMLElement;
+                  const parentWrapper = currentDropdown.closest('.dropdown-item-wrapper') as HTMLElement;
+                  if (parentWrapper && (parentWrapper.contains(relatedTarget) || parentWrapper === relatedTarget)) {
+                    return; // 부모 wrapper로 이동 중이면 hover 상태 유지
+                  }
+                  // 같은 레벨의 다른 nested dropdown으로 이동하는 경우는 제외
+                  if (relatedTarget.closest('.nested-dropdown') && !currentDropdown.contains(relatedTarget)) {
+                    // 다른 nested dropdown으로 이동하는 경우는 숨기기
+                    setHoveredSubMenu(null);
+                    return;
+                  }
+                }
+                // 완전히 아웃되었을 때는 즉시 숨기기
+                setHoveredSubMenu(null);
+              }}
+            >
+              {item.children!.map((child) => (
+                <NavMenuItem
+                  key={child.href}
+                  item={child}
+                  pathname={pathname}
+                  level={level + 1}
+                />
+              ))}
+            </div>
+          )}
+        </>
+      ) : (
+        <div 
+          className={`dropdown-item ${pathname?.startsWith(item.href) ? 'active' : ''}`}
+          style={{
+            ...dropdownItemStyle,
+            ...(pathname?.startsWith(item.href) ? { backgroundColor: '#eff6ff' } : {}),
+          }}
+        >
+          {item.isExternal ? (
+            <a
+              href={item.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                ...dropdownItemLinkStyle,
+                ...(pathname?.startsWith(item.href) ? { color: '#2563eb' } : {}),
+              }}
+            >
+              {item.label}
+            </a>
+          ) : (
+            <Link
+              href={item.href}
+              style={{
+                ...dropdownItemLinkStyle,
+                ...(pathname?.startsWith(item.href) ? { color: '#2563eb' } : {}),
+              }}
+            >
+              {item.label}
+            </Link>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Header({ navItems, locale, searchIndex }: HeaderProps) {
   const pathname = usePathname();
   const [hoveredMenu, setHoveredMenu] = useState<string | null>(null);
@@ -82,7 +242,20 @@ export default function Header({ navItems, locale, searchIndex }: HeaderProps) {
       <div style={navBarStyle}>
         <div style={navBarContainerStyle}>
           <nav style={navStyle}>
-            {navItems.map((item) => (
+            {navItems.map((item) => {
+              // 현재 경로가 해당 메뉴의 하위 메뉴인지 확인
+              const isCurrentPageInSubMenu = item.children && item.children.length > 0 && 
+                pathname && 
+                pathname.startsWith(item.href) && 
+                pathname !== item.href;
+              
+              // 파란 배경과 하단 파란줄을 위한 클래스 (현재 페이지가 하위 메뉴에 있거나 마우스 오버 시)
+              const hasDropdownOpen = hoveredMenu === item.href || isCurrentPageInSubMenu;
+              
+              // 드롭다운 표시 여부 (마우스 오버했을 때만)
+              const shouldShowDropdown = hoveredMenu === item.href;
+              
+              return (
               <div
                 key={item.href}
                 style={navItemWrapperStyle}
@@ -92,16 +265,32 @@ export default function Header({ navItems, locale, searchIndex }: HeaderProps) {
                 {/* 하위 메뉴가 있으면 링크 없이 버튼으로 표시, 없으면 링크 표시 */}
                 {item.children && item.children.length > 0 ? (
                   <button
-                    className="nav-item-link"
+                    className={`nav-item-link ${hasDropdownOpen ? 'has-dropdown-open' : ''}`}
                     style={{
                       ...navItemStyle,
                       background: 'none',
                       border: 'none',
+                      borderBottom: '2px solid transparent', /* 하단 파란줄을 위해 border-bottom 유지 */
                       cursor: 'pointer',
                     }}
                   >
                     {item.label}
-                    <span style={{ marginLeft: '0.25rem', fontSize: '0.75rem' }}>▼</span>
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 12 12"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      style={{ marginLeft: '0.25rem', flexShrink: 0 }}
+                    >
+                      <path
+                        d="M3 4.5L6 7.5L9 4.5"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
                   </button>
                 ) : item.isExternal ? (
                   <a
@@ -127,40 +316,25 @@ export default function Header({ navItems, locale, searchIndex }: HeaderProps) {
                     {item.label}
                   </Link>
                 )}
-                {item.children && item.children.length > 0 && hoveredMenu === item.href && (
+                {item.children && item.children.length > 0 && shouldShowDropdown && (
                   <div 
                     style={dropdownStyle}
                     onMouseEnter={() => setHoveredMenu(item.href)}
                     onMouseLeave={() => setHoveredMenu(null)}
                   >
-                    {item.children.map((child) => 
-                      child.isExternal ? (
-                        <a
-                          key={child.href}
-                          href={child.href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={dropdownItemStyle}
-                        >
-                          {child.label}
-                        </a>
-                      ) : (
-                        <Link
-                          key={child.href}
-                          href={child.href}
-                          style={{
-                            ...dropdownItemStyle,
-                            ...(pathname?.startsWith(child.href) ? dropdownItemActiveStyle : {}),
-                          }}
-                        >
-                          {child.label}
-                        </Link>
-                      )
-                    )}
+                    {item.children.map((child) => (
+                      <NavMenuItem
+                        key={child.href}
+                        item={child}
+                        pathname={pathname}
+                        level={1}
+                      />
+                    ))}
                   </div>
                 )}
               </div>
-            ))}
+              );
+            })}
           </nav>
         </div>
       </div>
@@ -327,6 +501,7 @@ const navItemStyle: React.CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   borderBottom: '2px solid transparent',
+  backgroundColor: '#ffffff',
 };
 
 const navItemActiveStyle: React.CSSProperties = {
@@ -345,22 +520,66 @@ const dropdownStyle: React.CSSProperties = {
   borderRadius: '0.5rem',
   boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
   minWidth: '200px',
-  padding: '0.5rem 0',
+  padding: '0.5rem 0 0.5rem 3px', /* 왼쪽에 파란줄 공간 확보 */
   zIndex: 1000,
+  overflow: 'visible', /* 왼쪽 파란줄이 보이도록 */
 };
 
 const dropdownItemStyle: React.CSSProperties = {
-  display: 'block',
-  padding: '0.5rem 1rem',
+  display: 'flex',
+  alignItems: 'center',
+  padding: '0.5rem 1rem 0.5rem 0.75rem', /* 왼쪽 패딩을 줄여서 chevron 아이콘 공간 확보 */
   fontSize: '0.875rem',
   color: '#6b7280',
   textDecoration: 'none',
   transition: 'all 0.2s',
+  position: 'relative',
+  backgroundColor: '#ffffff',
+  /* width: 100% 제거 - flex로 자동 조정 */
 };
 
 const dropdownItemActiveStyle: React.CSSProperties = {
-  color: '#111827',
-  backgroundColor: '#f3f4f6',
+  color: '#2563eb', /* 파란색 텍스트 */
+  backgroundColor: '#eff6ff', /* 연한 파란 배경 */
+};
+
+const dropdownItemWrapperStyle: React.CSSProperties = {
+  position: 'relative',
+};
+
+const dropdownItemLinkStyle: React.CSSProperties = {
+  display: 'block',
+  fontSize: '0.875rem',
+  color: '#6b7280',
+  textDecoration: 'none',
+  transition: 'all 0.2s',
+  flex: 1,
+  minWidth: 0, /* flex 아이템이 부모를 넘지 않도록 */
+  overflow: 'hidden', /* 텍스트가 길 경우 처리 */
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+};
+
+const chevronIconStyle: React.CSSProperties = {
+  color: '#9ca3af',
+  marginLeft: '0.5rem',
+  flexShrink: 0,
+};
+
+const nestedDropdownStyle: React.CSSProperties = {
+  position: 'absolute',
+  marginTop: '0',
+  paddingTop: '0.25rem',
+  backgroundColor: '#ffffff',
+  border: '1px solid #e5e7eb',
+  borderRadius: '0.5rem',
+  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+  minWidth: '200px',
+  padding: '0.5rem 0 0.5rem 3px', /* 왼쪽에 파란줄 공간 확보 */
+  zIndex: 1001,
+  overflow: 'visible', /* 왼쪽 파란줄이 보이도록 */
+  left: '100%', /* 부모 dropdown과 바로 붙여서 간격 최소화 */
+  marginLeft: '-1px', /* 부모 dropdown과 약간 겹치게 하여 마우스 이동 시 hover 유지 */
 };
 
 
