@@ -1,6 +1,7 @@
 # Firebase App Hosting configuration for web app
 runtime: nodejs20
 
+# 빌드팩의 npm ci를 우회하고 직접 npm install 실행
 buildCommand: npm install && npm run build
 runCommand: npm start
 
