@@ -1,7 +1,7 @@
 # Firebase App Hosting configuration for docs app
 runtime: nodejs20
 
-buildCommand: cd ../.. && npm install && npm run build:docs
+buildCommand: npm install && npm run build
 runCommand: npm start
 
 env:
