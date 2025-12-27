@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { useEffect } from 'react';
+import { useLayoutEffect } from 'react';
 import Script from 'next/script';
 import Header from './Header';
 import Sidebar from './Sidebar';
@@ -11,9 +11,10 @@ export default function ConditionalLayout({ children }: { children: React.ReactN
   const pathname = usePathname();
   const isLoginPage = pathname === '/admin/login';
 
-  useEffect(() => {
+  // useLayoutEffect를 사용하여 DOM 업데이트 전에 실행 (hydration 불일치 방지)
+  useLayoutEffect(() => {
     // Scope NiceAdmin fixes to admin pages only.
-    // 즉시 추가하여 FOUC 방지
+    // DOM 업데이트 전에 실행하여 hydration 불일치 방지
     if (typeof document !== 'undefined') {
       document.body.classList.add('admin-mode');
     }
@@ -24,9 +25,26 @@ export default function ConditionalLayout({ children }: { children: React.ReactN
     };
   }, []);
 
+  // 인라인 스크립트 - 서버 사이드에서도 실행되도록 개선
+  const adminModeScript = `
+    (function() {
+      if (typeof document !== 'undefined' && document.body) {
+        if (!document.body.classList.contains('admin-mode')) {
+          document.body.classList.add('admin-mode');
+        }
+      }
+    })();
+  `;
+
   if (isLoginPage) {
     return (
       <>
+        {/* 로그인 페이지에서도 admin-mode 클래스 추가 */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: adminModeScript,
+          }}
+        />
         {children}
         <Script src="/assets/vendor/bootstrap/js/bootstrap.bundle.min.js" strategy="afterInteractive" />
         <Script src="/assets/vendor/php-email-form/validate.js" strategy="afterInteractive" />
@@ -40,11 +58,7 @@ export default function ConditionalLayout({ children }: { children: React.ReactN
       {/* FOUC 방지를 위한 인라인 스크립트 - 초기 렌더링 시 즉시 실행 */}
       <script
         dangerouslySetInnerHTML={{
-          __html: `
-            if (typeof document !== 'undefined' && !document.body.classList.contains('admin-mode')) {
-              document.body.classList.add('admin-mode');
-            }
-          `,
+          __html: adminModeScript,
         }}
       />
       <Header />
@@ -69,5 +83,3 @@ export default function ConditionalLayout({ children }: { children: React.ReactN
     </>
   );
 }
-
-
