@@ -3,6 +3,7 @@ import { validLocales } from "@/lib/i18n/getLocale";
 import { getMenusByLocale } from "@/lib/cms/getMenus";
 import { getSearchIndex } from "@/lib/cms/getSearchIndex";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 export function generateStaticParams() {
   return [
@@ -102,6 +103,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
         searchIndex={searchIndex}
       />
       {children}
+      <Footer menus={menus} />
     </>
   );
 }
