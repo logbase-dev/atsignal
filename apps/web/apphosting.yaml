@@ -1,7 +1,5 @@
-# Firebase App Hosting 빌드 설정
-# web-ssr 백엔드용 빌드 시점 환경 변수 설정
-#
-# 참고: 이 파일은 apps/web 디렉토리에 위치해야 함 (rootDirectory가 apps/web이므로)
+# Firebase App Hosting configuration for web app
+runtime: nodejs20
 
 buildCommand: npm install && npm run build
 runCommand: npm start
