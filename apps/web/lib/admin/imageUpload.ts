@@ -42,7 +42,7 @@ async function resizeImageForEditor(file: File, maxWidth: number = 800): Promise
  */
 async function uploadViaFunctions(
   file: File,
-  target: 'editor' | 'authorImage' | 'thumbnail' | 'featuredImage',
+  target: 'editor' | 'authorImage' | 'thumbnail' | 'featuredImage' | 'event-featured' | 'event-thumbnail',
   maxWidth?: number
 ): Promise<ImageUploadResult> {
   // 에디터 이미지는 클라이언트에서 리사이징
@@ -94,7 +94,7 @@ async function uploadViaFunctions(
 async function getSignedUrl(
   fileName: string,
   contentType: string,
-  target: 'editor' | 'authorImage' | 'thumbnail' | 'featuredImage'
+  target: 'editor' | 'authorImage' | 'thumbnail' | 'featuredImage' | 'event-featured' | 'event-thumbnail'
 ): Promise<{ uploadUrl: string; publicUrl: string; path: string; fileName: string }> {
   const url = `/admin-api/admin/images/signed-url`;
   const response = await fetch(url, {
@@ -140,7 +140,7 @@ async function uploadToStorage(uploadUrl: string, file: File): Promise<void> {
  */
 async function uploadViaSignedUrl(
   file: File,
-  target: 'editor' | 'authorImage' | 'thumbnail' | 'featuredImage',
+  target: 'editor' | 'authorImage' | 'thumbnail' | 'featuredImage' | 'event-featured' | 'event-thumbnail',
   maxWidth?: number
 ): Promise<ImageUploadResult> {
   // 에디터 이미지는 클라이언트에서 리사이징
@@ -210,7 +210,7 @@ async function uploadViaSignedUrl(
  */
 export async function uploadImage(
   file: File,
-  options?: { maxWidth?: number; target?: 'thumbnail' | 'featuredImage' | 'authorImage' | 'editor' }
+  options?: { maxWidth?: number; target?: 'thumbnail' | 'featuredImage' | 'authorImage' | 'editor' | 'event-featured' | 'event-thumbnail' }
 ): Promise<ImageUploadResult> {
   // 파일 크기 확인 (10MB 제한)
   if (file.size > 10 * 1024 * 1024) {

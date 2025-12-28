@@ -253,6 +253,17 @@ export interface Event {
   updatedBy?: string;
 }
 
+export interface EventParticipant {
+  id?: string;
+  eventId: string;
+  name: string;
+  company: string;
+  email: string;
+  phone: string;
+  privacyConsent: boolean;
+  createdAt?: Date;
+}
+
 export interface WhatsNew {
   id?: string;
   title: LocalizedField;
@@ -280,4 +291,46 @@ export interface WhatsNew {
   updatedBy?: string;
 }
 
+// ... 기존 코드 (EventParticipant, WhatsNew 등) ...
+
+export interface RelatedLink {
+  url: string;
+  title?: string;
+  linkType: 'docs' | 'faq' | 'blog' | 'notice';
+}
+
+export interface GlossaryCategory {
+  id?: string;
+  name: LocalizedField;
+  description?: LocalizedField;
+  order: number;
+  enabled: {
+    ko: boolean;
+    en: boolean;
+  };
+  createdAt?: Date;
+  updatedAt?: Date;
+  createdBy?: string;
+  updatedBy?: string;
+}
+
+export interface Glossary {
+  id?: string;
+  term: LocalizedField;
+  description: LocalizedField;
+  categoryId?: string;
+  enabled: {
+    ko: boolean;
+    en: boolean;
+  };
+  relatedLinks?: RelatedLink[];
+  editorType?: 'nextra' | 'toast';
+  saveFormat?: 'markdown' | 'html';
+  initialLetter?: string;
+  views?: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+  createdBy?: string;
+  updatedBy?: string;
+}
 
