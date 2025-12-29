@@ -1,0 +1,10 @@
+* @logbase-dev @HaesuOceanHwang
+
+# 특정 경로의 소유자 지정 (예시)
+# /apps/web/ @logbase-dev @HaesuOceanHwang
+# /apps/docs/ @logbase-dev
+# /functions/ @logbase-dev @HaesuOceanHwang
+
+# 설정 파일은 관리자만
+# /.github/ @logbase-dev
+# /firebase.json @logbase-dev
