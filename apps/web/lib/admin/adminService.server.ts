@@ -1,6 +1,7 @@
 import { collection, addDoc, updateDoc, doc, query, where, orderBy, getDocs, getDoc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { Admin } from './types';
+import { COLLECTIONS } from './types';
 import { hashPassword } from '@/lib/utils/password';
 
 // 타임아웃 헬퍼 함수
@@ -79,7 +80,7 @@ export async function getAdmins(): Promise<Admin[]> {
   }
 
   try {
-    const adminsRef = collection(db, 'admins');
+    const adminsRef = collection(db, COLLECTIONS.ADMINS);
     const q = query(adminsRef, orderBy('createdAt', 'desc'));
     
     const querySnapshot = await withTimeout(getDocs(q), 5000);
@@ -100,7 +101,7 @@ export async function getAdminById(id: string): Promise<Admin | null> {
   }
 
   try {
-    const adminDoc = await getDoc(doc(db, 'admins', id));
+    const adminDoc = await getDoc(doc(db, COLLECTIONS.ADMINS, id));
     
     if (!adminDoc.exists()) {
       return null;
@@ -122,7 +123,7 @@ export async function getAdminByUsername(username: string): Promise<Admin | null
   }
 
   try {
-    const adminsRef = collection(db, 'admins');
+    const adminsRef = collection(db, COLLECTIONS.ADMINS);
     const q = query(adminsRef, where('username', '==', username.toLowerCase()));
     
     const querySnapshot = await withTimeout(getDocs(q), 5000);
@@ -175,7 +176,7 @@ export async function createAdmin(data: CreateAdminData): Promise<string> {
       createdBy: data.createdBy,
     });
 
-    const docRef = await addDoc(collection(db, 'admins'), adminData);
+    const docRef = await addDoc(collection(db, COLLECTIONS.ADMINS), adminData);
     return docRef.id;
   } catch (error: any) {
     console.error('[createAdmin] 에러:', error.message);
@@ -209,7 +210,7 @@ export async function updateAdmin(id: string, data: UpdateAdminData): Promise<vo
       updateData.enabled = data.enabled;
     }
 
-    await updateDoc(doc(db, 'admins', id), removeUndefinedFields(updateData));
+    await updateDoc(doc(db, COLLECTIONS.ADMINS, id), removeUndefinedFields(updateData));
   } catch (error: any) {
     console.error('[updateAdmin] 에러:', error.message);
     throw error;
@@ -225,7 +226,7 @@ export async function updateLastLoginAt(id: string): Promise<void> {
   }
 
   try {
-    await updateDoc(doc(db, 'admins', id), {
+    await updateDoc(doc(db, COLLECTIONS.ADMINS, id), {
       lastLoginAt: Timestamp.fromDate(new Date()),
       updatedAt: Timestamp.fromDate(new Date()),
     });
@@ -244,7 +245,7 @@ export async function deleteAdmin(id: string): Promise<void> {
   }
 
   try {
-    await updateDoc(doc(db, 'admins', id), {
+    await updateDoc(doc(db, COLLECTIONS.ADMINS, id), {
       enabled: false,
       updatedAt: Timestamp.fromDate(new Date()),
     });

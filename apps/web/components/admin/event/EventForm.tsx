@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import type { Event, LocalizedField } from '@/lib/admin/types';
 import { createEvent, getEventById, updateEvent } from '@/lib/admin/eventService';
 import { uploadImage } from '@/lib/admin/imageUpload';
 import { adminFetch } from '@/lib/admin/api';
+import { NextraMarkdownField } from '@/components/editor/NextraMarkdownField';
 
 type Locale = 'ko' | 'en';
 
@@ -96,6 +97,16 @@ export function EventForm({ mode, id }: EventFormProps) {
   const [saveFormat, setSaveFormat] = useState<'markdown' | 'html'>('markdown');
 
   const pageTitle = useMemo(() => (mode === 'create' ? '이벤트 추가' : '이벤트 수정'), [mode]);
+
+  // 각 입력 필드에 대한 ref 추가
+  const titleKoRef = useRef<HTMLInputElement>(null);
+  const oneLinerKoRef = useRef<HTMLInputElement>(null);
+  const contentKoRef = useRef<HTMLDivElement>(null);
+  const featuredImageRef = useRef<HTMLInputElement>(null);
+  const thumbnailImageRef = useRef<HTMLInputElement>(null);
+  const eventStartAtRef = useRef<HTMLInputElement>(null);
+  const eventEndAtRef = useRef<HTMLInputElement>(null);
+  const bannerPriorityRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     void loadAdmins();
@@ -190,30 +201,38 @@ export function EventForm({ mode, id }: EventFormProps) {
     })();
   }, [mode, id]);
 
-  const validate = (isPublishing: boolean = false): string | null => {
-    if (!title.ko.trim()) return '제목(ko)은 필수입니다.';
-    if (!oneLiner.ko.trim()) return '한 줄 문구(ko)는 필수입니다.';
-    if (oneLiner.ko.length > 20) return '한 줄 문구(ko)는 20글자를 초과할 수 없습니다.';
-    if (!content.ko.trim()) return '본문(ko)은 필수입니다.';
-    if (!featuredImage.trim()) return '대표 이미지는 필수입니다.';
-    if (!thumbnailImage.trim()) return '썸네일 이미지는 필수입니다.';
-    if (showInBanner && bannerPriority < 0) return '배너 우선순위는 0 이상이어야 합니다.';
+  const validate = (isPublishing: boolean = false): { message: string; ref: React.RefObject<HTMLElement> | null } | null => {
     
-    // 발행 시에만 이벤트 기간 필수 체크
+    if (!title.ko.trim()) return { message: '제목(ko)은 필수입니다.', ref: titleKoRef };
+    if (!oneLiner.ko.trim()) return { message: '한 줄 문구(ko)는 필수입니다.', ref: oneLinerKoRef };
+    if (oneLiner.ko.length > 20) return { message: '한 줄 문구(ko)는 20글자를 초과할 수 없습니다.', ref: oneLinerKoRef };
+
+    // 발행 시 이벤트 기간 필수 체크를 먼저 수행
     if (isPublishing) {
-      if (!eventStartAt) return '발행 시 이벤트 시작일시는 필수입니다.';
-      if (!eventEndAt) return '발행 시 이벤트 종료일시는 필수입니다.';
+      const startAt = eventStartAt?.trim() || '';
+      const endAt = eventEndAt?.trim() || '';
+      if (!startAt) {
+        return { message: '발행 시 이벤트 시작일시는 필수입니다.', ref: eventStartAtRef };
+      }
+      if (!endAt) {
+        return { message: '발행 시 이벤트 종료일시는 필수입니다.', ref: eventEndAtRef };
+      }
     }
+    
+    if (!content.ko.trim()) return { message: '본문(ko)은 필수입니다.', ref: contentKoRef };
+    if (!featuredImage.trim()) return { message: '대표 이미지는 필수입니다.', ref: featuredImageRef };
+    if (!thumbnailImage.trim()) return { message: '썸네일 이미지는 필수입니다.', ref: thumbnailImageRef };
+    if (showInBanner && bannerPriority < 0) return { message: '배너 우선순위는 0 이상이어야 합니다.', ref: bannerPriorityRef };
     
     if (eventStartAt && eventEndAt) {
       const start = new Date(eventStartAt);
       const end = new Date(eventEndAt);
-      if (end < start) return '이벤트 종료일시는 시작일시보다 이후여야 합니다.';
+      if (end < start) return { message: '이벤트 종료일시는 시작일시보다 이후여야 합니다.', ref: eventEndAtRef };
     }
     if (displayStartAt && displayEndAt) {
       const start = new Date(displayStartAt);
       const end = new Date(displayEndAt);
-      if (end < start) return '노출 종료일시는 시작일시보다 이후여야 합니다.';
+      if (end < start) return { message: '노출 종료일시는 시작일시보다 이후여야 합니다.', ref: null };
     }
     return null;
   };
@@ -233,7 +252,7 @@ export function EventForm({ mode, id }: EventFormProps) {
       displayEndAt: displayEndAt ? new Date(displayEndAt) : undefined,
       published: publishedOverride !== undefined ? publishedOverride : published,
       editorType,
-      saveFormat,
+      saveFormat: editorType === 'nextra' ? 'markdown' : saveFormat,
       enabled: { ko: enabledKo, en: enabledEn },
       isMainEvent,
       subEventOrder: subEventOrder || undefined,
@@ -245,9 +264,23 @@ export function EventForm({ mode, id }: EventFormProps) {
   const handleSave = async (publishedOverride?: boolean) => {
     setError(null);
     const isPublishing = publishedOverride === true;
-    const msg = validate(isPublishing);
-    if (msg) {
-      setError(msg);
+    
+    const validationResult = validate(isPublishing);
+    
+    if (validationResult) {
+      const { message, ref } = validationResult;
+      // alert로 경고 표시
+      alert(message);
+      // 해당 필드로 포커스 이동
+      if (ref?.current) {
+        // input 요소인 경우에만 focus 가능
+        if (ref.current instanceof HTMLInputElement || ref.current instanceof HTMLTextAreaElement) {
+          ref.current.focus();
+        }
+        // 스크롤도 함께 이동
+        ref.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      setError(message);
       return;
     }
 
@@ -267,7 +300,10 @@ export function EventForm({ mode, id }: EventFormProps) {
         void router.refresh();
       }
     } catch (e: any) {
-      setError(e?.message || '저장에 실패했습니다.');
+      console.error('[EventForm] 저장 실패:', e);
+      const errorMessage = e?.message || '저장에 실패했습니다.';
+      alert(errorMessage);
+      setError(errorMessage);
     } finally {
       setSaving(false);
     }
@@ -384,6 +420,7 @@ export function EventForm({ mode, id }: EventFormProps) {
           <div>
             <label style={labelStyle}>제목(ko) <span style={{ color: '#dc2626' }}>*</span></label>
             <input
+              ref={titleKoRef}
               type="text"
               value={title.ko || ''}
               onChange={(e) => setTitle((p) => ({ ...p, ko: e.target.value }))}
@@ -411,6 +448,7 @@ export function EventForm({ mode, id }: EventFormProps) {
             </label>
             <p style={helpTextStyle}>홈 상단 롤링 배너에 표시될 한 줄 문구입니다. (최대 20글자)</p>
             <input
+              ref={oneLinerKoRef}
               type="text"
               value={oneLiner.ko || ''}
               onChange={(e) => {
@@ -459,6 +497,7 @@ export function EventForm({ mode, id }: EventFormProps) {
             <label style={labelStyle}>이벤트 시작일시 <span style={{ color: '#dc2626' }}>*</span></label>
             <p style={helpTextStyle}>이벤트가 시작되는 일시입니다. (발행시 필수)</p>
             <input
+              ref={eventStartAtRef}
               type="datetime-local"
               value={eventStartAt}
               onChange={(e) => setEventStartAt(e.target.value)}
@@ -469,6 +508,7 @@ export function EventForm({ mode, id }: EventFormProps) {
             <label style={labelStyle}>이벤트 종료일시 <span style={{ color: '#dc2626' }}>*</span></label>
             <p style={helpTextStyle}>이벤트가 종료되는 일시입니다. (발행시 필수)</p>
             <input
+              ref={eventEndAtRef}
               type="datetime-local"
               value={eventEndAt}
               onChange={(e) => setEventEndAt(e.target.value)}
@@ -578,6 +618,7 @@ export function EventForm({ mode, id }: EventFormProps) {
             )}
             {!featuredImage && (
               <input
+                ref={featuredImageRef}
                 type="file"
                 accept="image/*"
                 onChange={(e) => {
@@ -620,6 +661,7 @@ export function EventForm({ mode, id }: EventFormProps) {
             )}
             {!thumbnailImage && (
               <input
+                ref={thumbnailImageRef}
                 type="file"
                 accept="image/*"
                 onChange={(e) => {
@@ -663,6 +705,7 @@ export function EventForm({ mode, id }: EventFormProps) {
             </label>
             <p style={helpTextStyle}>낮을수록 우선 표시됩니다. (기본값: 999)</p>
             <input
+              ref={bannerPriorityRef}
               type="number"
               value={bannerPriority}
               onChange={(e) => setBannerPriority(parseInt(e.target.value, 10) || 999)}
@@ -677,7 +720,7 @@ export function EventForm({ mode, id }: EventFormProps) {
         <div style={{ ...rowStyle, marginTop: '1.5rem' }}>
           <div>
             <label style={labelStyle}>노출 시작일시 (선택사항)</label>
-            <p style={helpTextStyle}>이 날짜 이후부터 노출됩니다.</p>
+            <p style={helpTextStyle}>이 날짜 이후부터 노출됩니다.(미선택시 즉시 노출)</p>
             <input
               type="datetime-local"
               value={displayStartAt}
@@ -687,7 +730,7 @@ export function EventForm({ mode, id }: EventFormProps) {
           </div>
           <div>
             <label style={labelStyle}>노출 종료일시 (선택사항)</label>
-            <p style={helpTextStyle}>이 날짜까지 노출됩니다.</p>
+            <p style={helpTextStyle}>이 날짜까지 노출됩니다.(미선택시 무기한 노출)</p>
             <input
               type="datetime-local"
               value={displayEndAt}
@@ -749,7 +792,12 @@ export function EventForm({ mode, id }: EventFormProps) {
             <span style={{ fontSize: '0.85rem', color: '#6b7280' }}>에디터 타입:</span>
             <select
               value={editorType}
-              onChange={(e) => setEditorType(e.target.value as 'nextra' | 'toast')}
+              onChange={(e) => {
+                const newType = e.target.value as 'nextra' | 'toast';
+                const message =
+                  '에디터를 전환하면 현재 입력된 내용이 그대로 유지됩니다.\n\n⚠️ 주의사항:\n- 에디터 간 호환성 문제가 발생할 수 있습니다.\n- 전환 후 반드시 내용을 확인하세요.\n\n계속하시겠습니까?';
+                if (window.confirm(message)) setEditorType(newType);
+              }}
               style={{ padding: '0.5rem 1rem', borderRadius: '0.5rem', border: '1px solid #d1d5db', fontSize: '0.9rem', backgroundColor: '#fff' }}
             >
               <option value="toast">TOAST UI Editor</option>
@@ -794,20 +842,33 @@ export function EventForm({ mode, id }: EventFormProps) {
           </button>
         </div>
 
-        <div>
+        <div ref={contentKoRef}>
           <label style={labelStyle}>
             본문 {localeTab === 'ko' ? <span style={{ color: '#dc2626' }}>*</span> : null}
           </label>
           <p style={helpTextStyle}>현재 언어({localeTab.toUpperCase()}) 기준 본문을 입력합니다.</p>
           <div style={{ border: '1px solid #e5e7eb', borderRadius: '0.5rem', overflow: 'hidden' }}>
-            <ToastMarkdownEditor
-              value={(localeTab === 'ko' ? content.ko : content.en) || ''}
-              onChange={(next) => setContent((p) => ({ ...p, [localeTab]: next } as any))}
-              saveFormat={saveFormat}
-              onSaveFormatChange={setSaveFormat}
-              isNewPage={mode === 'create'}
-              height="680px"
-            />
+            {editorType === 'nextra' ? (
+              <NextraMarkdownField
+                id={`content-${localeTab}`}
+                label={`본문 ${localeTab === 'ko' ? '(ko)' : '(en)'}`}
+                locale={localeTab}
+                required={localeTab === 'ko'}
+                helperText={`현재 언어(${localeTab.toUpperCase()}) 기준 본문을 입력합니다.`}
+                value={(localeTab === 'ko' ? content.ko : content.en) || ''}
+                onChange={(next) => setContent((p) => ({ ...p, [localeTab]: next } as any))}
+                height="500px"
+              />
+            ) : (
+              <ToastMarkdownEditor
+                value={(localeTab === 'ko' ? content.ko : content.en) || ''}
+                onChange={(next) => setContent((p) => ({ ...p, [localeTab]: next } as any))}
+                saveFormat={saveFormat}
+                onSaveFormatChange={setSaveFormat}
+                isNewPage={mode === 'create'}
+                height="500px"
+              />
+            )}
           </div>
         </div>
       </div>

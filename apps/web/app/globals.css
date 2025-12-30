@@ -2634,3 +2634,35 @@ body:not(.admin-mode) .dropdown-item:hover {
     font-size: 0.8rem;
   }
 }
+
+.rolling-track {
+  display: inline-flex;
+  align-items: center;
+  gap: 48px;
+  white-space: pre;
+  position: absolute;
+  --roll-start-offset: 96px;
+  left: calc(100vw - var(--roll-start-offset));
+  top: 50%;
+  animation: rollingTicker 38s linear infinite;
+  font-size: 1.25rem;
+  color: #0a0a0a;
+  min-width: max-content;
+  animation-play-state: var(--rolling-state, running);
+}
+
+.rolling-item {
+  text-decoration: none;
+  color: inherit;
+  white-space: nowrap;
+  margin-right: 48px;
+  flex-shrink: 0;
+}
+
+.rolling-item:hover {
+  text-decoration: none;
+}
+
+.rolling-track span {
+  padding-right: 48px;
+}

@@ -1,6 +1,7 @@
 import { collection, addDoc, doc, query, where, orderBy, getDocs, Timestamp, limit, startAfter, QueryDocumentSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { AdminLoginLog } from './types';
+import { COLLECTIONS } from './types';
 
 // 타임아웃 헬퍼 함수
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 5000): Promise<T> {
@@ -95,7 +96,7 @@ export async function createLoginLog(data: CreateLoginLogData): Promise<string> 
       createdAt: Timestamp.fromDate(new Date()),
     });
 
-    const docRef = await addDoc(collection(db, 'adminLoginLogs'), logData);
+    const docRef = await addDoc(collection(db, COLLECTIONS.ADMIN_LOGIN_LOGS), logData);
     return docRef.id;
   } catch (error: any) {
     console.error('[createLoginLog] 에러:', error.message);
@@ -115,7 +116,7 @@ export async function getLoginLogsByAdminId(
   }
 
   try {
-    const logsRef = collection(db, 'adminLoginLogs');
+    const logsRef = collection(db, COLLECTIONS.ADMIN_LOGIN_LOGS);
     let q = query(logsRef, where('adminId', '==', adminId), orderBy('createdAt', 'desc'));
 
     // 성공/실패 필터 적용
@@ -172,7 +173,7 @@ export async function getLoginLogsByUsername(
   }
 
   try {
-    const logsRef = collection(db, 'adminLoginLogs');
+    const logsRef = collection(db, COLLECTIONS.ADMIN_LOGIN_LOGS);
     let q = query(logsRef, where('username', '==', username.toLowerCase()), orderBy('createdAt', 'desc'));
 
     // 성공/실패 필터 적용

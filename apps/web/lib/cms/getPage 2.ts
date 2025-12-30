@@ -10,6 +10,7 @@ import {
   type QueryDocumentSnapshot,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { COLLECTIONS } from '@/lib/admin/types';
 
 export type Site = 'web' | 'docs';
 
@@ -32,7 +33,7 @@ export interface CmsPage {
   draftUpdatedAt?: Date;
 }
 
-const pagesRef = collection(db, 'pages');
+const pagesRef = collection(db, COLLECTIONS.PAGES);
 
 function normalizeLocalizedField(field?: { ko?: string; en?: string } | null): LocalizedField {
   if (!field) {
@@ -76,7 +77,7 @@ export async function getPageBySlug(site: Site, slug: string): Promise<CmsPage |
 }
 
 export async function getPageById(id: string): Promise<CmsPage | null> {
-  const pageRef = doc(db, 'pages', id);
+  const pageRef = doc(db, COLLECTIONS.PAGES, id);
   const snapshot = await getDoc(pageRef);
   if (!snapshot.exists()) {
     return null;

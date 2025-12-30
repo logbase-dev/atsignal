@@ -1,5 +1,6 @@
 'use client';
 
+import React from "react";
 import Link from "next/link";
 import { getMenuByPath, pathToUrl } from "@/utils/menu";
 import { useEffect, useState, useRef } from "react";
@@ -7,6 +8,7 @@ import { defaultLocale } from '@/lib/i18n/getLocale';
 import koMessages from '@/locales/ko.json';
 import enMessages from '@/locales/en.json';
 import NewsletterModal from '@/components/Newsletter/NewsletterModal';
+import { useBannerData } from './useBannerData';
 
 const translations = {
   ko: koMessages,
@@ -24,6 +26,11 @@ export default function Home({ locale }: HomeProps) {
   
   // ko.json은 항상 있으므로 fallback으로 사용 (en.json에 없을 수 있음)
   const rollingTexts = translation.home?.rollingTexts ?? translations.ko.home.rollingTexts;
+  
+    // 롤링 배너 데이터 가져오기
+  const { bannerItems, isLoading: isLoadingBanner } = useBannerData();
+
+  // 기존 하드코딩된 rollingAnnouncements는 fallback으로 사용
   const rollingAnnouncements = [
     '[1.공지] atsignal 베타 서비스 오픈 안내',
     '[2.이벤트] atsignal 무료 데모 체험 이벤트',
@@ -31,7 +38,11 @@ export default function Home({ locale }: HomeProps) {
     '[4.공지] atsignal admin / CMS 업데이트 안내',
     '[5.이벤트] atsignal 뉴스레터 구독 이벤트',
   ];
-  const rollingBannerText = rollingAnnouncements.join('                         '); // 25 spaces
+
+  // bannerItems가 있으면 사용, 없으면 fallback 사용
+  const rollingBannerText = bannerItems.length > 0
+    ? bannerItems.map(item => item.text).join('                         ')
+    : rollingAnnouncements.join('                         ');
   const [isBannerPaused, setIsBannerPaused] = useState(false);
   const [isBannerCollapsed, setIsBannerCollapsed] = useState(false);
   
@@ -285,38 +296,78 @@ export default function Home({ locale }: HomeProps) {
       {/* Hero Section */}
       <section className="hero">
         <div className="hero-container">
-          <a
-            className={`rolling-banner ${isBannerCollapsed ? 'collapsed' : ''}`}
-            aria-label="Announcements"
-            href="/404"
-            onClick={(e) => {
-              if (isBannerCollapsed) e.preventDefault();
-            }}
-          >
-            <div
-              className="rolling-track"
-              data-paused={isBannerPaused}
-              onMouseEnter={() => setIsBannerPaused(true)}
-              onMouseLeave={() => setIsBannerPaused(false)}
-              style={{ ['--rolling-state' as any]: isBannerPaused ? 'paused' : 'running' }}
-            >
-              <span>{rollingBannerText}</span>
-              <span aria-hidden="true">{rollingBannerText}</span>
-              <span aria-hidden="true">{rollingBannerText}</span>
+        {bannerItems.length > 0 ? (
+            <div className={`rolling-banner ${isBannerCollapsed ? 'collapsed' : ''}`}>
+              <div
+                className="rolling-track"
+                data-paused={isBannerPaused}
+                onMouseEnter={() => setIsBannerPaused(true)}
+                onMouseLeave={() => setIsBannerPaused(false)}
+                style={{ ['--rolling-state' as any]: isBannerPaused ? 'paused' : 'running' }}
+              >
+                {bannerItems.map((item, index) => (
+                  <Link key={`${item.id}-${index}`} href={item.link} className="rolling-item">
+                    {item.text}
+                  </Link>
+                ))}
+                {bannerItems.map((item, index) => (
+                  <Link key={`${item.id}-${index}-dup1`} href={item.link} className="rolling-item" aria-hidden="true">
+                    {item.text}
+                  </Link>
+                ))}
+                {bannerItems.map((item, index) => (
+                  <Link key={`${item.id}-${index}-dup2`} href={item.link} className="rolling-item" aria-hidden="true">
+                    {item.text}
+                  </Link>
+                ))}
+              </div>
+              <button
+                type="button"
+                className="rolling-toggle"
+                aria-label={isBannerCollapsed ? '공지 펼치기' : '공지 접기'}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsBannerCollapsed((prev) => !prev);
+                  setIsBannerPaused((prev) => !prev);
+                }}
+              >
+                {isBannerCollapsed ? '▼ 공지 펼치기' : '▲ 공지 접기'}
+              </button>
             </div>
-            <button
-              type="button"
-              className="rolling-toggle"
-              aria-label={isBannerCollapsed ? '공지 펼치기' : '공지 접기'}
+          ) : (
+            <a
+              className={`rolling-banner ${isBannerCollapsed ? 'collapsed' : ''}`}
+              aria-label="Announcements"
+              href="/404"
               onClick={(e) => {
-                e.preventDefault();
-                setIsBannerCollapsed((prev) => !prev);
-                setIsBannerPaused((prev) => !prev);
+                if (isBannerCollapsed) e.preventDefault();
               }}
             >
-              {isBannerCollapsed ? '▼ 공지 펼치기' : '▲ 공지 접기'}
-            </button>
-          </a>
+              <div
+                className="rolling-track"
+                data-paused={isBannerPaused}
+                onMouseEnter={() => setIsBannerPaused(true)}
+                onMouseLeave={() => setIsBannerPaused(false)}
+                style={{ ['--rolling-state' as any]: isBannerPaused ? 'paused' : 'running' }}
+              >
+                <span>{rollingBannerText}</span>
+                <span aria-hidden="true">{rollingBannerText}</span>
+                <span aria-hidden="true">{rollingBannerText}</span>
+              </div>
+              <button
+                type="button"
+                className="rolling-toggle"
+                aria-label={isBannerCollapsed ? '공지 펼치기' : '공지 접기'}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsBannerCollapsed((prev) => !prev);
+                  setIsBannerPaused((prev) => !prev);
+                }}
+              >
+                {isBannerCollapsed ? '▼ 공지 펼치기' : '▲ 공지 접기'}
+              </button>
+            </a>
+          )}
           <div>
             <h1 className="hero-title">
               <span className="rolling-text-container">

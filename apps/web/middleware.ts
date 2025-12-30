@@ -2,8 +2,14 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(req: NextRequest) {
-  // Basic Auth 제거 - 모든 요청을 그대로 통과
-  return NextResponse.next();
+  const response = NextResponse.next();
+  
+  // Admin 경로 확인
+  if (req.nextUrl.pathname.startsWith('/admin')) {
+    response.headers.set('x-is-admin', 'true');
+  }
+  
+  return response;
 }
 
 export const config = {
