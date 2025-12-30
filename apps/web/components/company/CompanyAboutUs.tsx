@@ -17,114 +17,109 @@ export default function CompanyAboutUs({ locale }: CompanyAboutUsProps) {
   const vantaRef = useRef<HTMLDivElement>(null);
   const vantaInstanceRef = useRef<any>(null);
 
-  // Vanta.js 초기화
-  useEffect(() => {
-    const loadScript = (src: string): Promise<void> => {
-      return new Promise((resolve, reject) => {
-        if (document.querySelector(`script[src="${src}"]`)) {
-          resolve();
-          return;
-        }
-        const script = document.createElement('script');
-        script.src = src;
-        script.onload = () => resolve();
-        script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
-        document.head.appendChild(script);
-      });
-    };
-
-    const initVanta = async () => {
-      if (!vantaRef.current) return;
-
-      try {
-        // Three.js 로드
-        await loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r121/three.min.js');
-        
-        // Vanta 플러그인들 로드
-        await loadScript('https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.globe.min.js');
-        await loadScript('https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.waves.min.js');
-        await loadScript('https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.clouds.min.js');
-
-        if (!window.VANTA || !window.THREE) return;
-
-        // 기존 인스턴스 정리
-        if (vantaInstanceRef.current && vantaInstanceRef.current.destroy) {
-          vantaInstanceRef.current.destroy();
-        }
-
-        // 초마다 다른 배경 선택 (0: 글로브, 1: 웨이브, 2: 클라우드)
-        const sec = new Date().getSeconds();
-        const pick = sec % 3;
-
-        const base = {
-          el: vantaRef.current,
-          mouseControls: true,
-          touchControls: true,
-          gyroControls: false,
-          minHeight: 200.0,
-          minWidth: 200.0,
-          scale: 1.0,
-          scaleMobile: 1.0,
-        };
-
-        if (pick === 0) {
-          vantaInstanceRef.current = window.VANTA.GLOBE({
-            ...base,
-            color: 0x553fff,
-            size: 1.1,
-            backgroundColor: 0xd9d4e3,
-          });
-        } else if (pick === 1) {
-          vantaInstanceRef.current = window.VANTA.WAVES({
-            ...base,
-            color: 0x6089a4,
-            shininess: 19.0,
-            waveHeight: 5.0,
-            waveSpeed: 0.9,
-            zoom: 0.92,
-          });
-        } else {
-          vantaInstanceRef.current = window.VANTA.CLOUDS({
-            ...base,
-            skyColor: 0xeaf2fb,
-            cloudColor: 0x9bbad3,
-            cloudShadowColor: 0xb5c7de,
-            sunColor: 0xffffff,
-            sunGlareColor: 0xffffff,
-            sunlightColor: 0xf0f4ff,
-            speed: 1.0,
-          });
-        }
-      } catch (error) {
-        console.error('Failed to initialize Vanta.js:', error);
-      }
-    };
-
-    if (document.readyState === 'complete') {
-      initVanta();
-    } else {
-      window.addEventListener('load', initVanta);
-    }
-
-    const handleResize = () => {
-      if (vantaInstanceRef.current && vantaInstanceRef.current.resize) {
-        vantaInstanceRef.current.resize();
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      if (vantaInstanceRef.current && vantaInstanceRef.current.destroy) {
-        vantaInstanceRef.current.destroy();
-      }
-    };
-  }, []);
+  // Vanta.js 배경 애니메이션 일시 비활성화 (요청에 따라 주석 처리)
+  // useEffect(() => {
+  //   const loadScript = (src: string): Promise<void> => {
+  //     return new Promise((resolve, reject) => {
+  //       if (document.querySelector(`script[src="${src}"]`)) {
+  //         resolve();
+  //         return;
+  //       }
+  //       const script = document.createElement('script');
+  //       script.src = src;
+  //       script.onload = () => resolve();
+  //       script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+  //       document.head.appendChild(script);
+  //     });
+  //   };
+  //
+  //   const initVanta = async () => {
+  //     if (!vantaRef.current) return;
+  //
+  //     try {
+  //       await loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r121/three.min.js');
+  //       await loadScript('https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.globe.min.js');
+  //       await loadScript('https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.waves.min.js');
+  //       await loadScript('https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.clouds.min.js');
+  //
+  //       if (!window.VANTA || !window.THREE) return;
+  //
+  //       if (vantaInstanceRef.current && vantaInstanceRef.current.destroy) {
+  //         vantaInstanceRef.current.destroy();
+  //       }
+  //
+  //       const sec = new Date().getSeconds();
+  //       const pick = sec % 3;
+  //
+  //       const base = {
+  //         el: vantaRef.current,
+  //         mouseControls: true,
+  //         touchControls: true,
+  //         gyroControls: false,
+  //         minHeight: 200.0,
+  //         minWidth: 200.0,
+  //         scale: 1.0,
+  //         scaleMobile: 1.0,
+  //       };
+  //
+  //       if (pick === 0) {
+  //         vantaInstanceRef.current = window.VANTA.GLOBE({
+  //           ...base,
+  //           color: 0x553fff,
+  //           size: 1.1,
+  //           backgroundColor: 0xd9d4e3,
+  //         });
+  //       } else if (pick === 1) {
+  //         vantaInstanceRef.current = window.VANTA.WAVES({
+  //           ...base,
+  //           color: 0x6089a4,
+  //           shininess: 19.0,
+  //           waveHeight: 5.0,
+  //           waveSpeed: 0.9,
+  //           zoom: 0.92,
+  //         });
+  //       } else {
+  //         vantaInstanceRef.current = window.VANTA.CLOUDS({
+  //           ...base,
+  //           skyColor: 0xeaf2fb,
+  //           cloudColor: 0x9bbad3,
+  //           cloudShadowColor: 0xb5c7de,
+  //           sunColor: 0xffffff,
+  //           sunGlareColor: 0xffffff,
+  //           sunlightColor: 0xf0f4ff,
+  //           speed: 1.0,
+  //         });
+  //       }
+  //     } catch (error) {
+  //       console.error('Failed to initialize Vanta.js:', error);
+  //     }
+  //   };
+  //
+  //   if (document.readyState === 'complete') {
+  //     initVanta();
+  //   } else {
+  //     window.addEventListener('load', initVanta);
+  //   }
+  //
+  //   const handleResize = () => {
+  //     if (vantaInstanceRef.current && vantaInstanceRef.current.resize) {
+  //       vantaInstanceRef.current.resize();
+  //     }
+  //   };
+  //
+  //   window.addEventListener('resize', handleResize);
+  //
+  //   return () => {
+  //     window.removeEventListener('resize', handleResize);
+  //     if (vantaInstanceRef.current && vantaInstanceRef.current.destroy) {
+  //       vantaInstanceRef.current.destroy();
+  //     }
+  //   };
+  // }, []);
 
   return (
     <div style={{ position: 'relative', overflowX: 'hidden' }}>
-      {/* Vanta 배경 */}
+      {/* Vanta 배경 (요청에 따라 임시 비활성화)
       <div
         id="vanta-bg"
         ref={vantaRef}
@@ -135,6 +130,7 @@ export default function CompanyAboutUs({ locale }: CompanyAboutUsProps) {
           pointerEvents: 'none',
         }}
       />
+      */}
 
       {/* 메인 컨텐츠 */}
       <div

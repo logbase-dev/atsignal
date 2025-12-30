@@ -285,28 +285,10 @@ export default function Home({ locale }: HomeProps) {
       {/* Hero Section */}
       <section className="hero">
         <div className="hero-container">
-          <a
-            className={`rolling-banner ${isBannerCollapsed ? 'collapsed' : ''}`}
-            aria-label="Announcements"
-            href="/404"
-            onClick={(e) => {
-              if (isBannerCollapsed) e.preventDefault();
-            }}
-          >
-            <div
-              className="rolling-track"
-              data-paused={isBannerPaused}
-              onMouseEnter={() => setIsBannerPaused(true)}
-              onMouseLeave={() => setIsBannerPaused(false)}
-              style={{ ['--rolling-state' as any]: isBannerPaused ? 'paused' : 'running' }}
-            >
-              <span>{rollingBannerText}</span>
-              <span aria-hidden="true">{rollingBannerText}</span>
-              <span aria-hidden="true">{rollingBannerText}</span>
-            </div>
+          <div className="rolling-banner-wrap">
             <button
               type="button"
-              className="rolling-toggle"
+              className="rolling-label rolling-label-button"
               aria-label={isBannerCollapsed ? '공지 펼치기' : '공지 접기'}
               onClick={(e) => {
                 e.preventDefault();
@@ -314,9 +296,39 @@ export default function Home({ locale }: HomeProps) {
                 setIsBannerPaused((prev) => !prev);
               }}
             >
-              {isBannerCollapsed ? '▼ 공지 펼치기' : '▲ 공지 접기'}
+              Notice{isBannerCollapsed ? '▼' : '▲'}
             </button>
-          </a>
+            <div
+              className={`rolling-banner ${isBannerCollapsed ? 'collapsed' : ''}`}
+              aria-label="Announcements"
+              role="button"
+              tabIndex={0}
+              onClick={(e) => {
+                e.preventDefault();
+                setIsBannerCollapsed((prev) => !prev);
+                setIsBannerPaused((prev) => !prev);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setIsBannerCollapsed((prev) => !prev);
+                  setIsBannerPaused((prev) => !prev);
+                }
+              }}
+            >
+              <div
+                className="rolling-track"
+                data-paused={isBannerPaused}
+                onMouseEnter={() => setIsBannerPaused(true)}
+                onMouseLeave={() => setIsBannerPaused(false)}
+                style={{ ['--rolling-state' as any]: isBannerPaused ? 'paused' : 'running' }}
+              >
+                <span>{rollingBannerText}</span>
+                <span aria-hidden="true">{rollingBannerText}</span>
+                <span aria-hidden="true">{rollingBannerText}</span>
+              </div>
+            </div>
+          </div>
           <div>
             <h1 className="hero-title">
               <span className="rolling-text-container">
@@ -391,12 +403,6 @@ export default function Home({ locale }: HomeProps) {
                 &lt; {statsValues.responseTime}ms
               </div>
               <div className="stat-label">평균 응답 시간</div>
-            </div>
-            <div className="card" style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#FFFFFF', marginBottom: '0.5rem' }}>
-                {statsValues.platforms}+
-              </div>
-              <div className="stat-label">연동 플랫폼</div>
             </div>
           </div>
         </div>
@@ -589,7 +595,7 @@ export default function Home({ locale }: HomeProps) {
         </div>
       </section>
 
-      {/* Use Cases Section */}
+      {/*
       <section className="section section-gray">
         <div className="section-container">
           <h2 className="section-title">
@@ -626,6 +632,7 @@ export default function Home({ locale }: HomeProps) {
           </div>
         </div>
       </section>
+      */}
 
       {/* CTA Section */}
       <section className="section section-gray section-text-center">

@@ -3,10 +3,14 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     // 환경에 따라 Firebase Functions URL 결정
-    const functionsUrl = process.env.NODE_ENV === 'development'
+    const useEmulator =
+      process.env.NODE_ENV === 'development' &&
+      process.env.USE_SUBSCRIBE_EMULATOR === 'true';
+
+    const functionsUrl = useEmulator
       ? 'http://127.0.0.1:5001/atsignal/us-central1/subscribeNewsletterApi' // 로컬 Emulator
-      : process.env.NEXT_PUBLIC_SUBSCRIBE_API_URL || 
-        'https://asia-northeast3-atsignal.cloudfunctions.net/subscribeNewsletterApi'; // 프로덕션
+      : process.env.NEXT_PUBLIC_SUBSCRIBE_API_URL ||
+        'https://asia-northeast3-atsignal.cloudfunctions.net/subscribeNewsletterApi'; // 기본 프로덕션
     
     // 요청 본문 가져오기
     const body = await request.json();

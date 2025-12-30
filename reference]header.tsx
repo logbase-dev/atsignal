@@ -8,7 +8,6 @@ import { pathToUrl } from '@/utils/menu';
 import { getLocaleFromPath, defaultLocale } from '@/lib/i18n/getLocale';
 import koMessages from '@/locales/ko.json';
 import enMessages from '@/locales/en.json';
-import NewsletterModal from '@/components/Newsletter/NewsletterModal';
 
 const translations = {
   ko: koMessages,
@@ -41,24 +40,11 @@ export default function Header({ menuTree }: HeaderProps) {
   const pathname = usePathname();
   const locale = getLocaleFromPath(pathname);
   const contactCta = translations[locale]?.header?.contactCta ?? translations.ko.header.contactCta;
-  const notchPathD = `
-    M 0 0
-    C 11 0 22 15.5 34.13 40.5
-    C 46.8 65.5 61.02 72 72 72
-    L 1368 72
-    C 1378.98 72 1393.2 65.5 1405.87 40.5
-    C 1418.04 15.5 1429.02 0 1440 0
-    Z
-  `;
   const [openDropdowns, setOpenDropdowns] = useState<Set<string>>(new Set());
   const timeoutRefs = useRef<Map<string, NodeJS.Timeout>>(new Map());
-  const navRef = useRef<HTMLElement>(null);
+  const navRef = useRef<HTMLDivElement>(null);
   const navWrapperRef = useRef<HTMLDivElement>(null);
   const [navOverflow, setNavOverflow] = useState(false);
-  const [isHeaderHidden, setIsHeaderHidden] = useState(false);
-  const lastScrollY = useRef(0);
-  const ticking = useRef(false);
-  const [contactModalType, setContactModalType] = useState<'demo' | 'sales' | null>(null);
 
   const handleMouseEnter = (path: string) => {
     const existingTimeout = timeoutRefs.current.get(path);
@@ -113,26 +99,6 @@ export default function Header({ menuTree }: HeaderProps) {
       } else {
         window.removeEventListener('resize', measure);
       }
-    };
-  }, []);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (ticking.current) return;
-      ticking.current = true;
-      window.requestAnimationFrame(() => {
-        const currentY = window.scrollY;
-        const isScrollingDown = currentY > lastScrollY.current;
-        const pastThreshold = currentY > 120;
-        setIsHeaderHidden(isScrollingDown && pastThreshold);
-        lastScrollY.current = currentY;
-        ticking.current = false;
-      });
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
     };
   }, []);
 
@@ -229,7 +195,7 @@ export default function Header({ menuTree }: HeaderProps) {
           </div>
           {isOpen && node.children && node.children.length > 0 && (
             <div
-              className="cascading-dropdown cascading-dropdown-nested"
+              className="dropdown cascading-dropdown cascading-dropdown-nested"
               onMouseEnter={() => handleMouseEnter(node.path)}
               onMouseLeave={() => handleMouseLeave(node.path)}
             >
@@ -242,7 +208,9 @@ export default function Header({ menuTree }: HeaderProps) {
 
     if (level === 0) {
       return (
-        <div key={node.path}>{renderLink(node, href, 'nav-link')}</div>
+        <div key={node.path}>
+          {renderLink(node, href, 'nav-link')}
+        </div>
       );
     }
 
@@ -256,59 +224,53 @@ export default function Header({ menuTree }: HeaderProps) {
   };
 
   return (
-    <>
-      <header className={`header header--notch ${isHeaderHidden ? 'header--hidden' : ''}`}>
-        <div className="notch-shell">
-          <svg className="notch-bg" viewBox="0 0 1440 72" preserveAspectRatio="none" aria-hidden="true">
-            <path className="notch-fill" d={notchPathD} />
-            {/* Droplet animation disabled */}
-          </svg>
-          <div className="header-container notch-nav" aria-label="Top navigation">
-            <div className="header-content">
-              <Link href={`/${locale}`} className="logo notch-logo">
-                <img
-                  src="/images/logo.svg"
-                  alt="AtSignal"
-                  className="logo-image"
-                />
+    <header className="header header--notch">
+      <div className="notch-shell">
+        <svg className="notch-bg" viewBox="0 0 1440 72" preserveAspectRatio="none" aria-hidden="true">
+          <path
+            className="notch-fill"
+            d="
+              M 0 0
+              C 11 0 22 15.5 34.13 40.5
+              C 46.8 65.5 61.02 72 72 72
+              L 1368 72
+              C 1378.98 72 1393.2 65.5 1405.87 40.5
+              C 1418.04 15.5 1429.02 0 1440 0
+              Z
+            "
+          />
+        </svg>
+
+        <div className="header-container notch-nav">
+          <div className="header-content">
+            <Link href={`/${locale}`} className="logo">
+              <img
+                src="/images/logo.svg"
+                alt="AtSignal"
+                className="logo-image"
+              />
+            </Link>
+            
+            <div className="nav-wrapper" ref={navWrapperRef}>
+              <nav
+                className={`nav ${navOverflow ? 'nav-overflow' : ''}`}
+                ref={navRef}
+              >
+                {menuTree.map((node) => renderCascadingMenu(node, 0))}
+              </nav>
+            </div>
+
+            <div>
+              <Link
+                href={pathToUrl("/Pricing/Contact Sales", locale)}
+                className="cta-button"
+              >
+                Contact Sales
               </Link>
-
-              <div className="nav-wrapper" ref={navWrapperRef}>
-                <nav
-                  className={`nav ${navOverflow ? 'nav-overflow' : ''}`}
-                  ref={navRef}
-                >
-                  {menuTree.map((node) => renderCascadingMenu(node, 0))}
-                </nav>
-              </div>
-
-              <div className="nav-actions">
-                <button
-                  type="button"
-                  className="cta-button"
-                  onClick={() => setContactModalType('demo')}
-                >
-                  Get Demo
-                </button>
-                <button
-                  type="button"
-                  className="cta-button"
-                  onClick={() => setContactModalType('sales')}
-                >
-                  Contact Sales
-                </button>
-              </div>
             </div>
           </div>
         </div>
-      </header>
-
-      <NewsletterModal
-        isOpen={contactModalType !== null}
-        onClose={() => setContactModalType(null)}
-        locale={locale}
-        variant={contactModalType === 'demo' ? 'demo' : contactModalType === 'sales' ? 'sales' : 'newsletter'}
-      />
-    </>
+      </div>
+    </header>
   );
 }
