@@ -31,9 +31,18 @@ export default function Home({ locale }: HomeProps) {
     '[4.공지] atsignal admin / CMS 업데이트 안내',
     '[5.이벤트] atsignal 뉴스레터 구독 이벤트',
   ];
-  const rollingBannerText = rollingAnnouncements.join('                         '); // 25 spaces
+  const renderBannerItems = () =>
+    rollingAnnouncements.map((item, idx) => (
+      <a key={`banner-${idx}`} href={item} className="rolling-banner-link">
+        {item}
+      </a>
+    ));
   const [isBannerPaused, setIsBannerPaused] = useState(false);
   const [isBannerCollapsed, setIsBannerCollapsed] = useState(false);
+  const [dotCount, setDotCount] = useState(1);
+  const [dotIndex, setDotIndex] = useState(0);
+  const dotIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const dotSequence = useRef<number[]>([1, 2, 3, 4, 5, 4, 3, 2]).current;
   const benefits = [
     {
       title: 'App/Web Behavior Log 분석 특화',
@@ -101,25 +110,57 @@ export default function Home({ locale }: HomeProps) {
   const [emailInput, setEmailInput] = useState('');
 
   useEffect(() => {
-    let intervalId: NodeJS.Timeout | null = null;
-    
+    let textIntervalId: NodeJS.Timeout | null = null;
+
     // 첫 번째 전환은 1초 후
     const firstTimeout = setTimeout(() => {
       setCurrentIndex((prev) => (prev + 1) % rollingTexts.length);
       
       // 그 다음부터는 2초마다 순환
-      intervalId = setInterval(() => {
+      textIntervalId = setInterval(() => {
         setCurrentIndex((prev) => (prev + 1) % rollingTexts.length);
       }, 2000);
     }, 1000);
 
     return () => {
       clearTimeout(firstTimeout);
-      if (intervalId) {
-        clearInterval(intervalId);
+      if (textIntervalId) {
+        clearInterval(textIntervalId);
       }
     };
   }, [rollingTexts.length]);
+
+  // 점(dot) 애니메이션 전용
+  useEffect(() => {
+    // 기존 인터벌 정리
+    if (dotIntervalRef.current) {
+      clearInterval(dotIntervalRef.current);
+      dotIntervalRef.current = null;
+    }
+
+    if (!isBannerCollapsed) {
+      setDotCount(0);
+      setDotIndex(0);
+      return;
+    }
+    setDotIndex(0);
+    setDotCount(dotSequence[0]);
+
+    dotIntervalRef.current = setInterval(() => {
+      setDotIndex((prev) => {
+        const nextIndex = (prev + 1) % dotSequence.length;
+        setDotCount(dotSequence[nextIndex]);
+        return nextIndex;
+      });
+    }, 350);
+
+    return () => {
+      if (dotIntervalRef.current) {
+        clearInterval(dotIntervalRef.current);
+        dotIntervalRef.current = null;
+      }
+    };
+  }, [isBannerCollapsed]);
 
   // 카운트업 애니메이션
   useEffect(() => {
@@ -340,29 +381,25 @@ export default function Home({ locale }: HomeProps) {
               aria-label={isBannerCollapsed ? '공지 펼치기' : '공지 접기'}
               onClick={(e) => {
                 e.preventDefault();
-                setIsBannerCollapsed((prev) => !prev);
-                setIsBannerPaused((prev) => !prev);
+                setIsBannerCollapsed((prev) => {
+                  const next = !prev;
+                  setIsBannerPaused(next); // 접히면 일시정지, 펼치면 재생
+                  return next;
+                });
               }}
             >
               Notice{isBannerCollapsed ? '▼' : '▲'}
+              {isBannerCollapsed && dotCount > 0 && (
+                <span className="rolling-dots" aria-hidden="true">
+                  {Array.from({ length: dotCount }).map((_, i) => (
+                    <span key={`dot-${i}`} className="rolling-dot" />
+                  ))}
+                </span>
+              )}
             </button>
             <div
               className={`rolling-banner ${isBannerCollapsed ? 'collapsed' : ''}`}
               aria-label="Announcements"
-              role="button"
-              tabIndex={0}
-              onClick={(e) => {
-                e.preventDefault();
-                setIsBannerCollapsed((prev) => !prev);
-                setIsBannerPaused((prev) => !prev);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  setIsBannerCollapsed((prev) => !prev);
-                  setIsBannerPaused((prev) => !prev);
-                }
-              }}
             >
               <div
                 className="rolling-track"
@@ -371,9 +408,9 @@ export default function Home({ locale }: HomeProps) {
                 onMouseLeave={() => setIsBannerPaused(false)}
                 style={{ ['--rolling-state' as any]: isBannerPaused ? 'paused' : 'running' }}
               >
-                <span>{rollingBannerText}</span>
-                <span aria-hidden="true">{rollingBannerText}</span>
-                <span aria-hidden="true">{rollingBannerText}</span>
+                {renderBannerItems()}
+                {renderBannerItems()}
+                {renderBannerItems()}
               </div>
             </div>
           </div>

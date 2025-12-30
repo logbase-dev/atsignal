@@ -224,7 +224,7 @@ export default function CompanyAboutUs({ locale }: CompanyAboutUsProps) {
                 display: 'grid',
                 gridTemplateColumns: '1fr',
                 gap: '14px',
-                alignItems: 'flex-start',
+                alignItems: 'center',
               }}
               className="mission-grid"
             >
@@ -236,10 +236,10 @@ export default function CompanyAboutUs({ locale }: CompanyAboutUsProps) {
                 }
               `}</style>
               <div>
-                <p style={{ color: '#6b7280', fontSize: '14px', margin: 0 }}>
+                <p style={{ color: '#000000', fontSize: '19px', margin: 0 }}>
                   넷스루는 고객 행동 데이터를 끊김 없이 수집·분석·감지·활용할 수 있는 통합 솔루션으로, 디지털 마케팅의 성과를 꾸준히 높이는 것을 목표로 합니다.
                 </p>
-                <p style={{ color: '#6b7280', fontSize: '14px', marginTop: '6px' }}>
+                <p style={{ color: '#000000', fontSize: '19px', marginTop: '6px' }}>
                   신뢰 가능한 데이터 파이프라인과 직관적인 분석 경험을 통해, 조직이 숫자에 머무르지 않고 비즈니스의 핵심 가치를 발견하고 실행할 수 있도록 돕습니다.
                 </p>
               </div>
@@ -272,10 +272,9 @@ export default function CompanyAboutUs({ locale }: CompanyAboutUsProps) {
                       R
                     </div>
                     <div>
-                      <div>
-                        <strong>신뢰성 (Reliability)</strong>
-                      </div>
-                      <div style={{ color: '#6b7280', fontSize: '14px' }}>
+                                          <div style={{ color: '#000000' }}>
+                                            <strong>신뢰성 (Reliability)</strong>
+                                          </div>                      <div style={{ color: '#000000', fontSize: '14px' }}>
                         정확한 데이터 수집과 안정적인 서비스로 고객의 신뢰를 확보합니다.
                       </div>
                     </div>
@@ -298,10 +297,9 @@ export default function CompanyAboutUs({ locale }: CompanyAboutUsProps) {
                       S
                     </div>
                     <div>
-                      <div>
-                        <strong>간결성 (Simplicity)</strong>
-                      </div>
-                      <div style={{ color: '#6b7280', fontSize: '14px' }}>
+                                          <div style={{ color: '#000000' }}>
+                                            <strong>간결성 (Simplicity)</strong>
+                                          </div>                      <div style={{ color: '#000000', fontSize: '14px' }}>
                         복잡한 데이터도 직관적으로 활용할 수 있도록 사용성에 집중합니다.
                       </div>
                     </div>
@@ -324,10 +322,9 @@ export default function CompanyAboutUs({ locale }: CompanyAboutUsProps) {
                       E
                     </div>
                     <div>
-                      <div>
-                        <strong>확장성 (Expandability)</strong>
-                      </div>
-                      <div style={{ color: '#6b7280', fontSize: '14px' }}>
+                                          <div style={{ color: '#000000' }}>
+                                            <strong>확장성 (Expandability)</strong>
+                                          </div>                      <div style={{ color: '#000000', fontSize: '14px' }}>
                         비즈니스 성장 단계에 맞춰 유연하게 확장 가능한 요금과 인프라를 설계합니다.
                       </div>
                     </div>
@@ -361,7 +358,7 @@ export default function CompanyAboutUs({ locale }: CompanyAboutUsProps) {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+                gridTemplateColumns: 'repeat(4, 1fr)',
                 gap: '12px',
               }}
             >
@@ -375,8 +372,8 @@ export default function CompanyAboutUs({ locale }: CompanyAboutUsProps) {
                   boxShadow: '0 6px 18px rgba(16,24,40,0.04)',
                 }}
               >
-                <h3 style={{ margin: '0 0 8px 0' }}>고객행동수집 (Collector)</h3>
-                <p style={{ color: '#6b7280', fontSize: '14px', margin: 0 }}>
+                <h3 style={{ margin: '0 0 8px 0', color: '#000000' }}>고객행동수집 (Collector)</h3>
+                <p style={{ color: '#000000', fontSize: '14px', margin: 0 }}>
                   웹/앱에서 발생하는 고객 행동을 안정적으로 수집하여 이벤트 기반 데이터 레이크로 전달합니다. 높은 처리량과 안정성을 갖춘 수집 인프라를 제공합니다.
                 </p>
                 <p style={{ marginTop: 'auto', paddingTop: '8px' }}>
@@ -384,6 +381,7 @@ export default function CompanyAboutUs({ locale }: CompanyAboutUsProps) {
                     href="https://nethru.co.kr/collector/collector.html"
                     target="_blank"
                     rel="noopener noreferrer"
+                    style={{ color: '#000000' }}
                   >
                     제품 정보 보기 →
                   </a>
@@ -397,17 +395,23 @@ export default function CompanyAboutUs({ locale }: CompanyAboutUsProps) {
                   padding: '28px',
                   borderRadius: '12px',
                   boxShadow: '0 6px 18px rgba(16,24,40,0.04)',
+                  textAlign: 'center',
                 }}
               >
-                <h3 style={{ margin: '0 0 8px 0' }}>고객행동분석 (Data Story)</h3>
-                <p style={{ color: '#6b7280', fontSize: '14px', margin: 0 }}>
+                <h3 style={{ margin: 0, color: '#000000' }}>
+                  고객행동분석
+                  <br />
+                  (Data Story)
+                </h3>
+                <p style={{ color: '#000000', fontSize: '14px', margin: '12px 0 0' }}>
                   수집된 행동 데이터를 분석하여 세그먼트, 리텐션, 전환 흐름 등 마케팅 성과를 시각화하고 인사이트를 제공합니다.
                 </p>
-                <p style={{ marginTop: 'auto', paddingTop: '8px' }}>
+                <p style={{ marginTop: 'auto', paddingTop: '12px' }}>
                   <a
                     href="https://nethru.co.kr/analysis/datastory.html"
                     target="_blank"
                     rel="noopener noreferrer"
+                    style={{ color: '#000000' }}
                   >
                     제품 정보 보기 →
                   </a>
@@ -423,8 +427,8 @@ export default function CompanyAboutUs({ locale }: CompanyAboutUsProps) {
                   boxShadow: '0 6px 18px rgba(16,24,40,0.04)',
                 }}
               >
-                <h3 style={{ margin: '0 0 8px 0' }}>고객참여 강화 (smartCEP)</h3>
-                <p style={{ color: '#6b7280', fontSize: '14px', margin: 0 }}>
+                <h3 style={{ margin: '0 0 8px 0', color: '#000000' }}>고객참여 강화 (smartCEP)</h3>
+                <p style={{ color: '#000000', fontSize: '14px', margin: 0 }}>
                   실시간 이벤트 기반 규칙 엔진과 개인화 추천으로 캠페인 자동화 및 고객 참여를 향상시킵니다.
                 </p>
                 <p style={{ marginTop: 'auto', paddingTop: '8px' }}>
@@ -432,6 +436,7 @@ export default function CompanyAboutUs({ locale }: CompanyAboutUsProps) {
                     href="https://nethru.co.kr/CEP/smartCEP.html"
                     target="_blank"
                     rel="noopener noreferrer"
+                    style={{ color: '#000000' }}
                   >
                     제품 정보 보기 →
                   </a>
@@ -447,8 +452,8 @@ export default function CompanyAboutUs({ locale }: CompanyAboutUsProps) {
                   boxShadow: '0 6px 18px rgba(16,24,40,0.04)',
                 }}
               >
-                <h3 style={{ margin: '0 0 8px 0' }}>컨설팅 & 전문 서비스</h3>
-                <p style={{ color: '#6b7280', fontSize: '14px', margin: 0 }}>
+                <h3 style={{ margin: '0 0 8px 0', color: '#000000' }}>컨설팅 & 전문 서비스</h3>
+                <p style={{ color: '#000000', fontSize: '14px', margin: 0 }}>
                   데이터 아키텍처 설계, ETL 파이프라인 구축, 커스텀 분석 모델 개발 등 고객 맞춤형 컨설팅을 제공합니다.
                 </p>
               </div>
@@ -555,6 +560,7 @@ export default function CompanyAboutUs({ locale }: CompanyAboutUsProps) {
             연락처 & 회사 정보
           </h2>
           <div
+            className="contact-info-section"
             style={{
               background: '#fff',
               borderRadius: '12px',
@@ -633,21 +639,17 @@ export default function CompanyAboutUs({ locale }: CompanyAboutUsProps) {
               </a>
             </p>
             <p style={{ marginTop: '8px' }}>
-              <a
-                href="mailto:sales@nethru.co.kr"
-                style={{
-                  display: 'inline-block',
-                  padding: '8px 12px',
-                  background: '#2e5aac',
-                  color: '#fff',
-                  borderRadius: '8px',
-                  textDecoration: 'none',
-                  fontWeight: 600,
-                }}
-              >
-                데모 요청하기
-              </a>
             </p>
+            <style jsx>{`
+              .contact-info-section,
+              .contact-info-section p,
+              .contact-info-section strong {
+                color: #000000 !important;
+              }
+              .contact-info-section a {
+                color: #000000 !important;
+              }
+            `}</style>
           </div>
         </section>
 
@@ -742,33 +744,24 @@ function HistoryItem({ year, items }: { year: string; items: string[] }) {
           fontSize: '0.95rem',
           fontWeight: 600,
           paddingLeft: '28px',
+          paddingRight: '12px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          width: '100%',
+          color: '#000000',
         }}
         className="history-year"
       >
         {year}
-        <span
-          style={{
-            fontSize: '0.7rem',
-            opacity: 0.4,
-            transition: 'transform 0.2s ease, opacity 0.2s ease',
-          }}
-        >
-          ﹀
-        </span>
+        <span className="history-chevron" aria-hidden="true">﹀</span>
       </div>
       <div
         className="history-body"
         style={{
-          maxHeight: 0,
           overflow: 'hidden',
           paddingLeft: '28px',
           paddingRight: '8px',
-          transition: 'max-height 0.35s ease, opacity 0.25s ease, margin-top 0.25s ease',
-          opacity: 0,
-          marginTop: 0,
         }}
       >
         <ul
