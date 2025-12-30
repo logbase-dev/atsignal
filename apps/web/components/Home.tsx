@@ -31,9 +31,66 @@ export default function Home({ locale }: HomeProps) {
     '[4.공지] atsignal admin / CMS 업데이트 안내',
     '[5.이벤트] atsignal 뉴스레터 구독 이벤트',
   ];
-  const rollingBannerText = rollingAnnouncements.join('                         '); // 25 spaces
+  const renderBannerItems = () =>
+    rollingAnnouncements.map((item, idx) => (
+      <a key={`banner-${idx}`} href={item} className="rolling-banner-link">
+        {item}
+      </a>
+    ));
   const [isBannerPaused, setIsBannerPaused] = useState(false);
   const [isBannerCollapsed, setIsBannerCollapsed] = useState(false);
+  const [dotCount, setDotCount] = useState(1);
+  const [dotIndex, setDotIndex] = useState(0);
+  const dotIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const dotSequence = useRef<number[]>([1, 2, 3, 4, 5, 4, 3, 2]).current;
+  const benefits = [
+    {
+      title: 'App/Web Behavior Log 분석 특화',
+      details: [
+        'Event, Property, Custom Dimension 제약 없이 보관/분석 무제한',
+        '강력한 분석용 단위데이터셋: Topic(Multiple Event, Sequence, Attribution 등)',
+        'User Analytics: Cohort, User Stitching, 유연한 Session 정의, Raw Data 확인',
+      ],
+    },
+    {
+      title: '자체 고성능 데이터 처리 엔진',
+      details: [
+        'Low Latency & Freshness: Robust Data Processing',
+        'On-the-fly Data Manipulation (기본값 = No Batch Update)',
+        '지연수집(Late Hits) 보정으로 통계/분석 현행화 편리',
+      ],
+    },
+    {
+      title: '유연한 최적 요금제 (MTU, Event 모두 지원)',
+      details: [
+        'Event 기반/MTU 요금제를 모두 지원',
+        '장기 약정 시 Event/MTU 중 최저 요금으로 월별 Dynamic Billing (Impression Event 별도 고려)',
+      ],
+    },
+    {
+      title: 'MetaData 관리/탐색 편의성',
+      details: [
+        'Event, Property 현황 및 형상(샘플/분포 등) 파악이 용이',
+        '다양한 분석용 Dataset(=Topic) 조정이 간편',
+      ],
+    },
+    {
+      title: '데이터 권한/보안 그룹 공유 기능',
+      details: [
+        'Classified/Privacy 데이터 접근 제한 및 관리',
+        'Organization/Project/Group 레벨 보안 설정',
+        '암호화·Masking(BYOK/CMK)로 실제 Value 노출 방지',
+      ],
+    },
+    {
+      title: 'General BI: 포괄적인 분석 기능',
+      details: [
+        'Tableau 유사 데이터 탐색 UX(Data Pane & Report Generation)',
+        '사용자정의 필드/복잡 조건(LOD, Bucket, Funnel 등) 설정 가능',
+        '다양한 외부 데이터 소스 통합 분석 지원',
+      ],
+    },
+  ];
   
   const homeMenu = getMenuByPath('/Direct link');
   
@@ -53,25 +110,57 @@ export default function Home({ locale }: HomeProps) {
   const [emailInput, setEmailInput] = useState('');
 
   useEffect(() => {
-    let intervalId: NodeJS.Timeout | null = null;
-    
+    let textIntervalId: NodeJS.Timeout | null = null;
+
     // 첫 번째 전환은 1초 후
     const firstTimeout = setTimeout(() => {
       setCurrentIndex((prev) => (prev + 1) % rollingTexts.length);
       
       // 그 다음부터는 2초마다 순환
-      intervalId = setInterval(() => {
+      textIntervalId = setInterval(() => {
         setCurrentIndex((prev) => (prev + 1) % rollingTexts.length);
       }, 2000);
     }, 1000);
 
     return () => {
       clearTimeout(firstTimeout);
-      if (intervalId) {
-        clearInterval(intervalId);
+      if (textIntervalId) {
+        clearInterval(textIntervalId);
       }
     };
   }, [rollingTexts.length]);
+
+  // 점(dot) 애니메이션 전용
+  useEffect(() => {
+    // 기존 인터벌 정리
+    if (dotIntervalRef.current) {
+      clearInterval(dotIntervalRef.current);
+      dotIntervalRef.current = null;
+    }
+
+    if (!isBannerCollapsed) {
+      setDotCount(0);
+      setDotIndex(0);
+      return;
+    }
+    setDotIndex(0);
+    setDotCount(dotSequence[0]);
+
+    dotIntervalRef.current = setInterval(() => {
+      setDotIndex((prev) => {
+        const nextIndex = (prev + 1) % dotSequence.length;
+        setDotCount(dotSequence[nextIndex]);
+        return nextIndex;
+      });
+    }, 350);
+
+    return () => {
+      if (dotIntervalRef.current) {
+        clearInterval(dotIntervalRef.current);
+        dotIntervalRef.current = null;
+      }
+    };
+  }, [isBannerCollapsed]);
 
   // 카운트업 애니메이션
   useEffect(() => {
@@ -292,29 +381,25 @@ export default function Home({ locale }: HomeProps) {
               aria-label={isBannerCollapsed ? '공지 펼치기' : '공지 접기'}
               onClick={(e) => {
                 e.preventDefault();
-                setIsBannerCollapsed((prev) => !prev);
-                setIsBannerPaused((prev) => !prev);
+                setIsBannerCollapsed((prev) => {
+                  const next = !prev;
+                  setIsBannerPaused(next); // 접히면 일시정지, 펼치면 재생
+                  return next;
+                });
               }}
             >
               Notice{isBannerCollapsed ? '▼' : '▲'}
+              {isBannerCollapsed && dotCount > 0 && (
+                <span className="rolling-dots" aria-hidden="true">
+                  {Array.from({ length: dotCount }).map((_, i) => (
+                    <span key={`dot-${i}`} className="rolling-dot" />
+                  ))}
+                </span>
+              )}
             </button>
             <div
               className={`rolling-banner ${isBannerCollapsed ? 'collapsed' : ''}`}
               aria-label="Announcements"
-              role="button"
-              tabIndex={0}
-              onClick={(e) => {
-                e.preventDefault();
-                setIsBannerCollapsed((prev) => !prev);
-                setIsBannerPaused((prev) => !prev);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  setIsBannerCollapsed((prev) => !prev);
-                  setIsBannerPaused((prev) => !prev);
-                }
-              }}
             >
               <div
                 className="rolling-track"
@@ -323,9 +408,9 @@ export default function Home({ locale }: HomeProps) {
                 onMouseLeave={() => setIsBannerPaused(false)}
                 style={{ ['--rolling-state' as any]: isBannerPaused ? 'paused' : 'running' }}
               >
-                <span>{rollingBannerText}</span>
-                <span aria-hidden="true">{rollingBannerText}</span>
-                <span aria-hidden="true">{rollingBannerText}</span>
+                {renderBannerItems()}
+                {renderBannerItems()}
+                {renderBannerItems()}
               </div>
             </div>
           </div>
@@ -559,37 +644,27 @@ export default function Home({ locale }: HomeProps) {
       {/* Benefits Section */}
       <section className="section section-white">
         <div className="section-container">
-          <h2 className="section-title">
-            atsignal을 선택하는 이유
-          </h2>
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
-            gap: '1.5rem' 
-          }}>
-            <div className="benefit-item">
-              <div className="benefit-icon">✓</div>
-              <span className="benefit-text">App/Web Behavior Log 분석 특화</span>
-            </div>
-            <div className="benefit-item">
-              <div className="benefit-icon">✓</div>
-              <span className="benefit-text">자체 고성능 데이터 처리 엔진</span>
-            </div>
-            <div className="benefit-item">
-              <div className="benefit-icon">✓</div>
-              <span className="benefit-text">유연한 최적 요금제 (MTU, Event 모두 지원)</span>
-            </div>
-            <div className="benefit-item">
-              <div className="benefit-icon">✓</div>
-              <span className="benefit-text">MetaData 관리/탐색 편의성</span>
-            </div>
-            <div className="benefit-item">
-              <div className="benefit-icon">✓</div>
-              <span className="benefit-text">데이터 권한/보안 그룹 공유 기능</span>
-            </div>
-            <div className="benefit-item">
-              <div className="benefit-icon">✓</div>
-              <span className="benefit-text">General BI: 포괄적인 분석 기능</span>
+          <h2 className="section-title benefits-title">atsignal을 선택하는 이유</h2>
+          <div className="benefits-layout">
+            <div className="benefits-visual" aria-hidden="true" />
+            <div className="benefits-list">
+              <div className="benefits-list-items">
+                {benefits.map((benefit) => (
+                  <div className="benefit-item benefit-item-expandable" key={benefit.title} tabIndex={0}>
+                    <div className="benefit-row">
+                      <div className="benefit-icon">✓</div>
+                      <span className="benefit-text">{benefit.title}</span>
+                    </div>
+                    <div className="benefit-details">
+                      <ul>
+                        {benefit.details.map((detail) => (
+                          <li key={detail}>{detail}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
