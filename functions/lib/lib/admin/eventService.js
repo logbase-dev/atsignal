@@ -9,6 +9,7 @@ exports.deleteEvent = deleteEvent;
 exports.getBannerEvents = getBannerEvents;
 const firestore_1 = require("firebase-admin/firestore");
 const firebase_1 = require("../../firebase");
+const types_1 = require("./types");
 function stripUndefinedDeep(value) {
     if (value === undefined)
         return value;
@@ -113,7 +114,7 @@ async function getEvents(options) {
         const page = options?.page || 1;
         const limit = options?.limit || 20;
         const offset = (page - 1) * limit;
-        const eventsRef = firebase_1.firestore.collection("events");
+        const eventsRef = firebase_1.firestore.collection(types_1.COLLECTIONS.EVENTS);
         // 필터링
         let query = eventsRef;
         if (options?.published !== undefined) {
@@ -211,7 +212,7 @@ async function getEvents(options) {
 }
 async function getEventById(id) {
     try {
-        const docSnap = await withTimeout(firebase_1.firestore.collection("events").doc(id).get(), 5000);
+        const docSnap = await withTimeout(firebase_1.firestore.collection(types_1.COLLECTIONS.EVENTS).doc(id).get(), 5000);
         if (!docSnap.exists)
             return null;
         return mapEvent(docSnap.id, (docSnap.data() || {}));
@@ -265,10 +266,10 @@ async function createEvent(event) {
     // 메인 이벤트 자동 해제: 새로 메인으로 설정하면 기존 메인 이벤트 해제
     if (event.isMainEvent) {
         try {
-            const existingMainSnap = await withTimeout(firebase_1.firestore.collection("events").where("isMainEvent", "==", true).limit(1).get(), 5000);
+            const existingMainSnap = await withTimeout(firebase_1.firestore.collection(types_1.COLLECTIONS.EVENTS).where("isMainEvent", "==", true).limit(1).get(), 5000);
             if (!existingMainSnap.empty) {
                 const existingMainId = existingMainSnap.docs[0].id;
-                await withTimeout(firebase_1.firestore.collection("events").doc(existingMainId).update({ isMainEvent: false }), 5000);
+                await withTimeout(firebase_1.firestore.collection(types_1.COLLECTIONS.EVENTS).doc(existingMainId).update({ isMainEvent: false }), 5000);
                 console.log(`[createEvent] 기존 메인 이벤트 해제: ${existingMainId}`);
             }
         }
@@ -279,10 +280,10 @@ async function createEvent(event) {
     // 서브 이벤트 자동 교체: 새로 서브로 설정하면 기존 서브 이벤트 해제
     if (event.subEventOrder && [1, 2, 3].includes(event.subEventOrder)) {
         try {
-            const existingSubSnap = await withTimeout(firebase_1.firestore.collection("events").where("subEventOrder", "==", event.subEventOrder).limit(1).get(), 5000);
+            const existingSubSnap = await withTimeout(firebase_1.firestore.collection(types_1.COLLECTIONS.EVENTS).where("subEventOrder", "==", event.subEventOrder).limit(1).get(), 5000);
             if (!existingSubSnap.empty) {
                 const existingSubId = existingSubSnap.docs[0].id;
-                await withTimeout(firebase_1.firestore.collection("events").doc(existingSubId).update({ subEventOrder: null }), 5000);
+                await withTimeout(firebase_1.firestore.collection(types_1.COLLECTIONS.EVENTS).doc(existingSubId).update({ subEventOrder: null }), 5000);
                 console.log(`[createEvent] 기존 서브 이벤트 해제: ${existingSubId} (순서: ${event.subEventOrder})`);
             }
         }
@@ -290,7 +291,7 @@ async function createEvent(event) {
             console.error("[createEvent] 서브 이벤트 해제 실패:", err);
         }
     }
-    const docRef = await withTimeout(firebase_1.firestore.collection("events").add(data), 5000);
+    const docRef = await withTimeout(firebase_1.firestore.collection(types_1.COLLECTIONS.EVENTS).add(data), 5000);
     return docRef.id;
 }
 async function updateEvent(id, patch) {
@@ -319,10 +320,10 @@ async function updateEvent(id, patch) {
     // 메인 이벤트 자동 해제: 새로 메인으로 설정하면 기존 메인 이벤트 해제
     if (patch.isMainEvent === true) {
         try {
-            const existingMainSnap = await withTimeout(firebase_1.firestore.collection("events").where("isMainEvent", "==", true).where(firestore_1.FieldPath.documentId(), "!=", id).limit(1).get(), 5000);
+            const existingMainSnap = await withTimeout(firebase_1.firestore.collection(types_1.COLLECTIONS.EVENTS).where("isMainEvent", "==", true).where(firestore_1.FieldPath.documentId(), "!=", id).limit(1).get(), 5000);
             if (!existingMainSnap.empty) {
                 const existingMainId = existingMainSnap.docs[0].id;
-                await withTimeout(firebase_1.firestore.collection("events").doc(existingMainId).update({ isMainEvent: false }), 5000);
+                await withTimeout(firebase_1.firestore.collection(types_1.COLLECTIONS.EVENTS).doc(existingMainId).update({ isMainEvent: false }), 5000);
                 console.log(`[updateEvent] 기존 메인 이벤트 해제: ${existingMainId}`);
             }
         }
@@ -333,10 +334,10 @@ async function updateEvent(id, patch) {
     // 서브 이벤트 자동 교체: 새로 서브로 설정하면 기존 서브 이벤트 해제
     if (patch.subEventOrder !== undefined && patch.subEventOrder !== null && [1, 2, 3].includes(patch.subEventOrder)) {
         try {
-            const existingSubSnap = await withTimeout(firebase_1.firestore.collection("events").where("subEventOrder", "==", patch.subEventOrder).where(firestore_1.FieldPath.documentId(), "!=", id).limit(1).get(), 5000);
+            const existingSubSnap = await withTimeout(firebase_1.firestore.collection(types_1.COLLECTIONS.EVENTS).where("subEventOrder", "==", patch.subEventOrder).where(firestore_1.FieldPath.documentId(), "!=", id).limit(1).get(), 5000);
             if (!existingSubSnap.empty) {
                 const existingSubId = existingSubSnap.docs[0].id;
-                await withTimeout(firebase_1.firestore.collection("events").doc(existingSubId).update({ subEventOrder: null }), 5000);
+                await withTimeout(firebase_1.firestore.collection(types_1.COLLECTIONS.EVENTS).doc(existingSubId).update({ subEventOrder: null }), 5000);
                 console.log(`[updateEvent] 기존 서브 이벤트 해제: ${existingSubId} (순서: ${patch.subEventOrder})`);
             }
         }
@@ -345,11 +346,11 @@ async function updateEvent(id, patch) {
         }
     }
     console.log(`[updateEvent] 최종 업데이트 데이터:`, JSON.stringify(updateData, null, 2));
-    await withTimeout(firebase_1.firestore.collection("events").doc(id).update(updateData), 5000);
+    await withTimeout(firebase_1.firestore.collection(types_1.COLLECTIONS.EVENTS).doc(id).update(updateData), 5000);
 }
 async function incrementEventViews(id) {
     try {
-        const docRef = firebase_1.firestore.collection("events").doc(id);
+        const docRef = firebase_1.firestore.collection(types_1.COLLECTIONS.EVENTS).doc(id);
         await withTimeout(docRef.update({
             views: firestore_1.FieldValue.increment(1),
         }), 5000);
@@ -426,7 +427,7 @@ function extractFileNameFromUrl(url) {
     }
 }
 async function deleteEvent(id) {
-    const eventRef = firebase_1.firestore.collection("events").doc(id);
+    const eventRef = firebase_1.firestore.collection(types_1.COLLECTIONS.EVENTS).doc(id);
     const eventSnap = await withTimeout(eventRef.get(), 5000);
     if (eventSnap.exists) {
         const eventData = eventSnap.data();
@@ -478,7 +479,7 @@ async function deleteEvent(id) {
 async function getBannerEvents(locale = "ko") {
     try {
         const now = new Date();
-        const eventsRef = firebase_1.firestore.collection("events");
+        const eventsRef = firebase_1.firestore.collection(types_1.COLLECTIONS.EVENTS);
         // 배너 노출 조건: showInBanner=true, published=true, enabled[locale]=true
         let query = eventsRef
             .where("showInBanner", "==", true)

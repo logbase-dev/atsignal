@@ -2,6 +2,7 @@ import { Timestamp, FieldValue, FieldPath } from "firebase-admin/firestore";
 import type * as FirebaseFirestore from "firebase-admin/firestore";
 import { firestore, admin } from "../../firebase";
 import type { Event } from "./types";
+import { COLLECTIONS } from "./types";
 
 type LocalizedField = { ko: string; en?: string };
 
@@ -124,7 +125,7 @@ export async function getEvents(options?: {
     const limit = options?.limit || 20;
     const offset = (page - 1) * limit;
 
-    const eventsRef = firestore.collection("events");
+    const eventsRef = firestore.collection(COLLECTIONS.EVENTS);
 
     // 필터링
     let query: FirebaseFirestore.Query = eventsRef;
@@ -234,7 +235,7 @@ export async function getEvents(options?: {
 export async function getEventById(id: string): Promise<Event | null> {
   try {
     const docSnap = await withTimeout<FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData>>(
-      firestore.collection("events").doc(id).get(), 
+      firestore.collection(COLLECTIONS.EVENTS).doc(id).get(), 
       5000
     );
     if (!docSnap.exists) return null;
@@ -291,13 +292,13 @@ export async function createEvent(event: Omit<Event, "id">): Promise<string> {
   if (event.isMainEvent) {
     try {
       const existingMainSnap = await withTimeout(
-        firestore.collection("events").where("isMainEvent", "==", true).limit(1).get(),
+        firestore.collection(COLLECTIONS.EVENTS).where("isMainEvent", "==", true).limit(1).get(),
         5000
       );
       if (!existingMainSnap.empty) {
         const existingMainId = existingMainSnap.docs[0].id;
         await withTimeout(
-          firestore.collection("events").doc(existingMainId).update({ isMainEvent: false }),
+          firestore.collection(COLLECTIONS.EVENTS).doc(existingMainId).update({ isMainEvent: false }),
           5000
         );
         console.log(`[createEvent] 기존 메인 이벤트 해제: ${existingMainId}`);
@@ -311,13 +312,13 @@ export async function createEvent(event: Omit<Event, "id">): Promise<string> {
   if (event.subEventOrder && [1, 2, 3].includes(event.subEventOrder)) {
     try {
       const existingSubSnap = await withTimeout(
-        firestore.collection("events").where("subEventOrder", "==", event.subEventOrder).limit(1).get(),
+        firestore.collection(COLLECTIONS.EVENTS).where("subEventOrder", "==", event.subEventOrder).limit(1).get(),
         5000
       );
       if (!existingSubSnap.empty) {
         const existingSubId = existingSubSnap.docs[0].id;
         await withTimeout(
-          firestore.collection("events").doc(existingSubId).update({ subEventOrder: null }),
+          firestore.collection(COLLECTIONS.EVENTS).doc(existingSubId).update({ subEventOrder: null }),
           5000
         );
         console.log(`[createEvent] 기존 서브 이벤트 해제: ${existingSubId} (순서: ${event.subEventOrder})`);
@@ -328,7 +329,7 @@ export async function createEvent(event: Omit<Event, "id">): Promise<string> {
   }
 
   const docRef = await withTimeout<FirebaseFirestore.DocumentReference<FirebaseFirestore.DocumentData>>(
-    firestore.collection("events").add(data), 
+    firestore.collection(COLLECTIONS.EVENTS).add(data), 
     5000
   );
   return docRef.id;
@@ -365,13 +366,13 @@ export async function updateEvent(id: string, patch: Partial<Event>): Promise<vo
   if (patch.isMainEvent === true) {
     try {
       const existingMainSnap = await withTimeout(
-        firestore.collection("events").where("isMainEvent", "==", true).where(FieldPath.documentId(), "!=", id).limit(1).get(),
+        firestore.collection(COLLECTIONS.EVENTS).where("isMainEvent", "==", true).where(FieldPath.documentId(), "!=", id).limit(1).get(),
         5000
       );
       if (!existingMainSnap.empty) {
         const existingMainId = existingMainSnap.docs[0].id;
         await withTimeout(
-          firestore.collection("events").doc(existingMainId).update({ isMainEvent: false }),
+          firestore.collection(COLLECTIONS.EVENTS).doc(existingMainId).update({ isMainEvent: false }),
           5000
         );
         console.log(`[updateEvent] 기존 메인 이벤트 해제: ${existingMainId}`);
@@ -385,13 +386,13 @@ export async function updateEvent(id: string, patch: Partial<Event>): Promise<vo
   if (patch.subEventOrder !== undefined && patch.subEventOrder !== null && [1, 2, 3].includes(patch.subEventOrder)) {
     try {
       const existingSubSnap = await withTimeout(
-        firestore.collection("events").where("subEventOrder", "==", patch.subEventOrder).where(FieldPath.documentId(), "!=", id).limit(1).get(),
+        firestore.collection(COLLECTIONS.EVENTS).where("subEventOrder", "==", patch.subEventOrder).where(FieldPath.documentId(), "!=", id).limit(1).get(),
         5000
       );
       if (!existingSubSnap.empty) {
         const existingSubId = existingSubSnap.docs[0].id;
         await withTimeout(
-          firestore.collection("events").doc(existingSubId).update({ subEventOrder: null }),
+          firestore.collection(COLLECTIONS.EVENTS).doc(existingSubId).update({ subEventOrder: null }),
           5000
         );
         console.log(`[updateEvent] 기존 서브 이벤트 해제: ${existingSubId} (순서: ${patch.subEventOrder})`);
@@ -403,12 +404,12 @@ export async function updateEvent(id: string, patch: Partial<Event>): Promise<vo
   
   console.log(`[updateEvent] 최종 업데이트 데이터:`, JSON.stringify(updateData, null, 2));
   
-  await withTimeout(firestore.collection("events").doc(id).update(updateData), 5000);
+  await withTimeout(firestore.collection(COLLECTIONS.EVENTS).doc(id).update(updateData), 5000);
 }
 
 export async function incrementEventViews(id: string): Promise<void> {
   try {
-    const docRef = firestore.collection("events").doc(id);
+    const docRef = firestore.collection(COLLECTIONS.EVENTS).doc(id);
     await withTimeout(
       docRef.update({
         views: FieldValue.increment(1),
@@ -492,7 +493,7 @@ function extractFileNameFromUrl(url: string): { fileName: string; type: 'editor'
 }
 
 export async function deleteEvent(id: string): Promise<void> {
-  const eventRef = firestore.collection("events").doc(id);
+  const eventRef = firestore.collection(COLLECTIONS.EVENTS).doc(id);
   const eventSnap = await withTimeout(eventRef.get(), 5000);
 
   if (eventSnap.exists) {
@@ -550,7 +551,7 @@ export async function deleteEvent(id: string): Promise<void> {
 export async function getBannerEvents(locale: "ko" | "en" = "ko"): Promise<Event[]> {
   try {
     const now = new Date();
-    const eventsRef = firestore.collection("events");
+    const eventsRef = firestore.collection(COLLECTIONS.EVENTS);
 
     // 배너 노출 조건: showInBanner=true, published=true, enabled[locale]=true
     let query: FirebaseFirestore.Query = eventsRef

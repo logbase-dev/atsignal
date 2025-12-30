@@ -36,6 +36,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.requireAdmin = requireAdmin;
 const firebase_1 = require("../../firebase");
 const adminService_1 = require("./adminService");
+const types_1 = require("./types");
 function getAdminAuthMode() {
     const raw = (process.env.ADMIN_AUTH_MODE || "cookie").toLowerCase();
     return raw === "token" ? "token" : "cookie";
@@ -107,7 +108,7 @@ async function requireAdmin(req) {
     if (!uid)
         return null;
     const snap = await firebase_1.firestore
-        .collection("admins")
+        .collection(types_1.COLLECTIONS.ADMINS)
         .where("authUid", "==", uid)
         .limit(1)
         .get();

@@ -1,5 +1,6 @@
 import { admin, firestore } from "../../firebase";
 import type { Glossary, LocalizedField, RelatedLink } from "./types";
+import { COLLECTIONS } from "./types";
 import { Timestamp } from "firebase-admin/firestore";
 
 // Firestore 타입 별칭
@@ -128,7 +129,7 @@ export async function getGlossaries(options?: {
   totalPages: number; // 총 페이지 수
 }> {
   try {
-    const glossariesRef = firestore.collection("glossaries");
+    const glossariesRef = firestore.collection(COLLECTIONS.GLOSSARIES);
     let q: admin.firestore.Query = glossariesRef;
     
     const locale = options?.locale || "ko";
@@ -218,7 +219,7 @@ export async function getGlossaries(options?: {
 // 용어 단건 조회
 export async function getGlossaryById(id: string): Promise<Glossary | null> {
   try {
-    const glossaryRef = firestore.collection("glossaries").doc(id);
+    const glossaryRef = firestore.collection(COLLECTIONS.GLOSSARIES).doc(id);
     const glossarySnap = await withTimeout<DocSnap>(glossaryRef.get(), 5000);
     if (!glossarySnap.exists) return null;
     return mapGlossaryData(glossarySnap);
@@ -239,13 +240,13 @@ export async function updateGlossary(): Promise<void> {
 
 // Glossary 삭제
 export async function deleteGlossary(id: string): Promise<void> {
-  const glossaryRef = firestore.collection("glossaries").doc(id);
+  const glossaryRef = firestore.collection(COLLECTIONS.GLOSSARIES).doc(id);
   await withTimeout(glossaryRef.delete(), 5000);
 }
 
 // 용어 조회수 증가 (web 앱에서만 사용)
 export async function incrementGlossaryViews(id: string): Promise<void> {
-  const glossaryRef = firestore.collection("glossaries").doc(id);
+  const glossaryRef = firestore.collection(COLLECTIONS.GLOSSARIES).doc(id);
   await withTimeout(
     glossaryRef.update({
       views: admin.firestore.FieldValue.increment(1),

@@ -7,6 +7,7 @@ exports.savePageDraft = savePageDraft;
 exports.publishPage = publishPage;
 exports.deletePage = deletePage;
 const firebase_1 = require("../../firebase");
+const types_1 = require("./types");
 // Timestamp → Date 변환
 function normalizeTimestamp(value) {
     if (!value)
@@ -82,14 +83,14 @@ function extractFileNameFromUrl(url) {
 }
 // 페이지 목록 조회
 async function getPages(site) {
-    const pagesRef = firebase_1.firestore.collection("pages");
+    const pagesRef = firebase_1.firestore.collection(types_1.COLLECTIONS.PAGES);
     const q = pagesRef.where("site", "==", site);
     const snap = await q.get();
     return snap.docs.map(mapPageData);
 }
 // 단건 조회
 async function getPageById(id) {
-    const pageRef = firebase_1.firestore.collection("pages").doc(id);
+    const pageRef = firebase_1.firestore.collection(types_1.COLLECTIONS.PAGES).doc(id);
     const pageSnap = await pageRef.get();
     if (!pageSnap.exists)
         return null;
@@ -97,7 +98,7 @@ async function getPageById(id) {
 }
 // 메뉴 ID로 조회
 async function getPagesByMenuId(menuId) {
-    const pagesRef = firebase_1.firestore.collection("pages");
+    const pagesRef = firebase_1.firestore.collection(types_1.COLLECTIONS.PAGES);
     const q = pagesRef.where("menuId", "==", menuId);
     const snap = await q.get();
     return snap.docs.map(mapPageData);
@@ -116,7 +117,7 @@ async function publishPage() {
 }
 // 페이지 삭제 (연결된 이미지 삭제 포함)
 async function deletePage(id) {
-    const pageRef = firebase_1.firestore.collection("pages").doc(id);
+    const pageRef = firebase_1.firestore.collection(types_1.COLLECTIONS.PAGES).doc(id);
     // 페이지 데이터 가져오기 (이미지 URL 추출을 위해)
     const pageSnap = await pageRef.get();
     if (pageSnap.exists) {

@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handle = handle;
 const firebase_1 = require("../../firebase");
+const types_1 = require("../../lib/admin/types");
 const firestore_1 = require("firebase-admin/firestore");
 const requestAuth_1 = require("../_shared/requestAuth");
 const firestoreUtils_1 = require("../_shared/firestoreUtils");
@@ -26,7 +27,7 @@ function mapGlossaryCategoryData(docSnap) {
 // GET /api/admin/glossary-categories/[id]
 async function handleGet(req, res, id) {
     try {
-        const categoryRef = firebase_1.firestore.collection("glossaryCategories").doc(id);
+        const categoryRef = firebase_1.firestore.collection(types_1.COLLECTIONS.GLOSSARY_CATEGORIES).doc(id);
         const categorySnap = await categoryRef.get();
         if (!categorySnap.exists) {
             res.status(404).json({ error: "용어사전 카테고리를 찾을 수 없습니다." });
@@ -44,7 +45,7 @@ async function handleGet(req, res, id) {
 async function handlePut(req, res, id) {
     try {
         const adminId = (0, requestAuth_1.getRequestAdminId)(req);
-        const categoryRef = firebase_1.firestore.collection("glossaryCategories").doc(id);
+        const categoryRef = firebase_1.firestore.collection(types_1.COLLECTIONS.GLOSSARY_CATEGORIES).doc(id);
         const categorySnap = await categoryRef.get();
         if (!categorySnap.exists) {
             res.status(404).json({ error: "용어사전 카테고리를 찾을 수 없습니다." });
@@ -55,7 +56,7 @@ async function handlePut(req, res, id) {
         const body = req.body;
         // 순서 변경 시 다른 카테고리 순서 재조정
         if (body.order !== undefined && body.order !== oldOrder) {
-            const allSnap = await firebase_1.firestore.collection("glossaryCategories").get();
+            const allSnap = await firebase_1.firestore.collection(types_1.COLLECTIONS.GLOSSARY_CATEGORIES).get();
             const batch = firebase_1.firestore.batch();
             const newOrder = body.order;
             if (newOrder > oldOrder) {
@@ -103,7 +104,7 @@ async function handlePut(req, res, id) {
 async function handleDelete(req, res, id) {
     try {
         (0, requestAuth_1.getRequestAdminId)(req);
-        const categoryRef = firebase_1.firestore.collection("glossaryCategories").doc(id);
+        const categoryRef = firebase_1.firestore.collection(types_1.COLLECTIONS.GLOSSARY_CATEGORIES).doc(id);
         const categorySnap = await categoryRef.get();
         if (!categorySnap.exists) {
             res.status(404).json({ error: "용어사전 카테고리를 찾을 수 없습니다." });
@@ -111,7 +112,7 @@ async function handleDelete(req, res, id) {
         }
         // ✅ 해당 카테고리를 사용하는 Glossary가 있는지 확인
         const glossariesWithCategory = await firebase_1.firestore
-            .collection("glossaries")
+            .collection(types_1.COLLECTIONS.GLOSSARIES)
             .where("categoryId", "==", id)
             .limit(1)
             .get();

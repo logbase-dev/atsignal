@@ -8,6 +8,7 @@ exports.updateGlossary = updateGlossary;
 exports.deleteGlossary = deleteGlossary;
 exports.incrementGlossaryViews = incrementGlossaryViews;
 const firebase_1 = require("../../firebase");
+const types_1 = require("./types");
 const firestore_1 = require("firebase-admin/firestore");
 // 타임아웃 헬퍼
 function withTimeout(promise, timeoutMs = 5000) {
@@ -112,7 +113,7 @@ function mapGlossaryData(doc) {
 // 용어 목록 조회 (페이지네이션 지원)
 async function getGlossaries(options) {
     try {
-        const glossariesRef = firebase_1.firestore.collection("glossaries");
+        const glossariesRef = firebase_1.firestore.collection(types_1.COLLECTIONS.GLOSSARIES);
         let q = glossariesRef;
         const locale = options?.locale || "ko";
         const enabledField = `enabled.${locale}`;
@@ -191,7 +192,7 @@ async function getGlossaries(options) {
 // 용어 단건 조회
 async function getGlossaryById(id) {
     try {
-        const glossaryRef = firebase_1.firestore.collection("glossaries").doc(id);
+        const glossaryRef = firebase_1.firestore.collection(types_1.COLLECTIONS.GLOSSARIES).doc(id);
         const glossarySnap = await withTimeout(glossaryRef.get(), 5000);
         if (!glossarySnap.exists)
             return null;
@@ -211,12 +212,12 @@ async function updateGlossary() {
 }
 // Glossary 삭제
 async function deleteGlossary(id) {
-    const glossaryRef = firebase_1.firestore.collection("glossaries").doc(id);
+    const glossaryRef = firebase_1.firestore.collection(types_1.COLLECTIONS.GLOSSARIES).doc(id);
     await withTimeout(glossaryRef.delete(), 5000);
 }
 // 용어 조회수 증가 (web 앱에서만 사용)
 async function incrementGlossaryViews(id) {
-    const glossaryRef = firebase_1.firestore.collection("glossaries").doc(id);
+    const glossaryRef = firebase_1.firestore.collection(types_1.COLLECTIONS.GLOSSARIES).doc(id);
     await withTimeout(glossaryRef.update({
         views: firebase_1.admin.firestore.FieldValue.increment(1),
         updatedAt: firestore_1.Timestamp.fromDate(new Date()),

@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handle = handle;
 const firebase_1 = require("../../firebase");
+const types_1 = require("../../lib/admin/types");
 const firestore_1 = require("firebase-admin/firestore");
 const requestAuth_1 = require("../_shared/requestAuth");
 const firestoreUtils_1 = require("../_shared/firestoreUtils");
@@ -15,7 +16,7 @@ async function handleGet(request, response) {
         const locale = request.query.locale || "ko";
         const page = request.query.page ? Number(request.query.page) : 1;
         const limit = request.query.limit ? Number(request.query.limit) : 20;
-        const glossariesRef = firebase_1.firestore.collection("glossaries");
+        const glossariesRef = firebase_1.firestore.collection(types_1.COLLECTIONS.GLOSSARIES);
         let q = glossariesRef.where(`enabled.${locale}`, "==", true);
         // 카테고리 필터링
         if (categoryId && categoryId !== "__no_category__") {
@@ -97,7 +98,7 @@ async function handlePost(request, response) {
         const locale = body.enabled?.ko ? "ko" : "en";
         const initialLetter = (0, glossaryService_1.calculateInitialLetter)(body.term, locale);
         const now = firestore_1.Timestamp.fromDate(new Date());
-        const glossariesRef = firebase_1.firestore.collection("glossaries");
+        const glossariesRef = firebase_1.firestore.collection(types_1.COLLECTIONS.GLOSSARIES);
         const docRef = await glossariesRef.add((0, firestoreUtils_1.removeUndefinedFields)({
             ...body,
             initialLetter,

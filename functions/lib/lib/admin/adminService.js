@@ -9,6 +9,7 @@ exports.updateAdmin = updateAdmin;
 exports.updateLastLoginAt = updateLastLoginAt;
 exports.deleteAdmin = deleteAdmin;
 const firebase_1 = require("../../firebase");
+const types_1 = require("./types");
 const password_1 = require("../utils/password");
 const firestore_1 = require("firebase-admin/firestore"); // ✅ 추가
 // 타임아웃 헬퍼 함수
@@ -68,7 +69,7 @@ function mapAdminData(docSnapshot) {
  */
 async function getAdmins() {
     try {
-        const adminsRef = firebase_1.firestore.collection('admins');
+        const adminsRef = firebase_1.firestore.collection(types_1.COLLECTIONS.ADMINS);
         const q = adminsRef.orderBy('createdAt', 'desc');
         const querySnapshot = await withTimeout(q.get(), 5000);
         return querySnapshot.docs.map(mapAdminData);
@@ -83,7 +84,7 @@ async function getAdmins() {
  */
 async function getAdminById(id) {
     try {
-        const adminDoc = await firebase_1.firestore.collection('admins').doc(id).get();
+        const adminDoc = await firebase_1.firestore.collection(types_1.COLLECTIONS.ADMINS).doc(id).get();
         if (!adminDoc.exists) {
             return null;
         }
@@ -99,7 +100,7 @@ async function getAdminById(id) {
  */
 async function getAdminByUsername(username) {
     try {
-        const adminsRef = firebase_1.firestore.collection('admins');
+        const adminsRef = firebase_1.firestore.collection(types_1.COLLECTIONS.ADMINS);
         const q = adminsRef.where('username', '==', username.toLowerCase());
         const querySnapshot = await withTimeout(q.get(), 5000);
         if (querySnapshot.empty) {
@@ -141,7 +142,7 @@ async function createAdmin(data) {
             updatedAt: firestore_1.Timestamp.fromDate(now),
             createdBy: data.createdBy,
         });
-        const docRef = await firebase_1.firestore.collection('admins').add(adminData);
+        const docRef = await firebase_1.firestore.collection(types_1.COLLECTIONS.ADMINS).add(adminData);
         return docRef.id;
     }
     catch (error) {
@@ -168,7 +169,7 @@ async function updateAdmin(id, data) {
         if (data.enabled !== undefined) {
             updateData.enabled = data.enabled;
         }
-        await firebase_1.firestore.collection('admins').doc(id).update(removeUndefinedFields(updateData));
+        await firebase_1.firestore.collection(types_1.COLLECTIONS.ADMINS).doc(id).update(removeUndefinedFields(updateData));
     }
     catch (error) {
         console.error('[updateAdmin] 에러:', error.message);
@@ -180,7 +181,7 @@ async function updateAdmin(id, data) {
  */
 async function updateLastLoginAt(id) {
     try {
-        await firebase_1.firestore.collection('admins').doc(id).update({
+        await firebase_1.firestore.collection(types_1.COLLECTIONS.ADMINS).doc(id).update({
             lastLoginAt: firestore_1.Timestamp.fromDate(new Date()),
             updatedAt: firestore_1.Timestamp.fromDate(new Date()),
         });
@@ -195,7 +196,7 @@ async function updateLastLoginAt(id) {
  */
 async function deleteAdmin(id) {
     try {
-        await firebase_1.firestore.collection('admins').doc(id).update({
+        await firebase_1.firestore.collection(types_1.COLLECTIONS.ADMINS).doc(id).update({
             enabled: false,
             updatedAt: firestore_1.Timestamp.fromDate(new Date()),
         });

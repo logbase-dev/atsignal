@@ -2,6 +2,7 @@ import { Timestamp, FieldValue } from "firebase-admin/firestore";
 import type * as FirebaseFirestore from "firebase-admin/firestore";
 import { firestore, admin } from "../../firebase";
 import type { WhatsNew } from "./types";
+import { COLLECTIONS } from "./types";
 
 type LocalizedField = { ko: string; en?: string };
 
@@ -112,7 +113,7 @@ export async function getWhatsNews(options?: {
     const limit = options?.limit || 20;
     const offset = (page - 1) * limit;
 
-    const whatsnewsRef = firestore.collection("whatsnew");
+    const whatsnewsRef = firestore.collection(COLLECTIONS.WHATSNEW);
 
     // 필터링
     let query: FirebaseFirestore.Query = whatsnewsRef;
@@ -222,7 +223,7 @@ export async function getWhatsNews(options?: {
 export async function getWhatsNewById(id: string): Promise<WhatsNew | null> {
   try {
     const docSnap = await withTimeout<FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData>>(
-      firestore.collection("whatsnew").doc(id).get(), 
+      firestore.collection(COLLECTIONS.WHATSNEW).doc(id).get(), 
       5000
     );
     if (!docSnap.exists) return null;
@@ -259,7 +260,7 @@ export async function createWhatsNew(whatsnew: Omit<WhatsNew, "id">): Promise<st
   
   console.log(`[createWhatsNew] 생성 데이터:`, JSON.stringify(data, null, 2));
   const docRef = await withTimeout<FirebaseFirestore.DocumentReference<FirebaseFirestore.DocumentData>>(
-    firestore.collection("whatsnew").add(data), 
+    firestore.collection(COLLECTIONS.WHATSNEW).add(data), 
     5000
   );
   return docRef.id;
@@ -304,14 +305,14 @@ export async function updateWhatsNew(id: string, patch: Partial<WhatsNew>): Prom
   console.log(`[updateWhatsNew] isTop 필드 존재 여부:`, 'isTop' in updateData, `값:`, updateData.isTop);
   console.log(`[updateWhatsNew] Firestore 업데이트 시작 - 문서 ID: ${id}`);
   
-  await withTimeout(firestore.collection("whatsnew").doc(id).update(updateData), 5000);
+  await withTimeout(firestore.collection(COLLECTIONS.WHATSNEW).doc(id).update(updateData), 5000);
   
   console.log(`[updateWhatsNew] Firestore 업데이트 완료`);
 }
 
 export async function incrementWhatsNewViews(id: string): Promise<void> {
   try {
-    const docRef = firestore.collection("whatsnew").doc(id);
+    const docRef = firestore.collection(COLLECTIONS.WHATSNEW).doc(id);
     await withTimeout(
       docRef.update({
         views: FieldValue.increment(1),
@@ -380,7 +381,7 @@ function extractFileNameFromUrl(url: string): { fileName: string; type: 'editor'
 }
 
 export async function deleteWhatsNew(id: string): Promise<void> {
-  const whatsnewRef = firestore.collection("whatsnew").doc(id);
+  const whatsnewRef = firestore.collection(COLLECTIONS.WHATSNEW).doc(id);
   const whatsnewSnap = await withTimeout(whatsnewRef.get(), 5000);
 
   if (whatsnewSnap.exists) {
@@ -413,7 +414,7 @@ export async function deleteWhatsNew(id: string): Promise<void> {
 export async function getBannerWhatsNews(locale: "ko" | "en" = "ko"): Promise<WhatsNew[]> {
   try {
     const now = new Date();
-    const whatsnewsRef = firestore.collection("whatsnew");
+    const whatsnewsRef = firestore.collection(COLLECTIONS.WHATSNEW);
 
     // 배너 노출 조건: showInBanner=true, published=true, enabled[locale]=true
     let query: FirebaseFirestore.Query = whatsnewsRef

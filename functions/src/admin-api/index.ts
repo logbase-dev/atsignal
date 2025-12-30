@@ -71,13 +71,22 @@ export async function router(request: Request, response: Response, path: string)
       return await authMeHandler.handle(request, response);
     }
 
-    // A안 정리: login/logout/auth/me 제외 모든 admin 요청은 여기서 인증 강제
-    const authed = await requireAdmin(request);
-    if (!authed) {
-      response.status(401).json({ error: "Unauthorized" });
-      return;
+    // 공개 API 경로 (GET 요청만 인증 없이 접근 가능)
+    const publicPaths = ["faqs", "faq-categories"];
+    const isPublicGetRequest = 
+      request.method === "GET" && 
+      pathParts.length > 0 && 
+      publicPaths.includes(pathParts[0]);
+
+    // A안 정리: login/logout/auth/me, 공개 GET 요청 제외 모든 admin 요청은 여기서 인증 강제
+    if (!isPublicGetRequest) {
+      const authed = await requireAdmin(request);
+      if (!authed) {
+        response.status(401).json({ error: "Unauthorized" });
+        return;
+      }
+      attachAdminAuthToRequest(request, authed);
     }
-    attachAdminAuthToRequest(request, authed);
 
     // Admins
     if (pathParts[0] === "admins") {

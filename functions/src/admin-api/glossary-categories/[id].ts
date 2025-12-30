@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import * as admin from "firebase-admin";
 import { firestore } from "../../firebase";
 import type { GlossaryCategory } from "../../lib/admin/types";
+import { COLLECTIONS } from "../../lib/admin/types";
 import { Timestamp } from "firebase-admin/firestore";
 import { getRequestAdminId } from "../_shared/requestAuth";
 import { convertTimestamp, normalizeLocalizedField, removeUndefinedFields } from "../_shared/firestoreUtils";
@@ -28,7 +29,7 @@ function mapGlossaryCategoryData(docSnap: admin.firestore.DocumentSnapshot): Glo
 // GET /api/admin/glossary-categories/[id]
 async function handleGet(req: Request, res: Response, id: string) {
   try {
-    const categoryRef = firestore.collection("glossaryCategories").doc(id);
+    const categoryRef = firestore.collection(COLLECTIONS.GLOSSARY_CATEGORIES).doc(id);
     const categorySnap = await categoryRef.get();
 
     if (!categorySnap.exists) {
@@ -49,7 +50,7 @@ async function handlePut(req: Request, res: Response, id: string) {
   try {
     const adminId = getRequestAdminId(req);
 
-    const categoryRef = firestore.collection("glossaryCategories").doc(id);
+    const categoryRef = firestore.collection(COLLECTIONS.GLOSSARY_CATEGORIES).doc(id);
     const categorySnap = await categoryRef.get();
 
     if (!categorySnap.exists) {
@@ -63,7 +64,7 @@ async function handlePut(req: Request, res: Response, id: string) {
 
     // 순서 변경 시 다른 카테고리 순서 재조정
     if (body.order !== undefined && body.order !== oldOrder) {
-      const allSnap = await firestore.collection("glossaryCategories").get();
+      const allSnap = await firestore.collection(COLLECTIONS.GLOSSARY_CATEGORIES).get();
       const batch = firestore.batch();
       const newOrder = body.order;
 
@@ -115,7 +116,7 @@ async function handleDelete(req: Request, res: Response, id: string) {
   try {
     getRequestAdminId(req);
 
-    const categoryRef = firestore.collection("glossaryCategories").doc(id);
+    const categoryRef = firestore.collection(COLLECTIONS.GLOSSARY_CATEGORIES).doc(id);
     const categorySnap = await categoryRef.get();
 
     if (!categorySnap.exists) {
@@ -125,7 +126,7 @@ async function handleDelete(req: Request, res: Response, id: string) {
 
     // ✅ 해당 카테고리를 사용하는 Glossary가 있는지 확인
     const glossariesWithCategory = await firestore
-      .collection("glossaries")
+      .collection(COLLECTIONS.GLOSSARIES)
       .where("categoryId", "==", id)
       .limit(1)
       .get();

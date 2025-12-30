@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { firestore } from "../../firebase";
+import { COLLECTIONS } from "../../lib/admin/types";
 import { Timestamp } from "firebase-admin/firestore";
 import { getRequestAdminId } from "../_shared/requestAuth";
 import { normalizeLocalizedField, removeUndefinedFields } from "../_shared/firestoreUtils";
@@ -8,7 +9,7 @@ import { mapGlossaryCategoryDoc } from "../_shared/mappers";
 // GET /api/admin/glossary-categories
 async function handleGet(_req: Request, res: Response) {
   try {
-    const snap = await firestore.collection("glossaryCategories").get();
+    const snap = await firestore.collection(COLLECTIONS.GLOSSARY_CATEGORIES).get();
     const categories = snap.docs.map(mapGlossaryCategoryDoc).sort((a, b) => (a.order || 0) - (b.order || 0));
     res.json({ categories });
   } catch (error: any) {
@@ -49,7 +50,7 @@ async function handlePost(req: Request, res: Response) {
       updatedBy: adminId,
     });
 
-    const docRef = await firestore.collection("glossaryCategories").add(data);
+    const docRef = await firestore.collection(COLLECTIONS.GLOSSARY_CATEGORIES).add(data);
     res.json({ success: true, id: docRef.id });
   } catch (error: any) {
     console.error("[POST /api/admin/glossary-categories] 에러:", error.message);

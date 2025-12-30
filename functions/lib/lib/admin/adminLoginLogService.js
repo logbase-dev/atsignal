@@ -5,6 +5,7 @@ exports.getLoginLogsByAdminId = getLoginLogsByAdminId;
 exports.getLoginLogsByUsername = getLoginLogsByUsername;
 const firestore_1 = require("firebase-admin/firestore"); // ✅ 추가
 const firebase_1 = require("../../firebase");
+const types_1 = require("./types");
 // 추가: 타임아웃 헬퍼
 function withTimeout(promise, timeoutMs = 5000) {
     return Promise.race([
@@ -40,7 +41,7 @@ function mapLoginLogData(doc) {
 }
 async function createLoginLog(log) {
     const now = firestore_1.Timestamp.fromDate(new Date()); // ✅ 변경
-    const docRef = await firebase_1.firestore.collection("adminLoginLogs").add({
+    const docRef = await firebase_1.firestore.collection(types_1.COLLECTIONS.ADMIN_LOGIN_LOGS).add({
         ...log,
         createdAt: now,
     });
@@ -48,7 +49,7 @@ async function createLoginLog(log) {
 }
 async function getLoginLogsByAdminId(adminId, filters = {}) {
     let q = firebase_1.firestore
-        .collection("adminLoginLogs")
+        .collection(types_1.COLLECTIONS.ADMIN_LOGIN_LOGS)
         .where("adminId", "==", adminId)
         .orderBy("createdAt", "desc");
     if (filters.success !== undefined) {
@@ -80,7 +81,7 @@ async function getLoginLogsByAdminId(adminId, filters = {}) {
 async function getLoginLogsByUsername(username, filters) {
     try {
         let q = firebase_1.firestore
-            .collection("adminLoginLogs")
+            .collection(types_1.COLLECTIONS.ADMIN_LOGIN_LOGS)
             .where("username", "==", username.toLowerCase())
             .orderBy("createdAt", "desc");
         // 성공/실패 필터

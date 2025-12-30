@@ -7,6 +7,7 @@ exports.updateBlogCategory = updateBlogCategory;
 exports.deleteBlogCategory = deleteBlogCategory;
 const firestore_1 = require("firebase-admin/firestore");
 const firebase_1 = require("../../firebase");
+const types_1 = require("./types");
 function stripUndefinedDeep(value) {
     if (value === undefined)
         return value;
@@ -87,7 +88,7 @@ function mapCategory(id, data) {
 }
 async function getBlogCategories() {
     try {
-        const ref = firebase_1.firestore.collection("blogCategories");
+        const ref = firebase_1.firestore.collection(types_1.COLLECTIONS.BLOG_CATEGORIES);
         let q = ref.orderBy("order", "asc");
         const snap = await withTimeout(q.get(), 5000);
         return snap.docs.map((d) => mapCategory(d.id, d.data()));
@@ -99,7 +100,7 @@ async function getBlogCategories() {
 }
 async function getBlogCategoryById(id) {
     try {
-        const snap = await withTimeout(firebase_1.firestore.collection("blogCategories").doc(id).get(), 5000);
+        const snap = await withTimeout(firebase_1.firestore.collection(types_1.COLLECTIONS.BLOG_CATEGORIES).doc(id).get(), 5000);
         if (!snap.exists)
             return null;
         return mapCategory(snap.id, (snap.data() || {}));
@@ -110,7 +111,7 @@ async function getBlogCategoryById(id) {
     }
 }
 async function slugExists(slug, excludeId) {
-    const q = firebase_1.firestore.collection("blogCategories").where("slug", "==", slug).limit(2);
+    const q = firebase_1.firestore.collection(types_1.COLLECTIONS.BLOG_CATEGORIES).where("slug", "==", slug).limit(2);
     const snap = await withTimeout(q.get(), 5000);
     for (const d of snap.docs) {
         if (!excludeId || d.id !== excludeId)
@@ -134,7 +135,7 @@ async function ensureUniqueSlug(slug, excludeId) {
 async function createBlogCategory(category) {
     const now = firestore_1.Timestamp.fromDate(new Date());
     const uniqueSlug = await ensureUniqueSlug(category.slug);
-    const docRef = await withTimeout(firebase_1.firestore.collection("blogCategories").add({
+    const docRef = await withTimeout(firebase_1.firestore.collection(types_1.COLLECTIONS.BLOG_CATEGORIES).add({
         ...stripUndefinedDeep(category),
         slug: uniqueSlug,
         enabled: category.enabled ?? { ko: true, en: true },
@@ -151,9 +152,9 @@ async function updateBlogCategory(id, patch) {
     }
     if (patch.enabled !== undefined)
         updateData.enabled = normalizeEnabled(patch.enabled);
-    await withTimeout(firebase_1.firestore.collection("blogCategories").doc(id).update(updateData), 5000);
+    await withTimeout(firebase_1.firestore.collection(types_1.COLLECTIONS.BLOG_CATEGORIES).doc(id).update(updateData), 5000);
 }
 async function deleteBlogCategory(id) {
-    await withTimeout(firebase_1.firestore.collection("blogCategories").doc(id).delete(), 5000);
+    await withTimeout(firebase_1.firestore.collection(types_1.COLLECTIONS.BLOG_CATEGORIES).doc(id).delete(), 5000);
 }
 //# sourceMappingURL=blogCategoryService.js.map

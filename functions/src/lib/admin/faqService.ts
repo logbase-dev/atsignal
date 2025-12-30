@@ -1,5 +1,6 @@
 import { admin, firestore } from "../../firebase";
 import type { FAQ, LocalizedField } from "./types";
+import { COLLECTIONS } from "./types";
 import { Timestamp } from "firebase-admin/firestore"; // ✅ 추가
 
 // Firestore 타입 별칭
@@ -65,7 +66,7 @@ export async function getFAQs(options?: {
   orderDirection?: "asc" | "desc";
 }): Promise<FAQ[]> {
   try {
-    const faqsRef = firestore.collection("faqs");
+    const faqsRef = firestore.collection(COLLECTIONS.FAQS);
     let q: admin.firestore.Query = faqsRef;
 
     if (options?.categoryId && options.categoryId !== "__no_category__") {
@@ -141,7 +142,7 @@ export interface FAQResult {
 
 export async function getFAQsWithPagination(filters?: FAQFilters): Promise<FAQResult> {
   try {
-    const faqsRef = firestore.collection("faqs");
+    const faqsRef = firestore.collection(COLLECTIONS.FAQS);
     let q: admin.firestore.Query = faqsRef;
 
     if (filters?.categoryId && filters.categoryId !== "__no_category__") {
@@ -218,7 +219,7 @@ export async function getFAQsWithPagination(filters?: FAQFilters): Promise<FAQRe
 // 단건 조회
 export async function getFAQById(id: string): Promise<FAQ | null> {
   try {
-    const faqRef = firestore.collection("faqs").doc(id);
+    const faqRef = firestore.collection(COLLECTIONS.FAQS).doc(id);
     const faqSnap = await withTimeout<DocSnap>(faqRef.get(), 5000);
     if (!faqSnap.exists) return null;
     return mapFAQData(faqSnap);
@@ -272,7 +273,7 @@ function extractFileNameFromUrl(url: string): string | null {
 }
 
 export async function deleteFAQ(id: string): Promise<void> {
-  const faqRef = firestore.collection("faqs").doc(id);
+  const faqRef = firestore.collection(COLLECTIONS.FAQS).doc(id);
   const faqSnap = await withTimeout<DocSnap>(faqRef.get(), 5000);
 
   if (faqSnap.exists) {
@@ -298,7 +299,7 @@ export async function deleteFAQ(id: string): Promise<void> {
 
 // FAQ 순서 변경
 export async function updateFAQOrder(id: string, order: number): Promise<void> {
-  const faqRef = firestore.collection("faqs").doc(id);
+  const faqRef = firestore.collection(COLLECTIONS.FAQS).doc(id);
   await withTimeout(
     faqRef.update({
       order,
@@ -311,7 +312,7 @@ export async function updateFAQOrder(id: string, order: number): Promise<void> {
 // 모든 해시태그 목록 조회
 export async function getAllTags(): Promise<string[]> {
   try {
-    const faqsRef = firestore.collection("faqs");
+    const faqsRef = firestore.collection(COLLECTIONS.FAQS);
     const snap = await withTimeout<QuerySnap>(faqsRef.get(), 5000);
 
     const allTags = new Set<string>();

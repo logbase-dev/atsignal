@@ -9,6 +9,7 @@ exports.deleteFAQ = deleteFAQ;
 exports.updateFAQOrder = updateFAQOrder;
 exports.getAllTags = getAllTags;
 const firebase_1 = require("../../firebase");
+const types_1 = require("./types");
 const firestore_1 = require("firebase-admin/firestore"); // ✅ 추가
 // 타임아웃 헬퍼
 function withTimeout(promise, timeoutMs = 5000) {
@@ -63,7 +64,7 @@ function mapFAQData(doc) {
 // ----- 목록 조회 (하위 호환, 클라이언트 정렬 포함) -----
 async function getFAQs(options) {
     try {
-        const faqsRef = firebase_1.firestore.collection("faqs");
+        const faqsRef = firebase_1.firestore.collection(types_1.COLLECTIONS.FAQS);
         let q = faqsRef;
         if (options?.categoryId && options.categoryId !== "__no_category__") {
             q = q.where("categoryId", "==", options.categoryId);
@@ -121,7 +122,7 @@ async function getFAQs(options) {
 }
 async function getFAQsWithPagination(filters) {
     try {
-        const faqsRef = firebase_1.firestore.collection("faqs");
+        const faqsRef = firebase_1.firestore.collection(types_1.COLLECTIONS.FAQS);
         let q = faqsRef;
         if (filters?.categoryId && filters.categoryId !== "__no_category__") {
             q = q.where("categoryId", "==", filters.categoryId);
@@ -193,7 +194,7 @@ async function getFAQsWithPagination(filters) {
 // 단건 조회
 async function getFAQById(id) {
     try {
-        const faqRef = firebase_1.firestore.collection("faqs").doc(id);
+        const faqRef = firebase_1.firestore.collection(types_1.COLLECTIONS.FAQS).doc(id);
         const faqSnap = await withTimeout(faqRef.get(), 5000);
         if (!faqSnap.exists)
             return null;
@@ -243,7 +244,7 @@ function extractFileNameFromUrl(url) {
     }
 }
 async function deleteFAQ(id) {
-    const faqRef = firebase_1.firestore.collection("faqs").doc(id);
+    const faqRef = firebase_1.firestore.collection(types_1.COLLECTIONS.FAQS).doc(id);
     const faqSnap = await withTimeout(faqRef.get(), 5000);
     if (faqSnap.exists) {
         const faqData = faqSnap.data();
@@ -265,7 +266,7 @@ async function deleteFAQ(id) {
 }
 // FAQ 순서 변경
 async function updateFAQOrder(id, order) {
-    const faqRef = firebase_1.firestore.collection("faqs").doc(id);
+    const faqRef = firebase_1.firestore.collection(types_1.COLLECTIONS.FAQS).doc(id);
     await withTimeout(faqRef.update({
         order,
         updatedAt: firestore_1.Timestamp.fromDate(new Date()),
@@ -274,7 +275,7 @@ async function updateFAQOrder(id, order) {
 // 모든 해시태그 목록 조회
 async function getAllTags() {
     try {
-        const faqsRef = firebase_1.firestore.collection("faqs");
+        const faqsRef = firebase_1.firestore.collection(types_1.COLLECTIONS.FAQS);
         const snap = await withTimeout(faqsRef.get(), 5000);
         const allTags = new Set();
         snap.docs.forEach((docSnap) => {

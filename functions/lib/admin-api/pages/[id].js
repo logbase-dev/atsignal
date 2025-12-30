@@ -5,6 +5,7 @@ exports.handlePut = handlePut;
 exports.handleDelete = handleDelete;
 exports.handle = handle;
 const firebase_1 = require("../../firebase");
+const types_1 = require("../../lib/admin/types");
 const firestore_1 = require("firebase-admin/firestore"); // ✅ 추가
 const requestAuth_1 = require("../_shared/requestAuth");
 const firestoreUtils_1 = require("../_shared/firestoreUtils");
@@ -14,7 +15,7 @@ const storageImageUtils_1 = require("../_shared/storageImageUtils");
 // GET /api/pages/[id]
 async function handleGet(_req, res, id) {
     try {
-        const pageRef = firebase_1.firestore.collection("pages").doc(id);
+        const pageRef = firebase_1.firestore.collection(types_1.COLLECTIONS.PAGES).doc(id);
         const pageSnap = await pageRef.get();
         if (!pageSnap.exists) {
             res.status(404).json({ error: "페이지를 찾을 수 없습니다." });
@@ -32,7 +33,7 @@ async function handleGet(_req, res, id) {
 async function handlePut(req, res, id) {
     try {
         const adminId = (0, requestAuth_1.getRequestAdminId)(req);
-        const pageRef = firebase_1.firestore.collection("pages").doc(id);
+        const pageRef = firebase_1.firestore.collection(types_1.COLLECTIONS.PAGES).doc(id);
         const pageSnap = await pageRef.get();
         if (!pageSnap.exists) {
             res.status(404).json({ error: "페이지를 찾을 수 없습니다." });
@@ -117,7 +118,7 @@ async function handleDelete(req, res, id) {
     try {
         // Router already enforced auth; this is just a sanity check.
         (0, requestAuth_1.getRequestAdminId)(req);
-        const pageRef = firebase_1.firestore.collection("pages").doc(id);
+        const pageRef = firebase_1.firestore.collection(types_1.COLLECTIONS.PAGES).doc(id);
         const pageSnap = await pageRef.get();
         if (!pageSnap.exists) {
             res.status(404).json({ error: "페이지를 찾을 수 없습니다." });

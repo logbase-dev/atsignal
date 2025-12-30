@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handle = handle;
 const firebase_1 = require("../../firebase");
+const types_1 = require("../../lib/admin/types");
 const firestore_1 = require("firebase-admin/firestore"); // ✅ 추가
 const requestAuth_1 = require("../_shared/requestAuth");
 const firestoreUtils_1 = require("../_shared/firestoreUtils");
@@ -17,7 +18,7 @@ async function handleGet(request, response) {
             response.status(400).json({ error: "유효한 site 파라미터가 필요합니다 (web 또는 docs)." });
             return;
         }
-        const q = firebase_1.firestore.collection("menus").where("site", "==", site);
+        const q = firebase_1.firestore.collection(types_1.COLLECTIONS.MENUS).where("site", "==", site);
         const snap = await q.get();
         const menus = snap.docs.map(mappers_1.mapMenuDoc);
         menus.sort((a, b) => (a.order || 0) - (b.order || 0));
@@ -56,7 +57,7 @@ async function handlePost(request, response) {
             createdBy: adminId,
             updatedBy: adminId,
         });
-        const docRef = await firebase_1.firestore.collection("menus").add(menuData);
+        const docRef = await firebase_1.firestore.collection(types_1.COLLECTIONS.MENUS).add(menuData);
         response.json({ success: true, id: docRef.id });
     }
     catch (error) {

@@ -39,6 +39,7 @@ exports.updateMenu = updateMenu;
 exports.deleteMenu = deleteMenu;
 const admin = __importStar(require("firebase-admin"));
 const firebase_1 = require("../../firebase");
+const types_1 = require("./types");
 // 타임아웃 헬퍼 함수
 function withTimeout(promise, timeoutMs = 15000) {
     return Promise.race([
@@ -98,7 +99,7 @@ async function getMenus(site) {
     }
     return withRetry(async () => {
         try {
-            const menusRef = firebase_1.firestore.collection("menus");
+            const menusRef = firebase_1.firestore.collection(types_1.COLLECTIONS.MENUS);
             // orderBy를 제거하고 클라이언트 사이드에서 정렬 (인덱스 불필요)
             const q = menusRef.where("site", "==", site);
             const startTime = isDev ? Date.now() : 0;
@@ -151,7 +152,7 @@ async function updateMenu(id, menu) {
 async function deleteMenu(id) {
     try {
         // 연결된 페이지 확인 및 삭제
-        const pagesRef = firebase_1.firestore.collection("pages");
+        const pagesRef = firebase_1.firestore.collection(types_1.COLLECTIONS.PAGES);
         const pagesQuery = pagesRef.where("menuId", "==", id);
         const pagesSnapshot = await withTimeout(pagesQuery.get(), 3000);
         // 연결된 모든 페이지 삭제
@@ -160,7 +161,7 @@ async function deleteMenu(id) {
         });
         await Promise.all(deletePagePromises);
         // 메뉴 삭제
-        const menuRef = firebase_1.firestore.collection("menus").doc(id);
+        const menuRef = firebase_1.firestore.collection(types_1.COLLECTIONS.MENUS).doc(id);
         await withTimeout(menuRef.delete(), 3000);
     }
     catch (error) {

@@ -9,6 +9,7 @@ exports.deleteNotice = deleteNotice;
 exports.getBannerNotices = getBannerNotices;
 const firestore_1 = require("firebase-admin/firestore");
 const firebase_1 = require("../../firebase");
+const types_1 = require("./types");
 function stripUndefinedDeep(value) {
     if (value === undefined)
         return value;
@@ -104,7 +105,7 @@ async function getNotices(options) {
         const page = options?.page || 1;
         const limit = options?.limit || 20;
         const offset = (page - 1) * limit;
-        const noticesRef = firebase_1.firestore.collection("notices");
+        const noticesRef = firebase_1.firestore.collection(types_1.COLLECTIONS.NOTICES);
         // 필터링
         let query = noticesRef;
         if (options?.published !== undefined) {
@@ -204,7 +205,7 @@ async function getNotices(options) {
 }
 async function getNoticeById(id) {
     try {
-        const docSnap = await withTimeout(firebase_1.firestore.collection("notices").doc(id).get(), 5000);
+        const docSnap = await withTimeout(firebase_1.firestore.collection(types_1.COLLECTIONS.NOTICES).doc(id).get(), 5000);
         if (!docSnap.exists)
             return null;
         return mapNotice(docSnap.id, (docSnap.data() || {}));
@@ -236,7 +237,7 @@ async function createNotice(notice) {
         data.displayEndAt = firestore_1.Timestamp.fromDate(notice.displayEndAt);
     }
     console.log(`[createNotice] 생성 데이터:`, JSON.stringify(data, null, 2));
-    const docRef = await withTimeout(firebase_1.firestore.collection("notices").add(data), 5000);
+    const docRef = await withTimeout(firebase_1.firestore.collection(types_1.COLLECTIONS.NOTICES).add(data), 5000);
     return docRef.id;
 }
 async function updateNotice(id, patch) {
@@ -272,12 +273,12 @@ async function updateNotice(id, patch) {
     console.log(`[updateNotice] 최종 업데이트 데이터:`, JSON.stringify(updateData, null, 2));
     console.log(`[updateNotice] isTop 필드 존재 여부:`, 'isTop' in updateData, `값:`, updateData.isTop);
     console.log(`[updateNotice] Firestore 업데이트 시작 - 문서 ID: ${id}`);
-    await withTimeout(firebase_1.firestore.collection("notices").doc(id).update(updateData), 5000);
+    await withTimeout(firebase_1.firestore.collection(types_1.COLLECTIONS.NOTICES).doc(id).update(updateData), 5000);
     console.log(`[updateNotice] Firestore 업데이트 완료`);
 }
 async function incrementNoticeViews(id) {
     try {
-        const docRef = firebase_1.firestore.collection("notices").doc(id);
+        const docRef = firebase_1.firestore.collection(types_1.COLLECTIONS.NOTICES).doc(id);
         await withTimeout(docRef.update({
             views: firestore_1.FieldValue.increment(1),
         }), 5000);
@@ -288,13 +289,13 @@ async function incrementNoticeViews(id) {
     }
 }
 async function deleteNotice(id) {
-    await withTimeout(firebase_1.firestore.collection("notices").doc(id).delete(), 5000);
+    await withTimeout(firebase_1.firestore.collection(types_1.COLLECTIONS.NOTICES).doc(id).delete(), 5000);
 }
 // 배너 노출용 공지사항 조회
 async function getBannerNotices(locale = "ko") {
     try {
         const now = new Date();
-        const noticesRef = firebase_1.firestore.collection("notices");
+        const noticesRef = firebase_1.firestore.collection(types_1.COLLECTIONS.NOTICES);
         // 배너 노출 조건: showInBanner=true, published=true, enabled[locale]=true
         let query = noticesRef
             .where("showInBanner", "==", true)

@@ -1,15 +1,35 @@
 import { Request, Response } from "express";
 import { firestore } from "../../firebase";
+import { COLLECTIONS } from "../../lib/admin/types";
 import { Timestamp } from "firebase-admin/firestore"; // ✅ 추가
 import { getRequestAdminId } from "../_shared/requestAuth";
 import { normalizeLocalizedField, removeUndefinedFields } from "../_shared/firestoreUtils";
 import { mapFaqCategoryDoc } from "../_shared/mappers";
 
 // GET /api/faq-categories
-async function handleGet(_req: Request, res: Response) {
+async function handleGet(req: Request, res: Response) {
   try {
-    const snap = await firestore.collection("faqCategories").get();
-    const categories = snap.docs.map(mapFaqCategoryDoc).sort((a, b) => (a.order || 0) - (b.order || 0));
+    const enabledKo = req.query.enabledKo === 'true';
+    const enabledEn = req.query.enabledEn === 'true';
+    
+    const snap = await firestore.collection(COLLECTIONS.FAQ_CATEGORIES).get();
+    let categories = snap.docs.map(mapFaqCategoryDoc);
+
+    // enabled 필터링 (클라이언트 측)
+    if (enabledKo || enabledEn) {
+      categories = categories.filter((category) => {
+        if (enabledKo && enabledEn) {
+          return category.enabled.ko && category.enabled.en;
+        } else if (enabledKo) {
+          return category.enabled.ko;
+        } else if (enabledEn) {
+          return category.enabled.en;
+        }
+        return true;
+      });
+    }
+
+    categories.sort((a, b) => (a.order || 0) - (b.order || 0));
     res.json({ categories });
   } catch (error: any) {
     console.error("[GET /api/faq-categories] 에러:", error.message);
@@ -49,7 +69,7 @@ async function handlePost(req: Request, res: Response) {
       updatedBy: adminId,
     });
 
-    const docRef = await firestore.collection("faqCategories").add(data);
+    const docRef = await firestore.collection(COLLECTIONS.FAQ_CATEGORIES).add(data);
     res.json({ success: true, id: docRef.id });
   } catch (error: any) {
     console.error("[POST /api/faq-categories] 에러:", error.message);

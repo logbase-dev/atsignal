@@ -2,6 +2,7 @@ import * as admin from "firebase-admin";
 import { Timestamp } from "firebase-admin/firestore"; // ✅ 추가
 import { firestore } from "../../firebase";
 import type { AdminLoginLog } from "./types";
+import { COLLECTIONS } from "./types";
 
 // 추가: 타임아웃 헬퍼
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 5000): Promise<T> {
@@ -52,7 +53,7 @@ export async function createLoginLog(log: {
   failureReason?: string;
 }): Promise<string> {
   const now = Timestamp.fromDate(new Date()); // ✅ 변경
-  const docRef = await firestore.collection("adminLoginLogs").add({
+  const docRef = await firestore.collection(COLLECTIONS.ADMIN_LOGIN_LOGS).add({
     ...log,
     createdAt: now,
   });
@@ -64,7 +65,7 @@ export async function getLoginLogsByAdminId(
   filters: LoginLogFilters = {}
 ): Promise<{ logs: AdminLoginLog[]; hasMore: boolean }> {
   let q: admin.firestore.Query = firestore
-    .collection("adminLoginLogs")
+    .collection(COLLECTIONS.ADMIN_LOGIN_LOGS)
     .where("adminId", "==", adminId)
     .orderBy("createdAt", "desc");
 
@@ -109,7 +110,7 @@ export async function getLoginLogsByUsername(
 ): Promise<LoginLogResult> {
   try {
     let q: admin.firestore.Query = firestore
-      .collection("adminLoginLogs")
+      .collection(COLLECTIONS.ADMIN_LOGIN_LOGS)
       .where("username", "==", username.toLowerCase())
       .orderBy("createdAt", "desc");
 

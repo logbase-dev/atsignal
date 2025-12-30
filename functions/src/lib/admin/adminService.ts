@@ -1,6 +1,7 @@
 import * as admin from "firebase-admin";
 import { firestore } from "../../firebase";
 import type { Admin } from "./types";
+import { COLLECTIONS } from "./types";
 import { hashPassword } from "../utils/password";
 import { Timestamp } from "firebase-admin/firestore"; // ✅ 추가
 
@@ -78,7 +79,7 @@ export interface UpdateAdminData {
  */
 export async function getAdmins(): Promise<Admin[]> {
   try {
-    const adminsRef = firestore.collection('admins');
+    const adminsRef = firestore.collection(COLLECTIONS.ADMINS);
     const q = adminsRef.orderBy('createdAt', 'desc');
     
     const querySnapshot = await withTimeout(q.get(), 5000);
@@ -95,7 +96,7 @@ export async function getAdmins(): Promise<Admin[]> {
  */
 export async function getAdminById(id: string): Promise<Admin | null> {
   try {
-    const adminDoc = await firestore.collection('admins').doc(id).get();
+    const adminDoc = await firestore.collection(COLLECTIONS.ADMINS).doc(id).get();
     
     if (!adminDoc.exists) {
       return null;
@@ -113,7 +114,7 @@ export async function getAdminById(id: string): Promise<Admin | null> {
  */
 export async function getAdminByUsername(username: string): Promise<Admin | null> {
   try {
-    const adminsRef = firestore.collection('admins');
+    const adminsRef = firestore.collection(COLLECTIONS.ADMINS);
     const q = adminsRef.where('username', '==', username.toLowerCase());
     
     const querySnapshot = await withTimeout(q.get(), 5000);
@@ -162,7 +163,7 @@ export async function createAdmin(data: CreateAdminData): Promise<string> {
       createdBy: data.createdBy,
     });
 
-    const docRef = await firestore.collection('admins').add(adminData);
+    const docRef = await firestore.collection(COLLECTIONS.ADMINS).add(adminData);
     return docRef.id;
   } catch (error: any) {
     console.error('[createAdmin] 에러:', error.message);
@@ -192,7 +193,7 @@ export async function updateAdmin(id: string, data: UpdateAdminData): Promise<vo
       updateData.enabled = data.enabled;
     }
 
-    await firestore.collection('admins').doc(id).update(removeUndefinedFields(updateData));
+    await firestore.collection(COLLECTIONS.ADMINS).doc(id).update(removeUndefinedFields(updateData));
   } catch (error: any) {
     console.error('[updateAdmin] 에러:', error.message);
     throw error;
@@ -204,7 +205,7 @@ export async function updateAdmin(id: string, data: UpdateAdminData): Promise<vo
  */
 export async function updateLastLoginAt(id: string): Promise<void> {
   try {
-    await firestore.collection('admins').doc(id).update({
+    await firestore.collection(COLLECTIONS.ADMINS).doc(id).update({
       lastLoginAt: Timestamp.fromDate(new Date()),
       updatedAt: Timestamp.fromDate(new Date()),
     });
@@ -219,7 +220,7 @@ export async function updateLastLoginAt(id: string): Promise<void> {
  */
 export async function deleteAdmin(id: string): Promise<void> {
   try {
-    await firestore.collection('admins').doc(id).update({
+    await firestore.collection(COLLECTIONS.ADMINS).doc(id).update({
       enabled: false,
       updatedAt: Timestamp.fromDate(new Date()),
     });

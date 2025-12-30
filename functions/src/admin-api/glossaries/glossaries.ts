@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { firestore } from "../../firebase";
 import type { Glossary } from "../../lib/admin/types";
+import { COLLECTIONS } from "../../lib/admin/types";
 import { Timestamp } from "firebase-admin/firestore";
 import { getRequestAdminId } from "../_shared/requestAuth";
 import { removeUndefinedFields } from "../_shared/firestoreUtils";
@@ -16,7 +17,7 @@ async function handleGet(request: Request, response: Response) {
     const page = request.query.page ? Number(request.query.page) : 1;
     const limit = request.query.limit ? Number(request.query.limit) : 20;
 
-    const glossariesRef = firestore.collection("glossaries");
+    const glossariesRef = firestore.collection(COLLECTIONS.GLOSSARIES);
     let q = glossariesRef.where(`enabled.${locale}`, "==", true);
 
     // 카테고리 필터링
@@ -113,7 +114,7 @@ async function handlePost(request: Request, response: Response) {
     const initialLetter = calculateInitialLetter(body.term, locale);
 
     const now = Timestamp.fromDate(new Date());
-    const glossariesRef = firestore.collection("glossaries");
+    const glossariesRef = firestore.collection(COLLECTIONS.GLOSSARIES);
     const docRef = await glossariesRef.add(
       removeUndefinedFields({
         ...body,

@@ -1,6 +1,7 @@
 import type { Request } from "express";
 import { firestore } from "../../firebase";
 import { getAdminById } from "./adminService";
+import { COLLECTIONS } from "./types";
 
 export type AdminAuthMode = "cookie" | "token";
 
@@ -82,7 +83,7 @@ export async function requireAdmin(req: Request): Promise<AuthenticatedAdmin | n
   if (!uid) return null;
 
   const snap = await firestore
-    .collection("admins")
+    .collection(COLLECTIONS.ADMINS)
     .where("authUid", "==", uid)
     .limit(1)
     .get();

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { firestore } from "../../firebase";
 import type { PageDraftPayload, Site } from "../../lib/admin/types";
+import { COLLECTIONS } from "../../lib/admin/types";
 import { Timestamp } from "firebase-admin/firestore"; // ✅ 추가
 import { getRequestAdminId } from "../_shared/requestAuth";
 import { normalizeLocalizedField, removeUndefinedFields, convertTimestamp } from "../_shared/firestoreUtils";
@@ -19,7 +20,7 @@ export async function handle(request: Request, response: Response) {
         return;
       }
 
-      const pagesRef = firestore.collection("pages");
+      const pagesRef = firestore.collection(COLLECTIONS.PAGES);
       const q = pagesRef.where("site", "==", site);
       const snap = await q.get();
       
@@ -76,7 +77,7 @@ export async function handle(request: Request, response: Response) {
       const EMPTY_LOCALIZED = { ko: "", en: "" };
       const now = Timestamp.fromDate(new Date());
 
-      const pagesRef = firestore.collection("pages");
+      const pagesRef = firestore.collection(COLLECTIONS.PAGES);
       const docRef = await pagesRef.add(
         removeUndefinedFields({
           site: body.site,

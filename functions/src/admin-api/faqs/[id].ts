@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { firestore } from "../../firebase";
-import type { FAQ } from "../../lib/admin/types"; 
+import type { FAQ } from "../../lib/admin/types";
+import { COLLECTIONS } from "../../lib/admin/types";
 import { Timestamp } from "firebase-admin/firestore"; // ✅ 추가
 import { getRequestAdminId } from "../_shared/requestAuth";
 import { removeUndefinedFields } from "../_shared/firestoreUtils";
@@ -11,7 +12,7 @@ import { deleteImagesForFileName } from "../_shared/storageImageUtils";
 // GET /api/faqs/[id]
 async function handleGet(request: Request, response: Response, id: string) {
   try {
-    const faqRef = firestore.collection("faqs").doc(id);
+    const faqRef = firestore.collection(COLLECTIONS.FAQS).doc(id);
     const faqSnap = await faqRef.get();
 
     if (!faqSnap.exists) {
@@ -32,7 +33,7 @@ async function handlePut(request: Request, response: Response, id: string) {
   try {
     const adminId = getRequestAdminId(request);
 
-    const faqRef = firestore.collection("faqs").doc(id);
+    const faqRef = firestore.collection(COLLECTIONS.FAQS).doc(id);
     const faqSnap = await faqRef.get();
 
     if (!faqSnap.exists) {
@@ -88,7 +89,7 @@ async function handleDelete(request: Request, response: Response, id: string) {
   try {
     getRequestAdminId(request);
 
-    const faqRef = firestore.collection("faqs").doc(id);
+    const faqRef = firestore.collection(COLLECTIONS.FAQS).doc(id);
     const faqSnap = await faqRef.get();
 
     if (!faqSnap.exists) {

@@ -2,6 +2,7 @@ import { Timestamp } from "firebase-admin/firestore";
 import type * as FirebaseFirestore from "firebase-admin/firestore";
 import { firestore } from "../../firebase";
 import type { EventParticipant } from "./types";
+import { COLLECTIONS } from "./types";
 
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 5000): Promise<T> {
   return Promise.race([
@@ -48,7 +49,7 @@ export async function getEventParticipants(options?: {
     const limit = options?.limit || 20;
     const offset = (page - 1) * limit;
 
-    const participantsRef = firestore.collection("eventParticipants");
+    const participantsRef = firestore.collection(COLLECTIONS.EVENT_PARTICIPANTS);
 
     // eventId로 필터링
     let query: FirebaseFirestore.Query = participantsRef.where("eventId", "==", options.eventId);
@@ -129,7 +130,7 @@ export async function getEventParticipants(options?: {
 export async function getEventParticipantById(id: string): Promise<EventParticipant | null> {
   try {
     const docSnap = await withTimeout<FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData>>(
-      firestore.collection("eventParticipants").doc(id).get(), 
+      firestore.collection(COLLECTIONS.EVENT_PARTICIPANTS).doc(id).get(), 
       5000
     );
     if (!docSnap.exists) return null;
@@ -143,7 +144,7 @@ export async function getEventParticipantById(id: string): Promise<EventParticip
 // 이벤트별 이메일 중복 체크
 export async function checkEmailExists(eventId: string, email: string): Promise<boolean> {
   try {
-    const participantsRef = firestore.collection("eventParticipants");
+    const participantsRef = firestore.collection(COLLECTIONS.EVENT_PARTICIPANTS);
     const query = participantsRef
       .where("eventId", "==", eventId)
       .where("email", "==", email)
@@ -179,20 +180,20 @@ export async function createEventParticipant(participant: Omit<EventParticipant,
   console.log(`[createEventParticipant] 생성 데이터:`, JSON.stringify(data, null, 2));
   
   const docRef = await withTimeout<FirebaseFirestore.DocumentReference<FirebaseFirestore.DocumentData>>(
-    firestore.collection("eventParticipants").add(data), 
+    firestore.collection(COLLECTIONS.EVENT_PARTICIPANTS).add(data), 
     5000
   );
   return docRef.id;
 }
 
 export async function deleteEventParticipant(id: string): Promise<void> {
-  await withTimeout(firestore.collection("eventParticipants").doc(id).delete(), 5000);
+  await withTimeout(firestore.collection(COLLECTIONS.EVENT_PARTICIPANTS).doc(id).delete(), 5000);
 }
 
 // 이벤트 삭제 시 연관된 참가자 정보도 삭제 (cascade delete)
 export async function deleteEventParticipantsByEventId(eventId: string): Promise<void> {
   try {
-    const participantsRef = firestore.collection("eventParticipants");
+    const participantsRef = firestore.collection(COLLECTIONS.EVENT_PARTICIPANTS);
     const query = participantsRef.where("eventId", "==", eventId);
     
     const snap = await withTimeout(query.get(), 10000);

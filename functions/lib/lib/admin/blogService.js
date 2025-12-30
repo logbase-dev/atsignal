@@ -8,6 +8,7 @@ exports.incrementBlogPostViews = incrementBlogPostViews;
 exports.deleteBlogPost = deleteBlogPost;
 const firestore_1 = require("firebase-admin/firestore");
 const firebase_1 = require("../../firebase");
+const types_1 = require("./types");
 function stripUndefinedDeep(value) {
     if (value === undefined)
         return value;
@@ -77,7 +78,7 @@ function normalizeEnabled(value) {
     return { ko: true, en: true };
 }
 async function slugExists(slug, excludeId) {
-    const q = firebase_1.firestore.collection("blog").where("slug", "==", slug).limit(2);
+    const q = firebase_1.firestore.collection(types_1.COLLECTIONS.BLOGS).where("slug", "==", slug).limit(2);
     const snap = await withTimeout(q.get(), 5000);
     for (const d of snap.docs) {
         if (!excludeId || d.id !== excludeId)
@@ -135,7 +136,7 @@ async function getBlogPosts(options) {
         const page = options?.page || 1;
         const limit = options?.limit || 20;
         const offset = (page - 1) * limit;
-        let postsRef = firebase_1.firestore.collection("blog");
+        let postsRef = firebase_1.firestore.collection(types_1.COLLECTIONS.BLOGS);
         // 카테고리 필터
         if (options?.categoryId && options.categoryId.trim()) {
             postsRef = postsRef.where("categoryId", "==", options.categoryId.trim());
@@ -211,7 +212,7 @@ async function getBlogPosts(options) {
 }
 async function getBlogPostById(id) {
     try {
-        const docSnap = await withTimeout(firebase_1.firestore.collection("blog").doc(id).get(), 5000);
+        const docSnap = await withTimeout(firebase_1.firestore.collection(types_1.COLLECTIONS.BLOGS).doc(id).get(), 5000);
         if (!docSnap.exists)
             return null;
         return mapPost(docSnap.id, (docSnap.data() || {}));
@@ -240,7 +241,7 @@ async function createBlogPost(post) {
         hasAuthorName: 'authorName' in data,
         hasAuthorImage: 'authorImage' in data,
     });
-    const docRef = await withTimeout(firebase_1.firestore.collection("blog").add(data), 5000);
+    const docRef = await withTimeout(firebase_1.firestore.collection(types_1.COLLECTIONS.BLOGS).add(data), 5000);
     return docRef.id;
 }
 async function updateBlogPost(id, patch) {
@@ -261,11 +262,11 @@ async function updateBlogPost(id, patch) {
         hasAuthorName: 'authorName' in updateData,
         hasAuthorImage: 'authorImage' in updateData,
     });
-    await withTimeout(firebase_1.firestore.collection("blog").doc(id).update(updateData), 5000);
+    await withTimeout(firebase_1.firestore.collection(types_1.COLLECTIONS.BLOGS).doc(id).update(updateData), 5000);
 }
 async function incrementBlogPostViews(id) {
     try {
-        const docRef = firebase_1.firestore.collection("blog").doc(id);
+        const docRef = firebase_1.firestore.collection(types_1.COLLECTIONS.BLOGS).doc(id);
         await withTimeout(docRef.update({
             views: firestore_1.FieldValue.increment(1),
         }), 5000);
@@ -276,6 +277,6 @@ async function incrementBlogPostViews(id) {
     }
 }
 async function deleteBlogPost(id) {
-    await withTimeout(firebase_1.firestore.collection("blog").doc(id).delete(), 5000);
+    await withTimeout(firebase_1.firestore.collection(types_1.COLLECTIONS.BLOGS).doc(id).delete(), 5000);
 }
 //# sourceMappingURL=blogService.js.map

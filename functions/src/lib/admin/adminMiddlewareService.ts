@@ -1,4 +1,5 @@
 import { firestore } from "../../firebase";
+import { COLLECTIONS } from "./types";
 
 /**
  * Middleware 전용: 관리자 ID로 관리자 존재 여부 및 활성화 상태만 확인
@@ -6,7 +7,7 @@ import { firestore } from "../../firebase";
  */
 export async function checkAdminExistsAndEnabled(adminId: string): Promise<boolean> {
   try {
-    const adminDoc = await firestore.collection("admins").doc(adminId).get();
+    const adminDoc = await firestore.collection(COLLECTIONS.ADMINS).doc(adminId).get();
 
     if (!adminDoc.exists) {
       return false;

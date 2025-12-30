@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { firestore } from "../../firebase";
 import type { Glossary } from "../../lib/admin/types";
+import { COLLECTIONS } from "../../lib/admin/types";
 import { Timestamp } from "firebase-admin/firestore";
 import { getRequestAdminId } from "../_shared/requestAuth";
 import { removeUndefinedFields } from "../_shared/firestoreUtils";
@@ -10,7 +11,7 @@ import { calculateInitialLetter } from "../../lib/admin/glossaryService";
 // GET /api/admin/glossaries/[id]
 async function handleGet(request: Request, response: Response, id: string) {
   try {
-    const glossaryRef = firestore.collection("glossaries").doc(id);
+    const glossaryRef = firestore.collection(COLLECTIONS.GLOSSARIES).doc(id);
     const glossarySnap = await glossaryRef.get();
 
     if (!glossarySnap.exists) {
@@ -31,7 +32,7 @@ async function handlePut(request: Request, response: Response, id: string) {
   try {
     const adminId = getRequestAdminId(request);
 
-    const glossaryRef = firestore.collection("glossaries").doc(id);
+    const glossaryRef = firestore.collection(COLLECTIONS.GLOSSARIES).doc(id);
     const glossarySnap = await glossaryRef.get();
 
     if (!glossarySnap.exists) {
@@ -69,7 +70,7 @@ async function handleDelete(request: Request, response: Response, id: string) {
   try {
     getRequestAdminId(request);
 
-    const glossaryRef = firestore.collection("glossaries").doc(id);
+    const glossaryRef = firestore.collection(COLLECTIONS.GLOSSARIES).doc(id);
     const glossarySnap = await glossaryRef.get();
 
     if (!glossarySnap.exists) {

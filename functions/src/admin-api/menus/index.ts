@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { firestore } from "../../firebase";
 import type { Menu, Site } from "../../lib/admin/types";
+import { COLLECTIONS } from "../../lib/admin/types";
 import { Timestamp } from "firebase-admin/firestore"; // ✅ 추가
 import { getRequestAdminId } from "../_shared/requestAuth";
 import { removeUndefinedFields } from "../_shared/firestoreUtils";
@@ -20,7 +21,7 @@ async function handleGet(request: Request, response: Response) {
       return;
     }
 
-    const q = firestore.collection("menus").where("site", "==", site);
+    const q = firestore.collection(COLLECTIONS.MENUS).where("site", "==", site);
     const snap = await q.get();
 
     const menus = snap.docs.map(mapMenuDoc);
@@ -67,7 +68,7 @@ async function handlePost(request: Request, response: Response) {
       updatedBy: adminId,
     });
 
-    const docRef = await firestore.collection("menus").add(menuData);
+    const docRef = await firestore.collection(COLLECTIONS.MENUS).add(menuData);
 
     response.json({ success: true, id: docRef.id });
   } catch (error: any) {
