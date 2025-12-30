@@ -7,10 +7,29 @@ import { normalizeLocalizedField, removeUndefinedFields } from "../_shared/fires
 import { mapGlossaryCategoryDoc } from "../_shared/mappers";
 
 // GET /api/admin/glossary-categories
-async function handleGet(_req: Request, res: Response) {
+async function handleGet(req: Request, res: Response) {
   try {
+    const enabledKo = req.query.enabledKo === 'true';
+    const enabledEn = req.query.enabledEn === 'true';
+    
     const snap = await firestore.collection(COLLECTIONS.GLOSSARY_CATEGORIES).get();
-    const categories = snap.docs.map(mapGlossaryCategoryDoc).sort((a, b) => (a.order || 0) - (b.order || 0));
+    let categories = snap.docs.map(mapGlossaryCategoryDoc);
+    
+    // enabled 필터링 (공개 API용)
+    if (enabledKo || enabledEn) {
+      categories = categories.filter(category => {
+        if (enabledKo && enabledEn) {
+          return category.enabled.ko && category.enabled.en;
+        } else if (enabledKo) {
+          return category.enabled.ko;
+        } else if (enabledEn) {
+          return category.enabled.en;
+        }
+        return true;
+      });
+    }
+    
+    categories.sort((a, b) => (a.order || 0) - (b.order || 0));
     res.json({ categories });
   } catch (error: any) {
     console.error("[GET /api/admin/glossary-categories] 에러:", error.message);

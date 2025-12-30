@@ -13,12 +13,26 @@ async function handleGet(request: Request, response: Response) {
   try {
     const categoryId = request.query.categoryId as string | undefined;
     const search = request.query.search as string | undefined;
+    const initialLetter = request.query.initialLetter as string | undefined;
     const locale = (request.query.locale as "ko" | "en") || "ko";
     const page = request.query.page ? Number(request.query.page) : 1;
     const limit = request.query.limit ? Number(request.query.limit) : 20;
+    const enabledKo = request.query.enabledKo === 'true';
+    const enabledEn = request.query.enabledEn === 'true';
 
-    const glossariesRef = firestore.collection(COLLECTIONS.GLOSSARIES);
-    let q = glossariesRef.where(`enabled.${locale}`, "==", true);
+    let q: FirebaseFirestore.Query = firestore.collection(COLLECTIONS.GLOSSARIES);
+
+    // enabled 필터링 (공개 API용)
+    if (enabledKo || enabledEn) {
+      if (enabledKo && enabledEn) {
+        // 둘 다 활성화된 것만
+        q = q.where("enabled.ko", "==", true).where("enabled.en", "==", true);
+      } else if (enabledKo) {
+        q = q.where("enabled.ko", "==", true);
+      } else if (enabledEn) {
+        q = q.where("enabled.en", "==", true);
+      }
+    }
 
     // 카테고리 필터링
     if (categoryId && categoryId !== "__no_category__") {
@@ -51,6 +65,17 @@ async function handleGet(request: Request, response: Response) {
           descKo.includes(searchLower) ||
           descEn.includes(searchLower)
         );
+      });
+    }
+
+    // 첫 글자 필터링 (클라이언트 측)
+    if (initialLetter) {
+      glossaries = glossaries.filter((g) => {
+        const termKo = g.term.ko || '';
+        const termEn = g.term.en || '';
+        const firstCharKo = termKo.charAt(0).toUpperCase();
+        const firstCharEn = termEn.charAt(0).toUpperCase();
+        return firstCharKo === initialLetter || firstCharEn === initialLetter;
       });
     }
 

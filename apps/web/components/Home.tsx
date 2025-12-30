@@ -32,11 +32,11 @@ export default function Home({ locale }: HomeProps) {
 
   // 기존 하드코딩된 rollingAnnouncements는 fallback으로 사용
   const rollingAnnouncements = [
-    '[1.공지] atsignal 베타 서비스 오픈 안내',
-    '[2.이벤트] atsignal 무료 데모 체험 이벤트',
-    '[3.이벤트] 로그 진단 무료 컨설팅 이벤트 (선착순 10개 기업)',
-    '[4.공지] atsignal admin / CMS 업데이트 안내',
-    '[5.이벤트] atsignal 뉴스레터 구독 이벤트',
+    '',
+    '',
+    '',
+    '',
+    '',
   ];
 
   // bannerItems가 있으면 사용, 없으면 fallback 사용

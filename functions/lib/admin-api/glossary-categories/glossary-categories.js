@@ -8,10 +8,28 @@ const requestAuth_1 = require("../_shared/requestAuth");
 const firestoreUtils_1 = require("../_shared/firestoreUtils");
 const mappers_1 = require("../_shared/mappers");
 // GET /api/admin/glossary-categories
-async function handleGet(_req, res) {
+async function handleGet(req, res) {
     try {
+        const enabledKo = req.query.enabledKo === 'true';
+        const enabledEn = req.query.enabledEn === 'true';
         const snap = await firebase_1.firestore.collection(types_1.COLLECTIONS.GLOSSARY_CATEGORIES).get();
-        const categories = snap.docs.map(mappers_1.mapGlossaryCategoryDoc).sort((a, b) => (a.order || 0) - (b.order || 0));
+        let categories = snap.docs.map(mappers_1.mapGlossaryCategoryDoc);
+        // enabled 필터링 (공개 API용)
+        if (enabledKo || enabledEn) {
+            categories = categories.filter(category => {
+                if (enabledKo && enabledEn) {
+                    return category.enabled.ko && category.enabled.en;
+                }
+                else if (enabledKo) {
+                    return category.enabled.ko;
+                }
+                else if (enabledEn) {
+                    return category.enabled.en;
+                }
+                return true;
+            });
+        }
+        categories.sort((a, b) => (a.order || 0) - (b.order || 0));
         res.json({ categories });
     }
     catch (error) {

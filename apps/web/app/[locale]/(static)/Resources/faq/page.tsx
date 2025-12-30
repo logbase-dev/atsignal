@@ -3,10 +3,10 @@
 import { useEffect, useState, useCallback } from 'react';
 import { FAQCardCarousel } from '@/components/Resources/faq/FAQCardCarousel';
 import { FAQAccordion } from '@/components/Resources/faq/FAQAccordion';
+import { FAQCardView } from '@/components/Resources/faq/FAQCardView';
 import { FAQSearchBar } from '@/components/Resources/faq/FAQSearchBar';
 import { getPublicFAQs, getPublicFAQCategories } from '@/lib/faq/faqService';
 import type { FAQ, FAQCategory } from '@/lib/admin/types';
-import { getLocaleFromPath } from '@/lib/i18n/getLocale';
 
 interface PageProps {
   params: Promise<{
@@ -18,17 +18,25 @@ interface PageProps {
 
 export default function FAQPage({ params }: PageProps) {
   const [locale, setLocale] = useState<string>('ko');
+  
+  // 상단 고정 FAQ (캐러셀용)
+  const [topFaqs, setTopFaqs] = useState<FAQ[]>([]);
+  const [topFaqsLoading, setTopFaqsLoading] = useState(true);
+  
+  // 일반 FAQ (하단 리스트용)
   const [faqs, setFaqs] = useState<FAQ[]>([]);
   const [categories, setCategories] = useState<FAQCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // 페이지네이션 및 필터
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('all');
-  const [viewMode, setViewMode] = useState<'card' | 'accordion'>('card');
-  const itemsPerPage = 10;
+  const [viewMode, setViewMode] = useState<'card' | 'accordion'>('accordion');
+  const itemsPerPage = 12;
 
   useEffect(() => {
     // params가 Promise인지 확인
@@ -39,13 +47,51 @@ export default function FAQPage({ params }: PageProps) {
         })
         .catch((err) => {
           console.error('Failed to get locale from params:', err);
-          // 기본값 유지
         });
     } else if (params && typeof params === 'object' && 'locale' in params) {
-      // params가 이미 객체인 경우
       setLocale((params as { locale: string }).locale);
     }
   }, [params]);
+
+  // 상단 고정 FAQ 로드 (isTop: true이면서 level이 낮은 순으로 4개)
+  const loadTopFAQs = useCallback(async () => {
+    setTopFaqsLoading(true);
+    console.log('[loadTopFAQs] 시작, locale:', locale);
+    try {
+      const enabled = {
+        ko: locale === 'ko',
+        en: locale === 'en',
+      };
+
+      console.log('[loadTopFAQs] API 호출 시작, enabled:', enabled);
+      const result = await getPublicFAQs({
+        orderBy: 'isTop',
+        orderDirection: 'desc', // isTop: true가 먼저 오도록
+        page: 1,
+        limit: 4, // 정확히 4개만 가져오기
+        enabled,
+      });
+
+      console.log('[loadTopFAQs] API 호출 성공!');
+      console.log('All FAQs loaded:', result.faqs.length);
+      console.log('FAQs with isTop:', result.faqs.filter(faq => faq.isTop === true).length);
+
+      // API에서 이미 isTop DESC, level ASC 순으로 정렬되어 옴
+      // 상위 4개만 선택 (이미 limit: 4로 설정했지만 안전장치)
+      const topFaqsFiltered = result.faqs.slice(0, 4);
+      
+      console.log('Final top FAQs:', topFaqsFiltered.length);
+      console.log('Top FAQs data:', topFaqsFiltered);
+      setTopFaqs(topFaqsFiltered);
+    } catch (err: any) {
+      console.error('[loadTopFAQs] API 호출 실패:', err);
+      console.error('Error details:', err.message, err.stack);
+      setTopFaqs([]);
+    } finally {
+      setTopFaqsLoading(false);
+      console.log('[loadTopFAQs] 완료');
+    }
+  }, [locale]);
 
   const loadCategories = useCallback(async () => {
     try {
@@ -80,8 +126,10 @@ export default function FAQPage({ params }: PageProps) {
       setTotalPages(result.totalPages);
     } catch (err: any) {
       console.error('Failed to load FAQs:', err);
-      setError(err.message || 'FAQ를 불러오는데 실패했습니다.');
       setFaqs([]);
+      setTotal(0);
+      setTotalPages(1);
+      setError(err.message || 'FAQ를 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
     }
@@ -90,6 +138,10 @@ export default function FAQPage({ params }: PageProps) {
   useEffect(() => {
     void loadCategories();
   }, [loadCategories]);
+
+  useEffect(() => {
+    void loadTopFAQs();
+  }, [loadTopFAQs]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -107,11 +159,16 @@ export default function FAQPage({ params }: PageProps) {
     setSelectedCategoryId(categoryId);
   };
 
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
   return (
     <div style={{ 
       minHeight: '100vh', 
       backgroundColor: '#f9f9f9',
       padding: '2rem 1rem',
+      paddingTop: '6rem',
     }}>
       <div style={{ 
         maxWidth: '1200px', 
@@ -119,83 +176,52 @@ export default function FAQPage({ params }: PageProps) {
       }}>
         {/* 헤더 */}
         <div style={{ 
-          marginBottom: '2rem',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '1rem',
+          marginBottom: '3rem',
+          textAlign: 'center',
         }}>
-          <h1 style={{ 
-            fontSize: '2.5rem', 
+          {/* <h1 style={{ 
+            fontSize: '3rem', 
             fontWeight: '700', 
             color: '#1a1a1a',
-            margin: 0,
+            margin: '0 0 1rem 0',
           }}>
             FAQ
-          </h1>
-          <FAQSearchBar 
-            onSearch={handleSearch}
-            placeholder={locale === 'en' ? 'Search FAQs...' : 'FAQ 검색...'}
-          />
+          </h1> */}
+          <p style={{
+            fontSize: '1.125rem',
+            color: '#666',
+            margin: '0 0 2rem 0',
+          }}>
+            {locale === 'en' 
+              ? 'Find answers to frequently asked questions' 
+              : '자주 묻는 질문에 대한 답변을 찾아보세요'
+            }
+          </p>
+          <div style={{ 
+            display: 'flex',
+            justifyContent: 'center',
+            marginBottom: '2rem',
+          }}>
+            <FAQSearchBar 
+              onSearch={handleSearch}
+              placeholder={locale === 'en' ? 'Search FAQs...' : 'FAQ 검색...'}
+            />
+          </div>
         </div>
 
-        {/* 카테고리 탭 */}
-        {categories.length > 0 && (
-          <div style={{ 
-            marginBottom: '2rem',
-            display: 'flex',
-            gap: '0.5rem',
-            flexWrap: 'wrap',
-            borderBottom: '2px solid #e5e5e5',
-            paddingBottom: '1rem',
-          }}>
-            <button
-              type="button"
-              onClick={() => handleCategoryChange('all')}
-              style={{
-                padding: '0.75rem 1.5rem',
-                backgroundColor: selectedCategoryId === 'all' ? '#0070f3' : 'transparent',
-                color: selectedCategoryId === 'all' ? 'white' : '#666',
-                border: '1px solid',
-                borderColor: selectedCategoryId === 'all' ? '#0070f3' : '#ddd',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '1rem',
-                fontWeight: selectedCategoryId === 'all' ? '600' : '400',
-                transition: 'all 0.2s ease',
-              }}
-            >
-              {locale === 'en' ? 'All' : '전체'}
-            </button>
-            {categories.map((category) => {
-              if (!category.id) return null;
-              
-              const categoryName = locale === 'en' && category.name.en 
-                ? category.name.en 
-                : category.name.ko;
-              return (
-                <button
-                  key={category.id}
-                  type="button"
-                  onClick={() => handleCategoryChange(category.id!)}
-                  style={{
-                    padding: '0.75rem 1.5rem',
-                    backgroundColor: selectedCategoryId === category.id ? '#0070f3' : 'transparent',
-                    color: selectedCategoryId === category.id ? 'white' : '#666',
-                    border: '1px solid',
-                    borderColor: selectedCategoryId === category.id ? '#0070f3' : '#ddd',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontSize: '1rem',
-                    fontWeight: selectedCategoryId === category.id ? '600' : '400',
-                    transition: 'all 0.2s ease',
-                  }}
-                >
-                  {categoryName}
-                </button>
-              );
-            })}
+        {/* 상단 고정 FAQ 캐러셀 */}
+        {!topFaqsLoading && topFaqs.length > 0 && (
+          <div style={{ marginBottom: '4rem' }}>
+            {/* <h2 style={{
+              fontSize: '1.5rem',
+              fontWeight: '600',
+              color: '#1a1a1a',
+              marginBottom: '2rem',
+              textAlign: 'center',
+            }}>
+              {locale === 'en' ? 'Featured FAQs' : '주요 FAQ'}
+            </h2> */}
+            <FAQCardCarousel faqs={topFaqs} locale={locale} />
           </div>
         )}
 
@@ -203,45 +229,69 @@ export default function FAQPage({ params }: PageProps) {
         <div style={{ 
           marginBottom: '2rem',
           display: 'flex',
-          justifyContent: 'flex-end',
-          gap: '0.5rem',
+          justifyContent: 'space-between',
+          alignItems: 'center',
         }}>
-          <button
-            type="button"
-            onClick={() => setViewMode('card')}
-            style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: viewMode === 'card' ? '#0070f3' : '#f5f5f5',
-              color: viewMode === 'card' ? 'white' : '#666',
-              border: '1px solid',
-              borderColor: viewMode === 'card' ? '#0070f3' : '#ddd',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '0.875rem',
-              fontWeight: viewMode === 'card' ? '600' : '400',
-              transition: 'all 0.2s ease',
-            }}
-          >
-            {locale === 'en' ? 'Card View' : '카드뷰'}
-          </button>
-          <button
-            type="button"
-            onClick={() => setViewMode('accordion')}
-            style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: viewMode === 'accordion' ? '#0070f3' : '#f5f5f5',
-              color: viewMode === 'accordion' ? 'white' : '#666',
-              border: '1px solid',
-              borderColor: viewMode === 'accordion' ? '#0070f3' : '#ddd',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '0.875rem',
-              fontWeight: viewMode === 'accordion' ? '600' : '400',
-              transition: 'all 0.2s ease',
-            }}
-          >
-            {locale === 'en' ? 'Accordion View' : '아코디언뷰'}
-          </button>
+          <h3 style={{
+            fontSize: '1.25rem',
+            fontWeight: '600',
+            color: '#1a1a1a',
+            margin: 0,
+          }}>
+            {locale === 'en' ? 'All FAQs' : '전체 FAQ'}
+            {!loading && !error && (
+              <span style={{
+                fontSize: '0.875rem',
+                fontWeight: '400',
+                color: '#666',
+                marginLeft: '0.5rem',
+              }}>
+                ({locale === 'en' 
+                  ? `${total} items, Page ${currentPage}/${totalPages}`
+                  : `총 ${total}개, ${currentPage}/${totalPages} 페이지`
+                })
+              </span>
+            )}
+          </h3>
+          
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button
+              type="button"
+              onClick={() => setViewMode('accordion')}
+              style={{
+                padding: '0.5rem 1rem',
+                backgroundColor: viewMode === 'accordion' ? '#0070f3' : '#f5f5f5',
+                color: viewMode === 'accordion' ? 'white' : '#666',
+                border: '1px solid',
+                borderColor: viewMode === 'accordion' ? '#0070f3' : '#ddd',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '0.875rem',
+                fontWeight: viewMode === 'accordion' ? '600' : '400',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              {locale === 'en' ? 'List View' : '리스트뷰'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('card')}
+              style={{
+                padding: '0.5rem 1rem',
+                backgroundColor: viewMode === 'card' ? '#0070f3' : '#f5f5f5',
+                color: viewMode === 'card' ? 'white' : '#666',
+                border: '1px solid',
+                borderColor: viewMode === 'card' ? '#0070f3' : '#ddd',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '0.875rem',
+                fontWeight: viewMode === 'card' ? '600' : '400',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              {locale === 'en' ? 'Card View' : '카드뷰'}
+            </button>
+          </div>
         </div>
 
         {/* 로딩 상태 */}
@@ -269,17 +319,14 @@ export default function FAQPage({ params }: PageProps) {
           </div>
         )}
 
-        {/* 카드뷰 */}
-        {!loading && !error && viewMode === 'card' && (
+        {/* FAQ 리스트 */}
+        {!loading && !error && (
           <div style={{ marginBottom: '3rem' }}>
-            <FAQCardCarousel faqs={faqs} locale={locale} />
-          </div>
-        )}
-
-        {/* 아코디언뷰 */}
-        {!loading && !error && viewMode === 'accordion' && (
-          <div style={{ marginBottom: '3rem' }}>
-            <FAQAccordion faqs={faqs} locale={locale} />
+            {viewMode === 'accordion' ? (
+              <FAQAccordion faqs={faqs} locale={locale} />
+            ) : (
+              <FAQCardView faqs={faqs} locale={locale} />
+            )}
           </div>
         )}
 
@@ -298,88 +345,143 @@ export default function FAQPage({ params }: PageProps) {
         )}
 
         {/* 페이지네이션 */}
-        {!loading && !error && faqs.length > 0 && totalPages > 1 && (
+        {!loading && !error && (
           <div style={{ 
             display: 'flex', 
             justifyContent: 'center', 
             alignItems: 'center', 
             gap: '0.5rem', 
-            marginTop: '2rem' 
+            marginTop: '3rem' 
           }}>
             <button
               type="button"
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1 || totalPages <= 1}
               style={{
-                padding: '0.5rem 1rem',
+                padding: '0.75rem 1rem',
                 backgroundColor: currentPage === 1 || totalPages <= 1 ? '#e5e7eb' : '#0070f3',
                 color: currentPage === 1 || totalPages <= 1 ? '#999' : 'white',
                 border: 'none',
-                borderRadius: '0.25rem',
+                borderRadius: '8px',
                 cursor: currentPage === 1 || totalPages <= 1 ? 'not-allowed' : 'pointer',
                 fontSize: '0.875rem',
                 fontWeight: '500',
+                minWidth: '80px',
               }}
             >
               {locale === 'en' ? 'Previous' : '이전'}
             </button>
 
             <div style={{ display: 'flex', gap: '0.25rem' }}>
-              {Array.from({ length: Math.max(1, totalPages) }, (_, i) => i + 1).map((page) => (
-                <button
-                  key={page}
-                  type="button"
-                  onClick={() => setCurrentPage(page)}
-                  disabled={totalPages <= 1}
-                  style={{
-                    padding: '0.5rem 0.75rem',
-                    backgroundColor: page === currentPage ? '#0070f3' : totalPages <= 1 ? '#e5e7eb' : '#fff',
-                    color: page === currentPage ? 'white' : totalPages <= 1 ? '#999' : '#333',
-                    border: '1px solid #ddd',
-                    borderRadius: '0.25rem',
-                    cursor: totalPages <= 1 ? 'not-allowed' : 'pointer',
-                    minWidth: '2.5rem',
-                    fontSize: '0.875rem',
-                    fontWeight: page === currentPage ? '600' : '400',
-                  }}
-                >
-                  {page}
-                </button>
-              ))}
+              {/* 첫 페이지 */}
+              {currentPage > 3 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => handlePageChange(1)}
+                    style={{
+                      padding: '0.75rem 1rem',
+                      backgroundColor: '#fff',
+                      color: '#333',
+                      border: '1px solid #ddd',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      minWidth: '45px',
+                      fontSize: '0.875rem',
+                    }}
+                  >
+                    1
+                  </button>
+                  {currentPage > 4 && (
+                    <span style={{ 
+                      padding: '0.75rem 0.5rem', 
+                      color: '#666',
+                      fontSize: '0.875rem',
+                    }}>
+                      ...
+                    </span>
+                  )}
+                </>
+              )}
+
+              {/* 현재 페이지 주변 */}
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(page => 
+                  page >= Math.max(1, currentPage - 2) && 
+                  page <= Math.min(totalPages, currentPage + 2)
+                )
+                .map((page) => (
+                  <button
+                    key={page}
+                    type="button"
+                    onClick={() => handlePageChange(page)}
+                    style={{
+                      padding: '0.75rem 1rem',
+                      backgroundColor: page === currentPage ? '#0070f3' : '#fff',
+                      color: page === currentPage ? 'white' : '#333',
+                      border: '1px solid',
+                      borderColor: page === currentPage ? '#0070f3' : '#ddd',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      minWidth: '45px',
+                      fontSize: '0.875rem',
+                      fontWeight: page === currentPage ? '600' : '400',
+                    }}
+                  >
+                    {page}
+                  </button>
+                ))}
+
+              {/* 마지막 페이지 */}
+              {currentPage < totalPages - 2 && (
+                <>
+                  {currentPage < totalPages - 3 && (
+                    <span style={{ 
+                      padding: '0.75rem 0.5rem', 
+                      color: '#666',
+                      fontSize: '0.875rem',
+                    }}>
+                      ...
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => handlePageChange(totalPages)}
+                    style={{
+                      padding: '0.75rem 1rem',
+                      backgroundColor: '#fff',
+                      color: '#333',
+                      border: '1px solid #ddd',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      minWidth: '45px',
+                      fontSize: '0.875rem',
+                    }}
+                  >
+                    {totalPages}
+                  </button>
+                </>
+              )}
             </div>
 
             <button
               type="button"
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages || totalPages <= 1}
+              onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage >= totalPages || totalPages <= 1}
               style={{
-                padding: '0.5rem 1rem',
-                backgroundColor: currentPage === totalPages || totalPages <= 1 ? '#e5e7eb' : '#0070f3',
-                color: currentPage === totalPages || totalPages <= 1 ? '#999' : 'white',
+                padding: '0.75rem 1rem',
+                backgroundColor: currentPage >= totalPages || totalPages <= 1 ? '#e5e7eb' : '#0070f3',
+                color: currentPage >= totalPages || totalPages <= 1 ? '#999' : 'white',
                 border: 'none',
-                borderRadius: '0.25rem',
-                cursor: currentPage === totalPages || totalPages <= 1 ? 'not-allowed' : 'pointer',
+                borderRadius: '8px',
+                cursor: currentPage >= totalPages || totalPages <= 1 ? 'not-allowed' : 'pointer',
                 fontSize: '0.875rem',
                 fontWeight: '500',
+                minWidth: '80px',
               }}
             >
               {locale === 'en' ? 'Next' : '다음'}
             </button>
-          </div>
-        )}
-
-        {/* 총 개수 표시 */}
-        {!loading && !error && faqs.length > 0 && (
-          <div style={{ 
-            textAlign: 'center', 
-            marginTop: '1rem', 
-            color: '#666',
-            fontSize: '0.875rem',
-          }}>
-            {locale === 'en' 
-              ? `Total ${total} FAQs (Page ${currentPage} / ${totalPages})`
-              : `총 ${total}개의 FAQ (페이지 ${currentPage} / ${totalPages})`
-            }
           </div>
         )}
       </div>

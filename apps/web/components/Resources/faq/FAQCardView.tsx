@@ -6,25 +6,16 @@ import remarkGfm from 'remark-gfm';
 import rehypeSlug from 'rehype-slug';
 import type { FAQ } from '@/lib/admin/types';
 
-interface FAQAccordionProps {
+interface FAQCardViewProps {
   faqs: FAQ[];
-  locale?: string;
+  locale: string;
 }
 
-export function FAQAccordion({ faqs, locale }: FAQAccordionProps) {
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
-  const currentLocale = locale || 'ko';
+export function FAQCardView({ faqs, locale }: FAQCardViewProps) {
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const toggleExpanded = (id: string) => {
-    setExpandedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
+    setExpandedId(expandedId === id ? null : id);
   };
 
   if (faqs.length === 0) {
@@ -38,21 +29,28 @@ export function FAQAccordion({ faqs, locale }: FAQAccordionProps) {
         alignItems: 'center',
         justifyContent: 'center'
       }}>
-        <p>FAQ가 없습니다.</p>
+        <p>{locale === 'en' ? 'No FAQs found.' : 'FAQ가 없습니다.'}</p>
       </div>
     );
   }
 
   return (
-    <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ 
+      display: 'grid',
+      gridTemplateColumns: 'repeat(3, 1fr)',
+      gap: '1.5rem',
+      width: '100%',
+      maxWidth: '1200px',
+      margin: '0 auto'
+    }}>
       {faqs.map((faq) => {
         if (!faq.id) return null;
         
-        const isExpanded = expandedIds.has(faq.id);
-        const question = currentLocale === 'en' && faq.question.en 
+        const isExpanded = expandedId === faq.id;
+        const question = locale === 'en' && faq.question.en 
           ? faq.question.en 
           : faq.question.ko;
-        const answer = currentLocale === 'en' && faq.answer.en 
+        const answer = locale === 'en' && faq.answer.en 
           ? faq.answer.en 
           : faq.answer.ko;
 
@@ -61,12 +59,19 @@ export function FAQAccordion({ faqs, locale }: FAQAccordionProps) {
             key={faq.id}
             style={{
               backgroundColor: '#fff',
-              border: '1px solid #e5e5e5',
-              borderRadius: '8px',
-              marginBottom: '1rem',
+              borderRadius: '12px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
               overflow: 'hidden',
-              transition: 'all 0.3s ease',
-              boxShadow: isExpanded ? '0 2px 8px rgba(0, 0, 0, 0.1)' : 'none',
+              transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+              cursor: 'pointer',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.15)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
             }}
           >
             <button
@@ -74,31 +79,24 @@ export function FAQAccordion({ faqs, locale }: FAQAccordionProps) {
               onClick={() => toggleExpanded(faq.id!)}
               style={{
                 width: '100%',
-                padding: '1.25rem 1.5rem',
+                padding: '1.5rem',
                 backgroundColor: 'transparent',
                 border: 'none',
                 textAlign: 'left',
                 cursor: 'pointer',
                 display: 'flex',
                 justifyContent: 'space-between',
-                alignItems: 'center',
-                transition: 'background-color 0.2s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#f9f9f9';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
+                alignItems: 'flex-start',
+                gap: '1rem',
               }}
             >
               <h4
                 style={{
                   fontSize: '1.125rem',
-                  fontWeight: '500',
+                  fontWeight: '600',
                   color: '#1a1a1a',
                   margin: 0,
                   flex: 1,
-                  paddingRight: '1rem',
                   lineHeight: '1.5',
                 }}
               >
@@ -233,4 +231,3 @@ export function FAQAccordion({ faqs, locale }: FAQAccordionProps) {
     </div>
   );
 }
-

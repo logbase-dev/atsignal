@@ -353,7 +353,81 @@ export default function AdminFAQPage() {
                           <ToastViewer initialValue={faq.answer.ko || faq.answer.en || ''} />
                         </div>
                       ) : (
-                        <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeSlug]}>
+                        <ReactMarkdown 
+                          remarkPlugins={[remarkGfm]} 
+                          rehypePlugins={[rehypeSlug]}
+                          components={{
+                            p: ({ children }) => (
+                              <p style={{ margin: '0 0 1rem 0' }}>{children}</p>
+                            ),
+                            ul: ({ children }) => (
+                              <ul style={{ margin: '0 0 1rem 0', paddingLeft: '1.5rem' }}>{children}</ul>
+                            ),
+                            ol: ({ children }) => (
+                              <ol style={{ margin: '0 0 1rem 0', paddingLeft: '1.5rem' }}>{children}</ol>
+                            ),
+                            li: ({ children }) => (
+                              <li style={{ margin: '0 0 0.5rem 0' }}>{children}</li>
+                            ),
+                            strong: ({ children }) => (
+                              <strong style={{ fontWeight: '600', color: '#1a1a1a' }}>{children}</strong>
+                            ),
+                            code: ({ children }) => (
+                              <code style={{ 
+                                backgroundColor: '#f5f5f5', 
+                                padding: '0.125rem 0.375rem', 
+                                borderRadius: '0.25rem',
+                                fontSize: '0.875rem',
+                                fontFamily: 'monospace'
+                              }}>{children}</code>
+                            ),
+                            blockquote: ({ children }) => (
+                              <blockquote style={{
+                                borderLeft: '4px solid #0070f3',
+                                paddingLeft: '1rem',
+                                margin: '1rem 0',
+                                fontStyle: 'italic',
+                                color: '#555'
+                              }}>{children}</blockquote>
+                            ),
+                            h1: ({ children }) => (
+                              <h1 style={{ fontSize: '1.5rem', fontWeight: '600', margin: '0 0 1rem 0', color: '#1a1a1a' }}>{children}</h1>
+                            ),
+                            h2: ({ children }) => (
+                              <h2 style={{ fontSize: '1.25rem', fontWeight: '600', margin: '0 0 1rem 0', color: '#1a1a1a' }}>{children}</h2>
+                            ),
+                            h3: ({ children }) => (
+                              <h3 style={{ fontSize: '1.125rem', fontWeight: '600', margin: '0 0 1rem 0', color: '#1a1a1a' }}>{children}</h3>
+                            ),
+                            table: ({ children }) => (
+                              <table style={{ 
+                                width: '100%', 
+                                borderCollapse: 'collapse', 
+                                margin: '1rem 0',
+                                border: '1px solid #e5e5e5'
+                              }}>{children}</table>
+                            ),
+                            thead: ({ children }) => (
+                              <thead style={{ backgroundColor: '#f8f9fa' }}>{children}</thead>
+                            ),
+                            th: ({ children }) => (
+                              <th style={{ 
+                                padding: '0.75rem', 
+                                border: '1px solid #e5e5e5',
+                                fontWeight: '600',
+                                textAlign: 'left',
+                                fontSize: '0.875rem'
+                              }}>{children}</th>
+                            ),
+                            td: ({ children }) => (
+                              <td style={{ 
+                                padding: '0.75rem', 
+                                border: '1px solid #e5e5e5',
+                                fontSize: '0.875rem'
+                              }}>{children}</td>
+                            ),
+                          }}
+                        >
                           {faq.answer.ko || faq.answer.en || ''}
                         </ReactMarkdown>
                       )}

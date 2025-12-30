@@ -13,11 +13,26 @@ async function handleGet(request, response) {
     try {
         const categoryId = request.query.categoryId;
         const search = request.query.search;
+        const initialLetter = request.query.initialLetter;
         const locale = request.query.locale || "ko";
         const page = request.query.page ? Number(request.query.page) : 1;
         const limit = request.query.limit ? Number(request.query.limit) : 20;
-        const glossariesRef = firebase_1.firestore.collection(types_1.COLLECTIONS.GLOSSARIES);
-        let q = glossariesRef.where(`enabled.${locale}`, "==", true);
+        const enabledKo = request.query.enabledKo === 'true';
+        const enabledEn = request.query.enabledEn === 'true';
+        let q = firebase_1.firestore.collection(types_1.COLLECTIONS.GLOSSARIES);
+        // enabled 필터링 (공개 API용)
+        if (enabledKo || enabledEn) {
+            if (enabledKo && enabledEn) {
+                // 둘 다 활성화된 것만
+                q = q.where("enabled.ko", "==", true).where("enabled.en", "==", true);
+            }
+            else if (enabledKo) {
+                q = q.where("enabled.ko", "==", true);
+            }
+            else if (enabledEn) {
+                q = q.where("enabled.en", "==", true);
+            }
+        }
         // 카테고리 필터링
         if (categoryId && categoryId !== "__no_category__") {
             q = q.where("categoryId", "==", categoryId);
@@ -43,6 +58,16 @@ async function handleGet(request, response) {
                     termEn.includes(searchLower) ||
                     descKo.includes(searchLower) ||
                     descEn.includes(searchLower));
+            });
+        }
+        // 첫 글자 필터링 (클라이언트 측)
+        if (initialLetter) {
+            glossaries = glossaries.filter((g) => {
+                const termKo = g.term.ko || '';
+                const termEn = g.term.en || '';
+                const firstCharKo = termKo.charAt(0).toUpperCase();
+                const firstCharEn = termEn.charAt(0).toUpperCase();
+                return firstCharKo === initialLetter || firstCharEn === initialLetter;
             });
         }
         // 클라이언트 측 정렬: initialLetter → term (같은 알파벳 내에서)
