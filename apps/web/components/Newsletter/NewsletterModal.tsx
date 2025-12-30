@@ -248,7 +248,7 @@ export default function NewsletterModal({
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="newsletter-form">
-            <div className="newsletter-form-group">
+            <div className="newsletter-form-group newsletter-form-inline">
               <label htmlFor="newsletter-name">
                 {t.nameLabel || '성함'} <span className="required">*</span>
               </label>
@@ -265,7 +265,7 @@ export default function NewsletterModal({
               />
             </div>
 
-            <div className="newsletter-form-group">
+            <div className="newsletter-form-group newsletter-form-inline">
               <label htmlFor="newsletter-company">
                 {t.companyLabel || '소속/회사명'} <span className="required">*</span>
               </label>
@@ -281,7 +281,7 @@ export default function NewsletterModal({
               />
             </div>
 
-            <div className="newsletter-form-group">
+            <div className="newsletter-form-group newsletter-form-inline">
               <label htmlFor="newsletter-email">
                 {t.emailLabel || '이메일'} <span className="required">*</span>
               </label>
@@ -296,7 +296,7 @@ export default function NewsletterModal({
               />
             </div>
 
-            <div className="newsletter-form-group">
+            <div className="newsletter-form-group newsletter-form-inline">
               <label htmlFor="newsletter-phone">
                 {t.phoneLabel || '휴대폰 번호'} <span className="required">*</span>
               </label>

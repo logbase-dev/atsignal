@@ -34,6 +34,54 @@ export default function Home({ locale }: HomeProps) {
   const rollingBannerText = rollingAnnouncements.join('                         '); // 25 spaces
   const [isBannerPaused, setIsBannerPaused] = useState(false);
   const [isBannerCollapsed, setIsBannerCollapsed] = useState(false);
+  const benefits = [
+    {
+      title: 'App/Web Behavior Log 분석 특화',
+      details: [
+        'Event, Property, Custom Dimension 제약 없이 보관/분석 무제한',
+        '강력한 분석용 단위데이터셋: Topic(Multiple Event, Sequence, Attribution 등)',
+        'User Analytics: Cohort, User Stitching, 유연한 Session 정의, Raw Data 확인',
+      ],
+    },
+    {
+      title: '자체 고성능 데이터 처리 엔진',
+      details: [
+        'Low Latency & Freshness: Robust Data Processing',
+        'On-the-fly Data Manipulation (기본값 = No Batch Update)',
+        '지연수집(Late Hits) 보정으로 통계/분석 현행화 편리',
+      ],
+    },
+    {
+      title: '유연한 최적 요금제 (MTU, Event 모두 지원)',
+      details: [
+        'Event 기반/MTU 요금제를 모두 지원',
+        '장기 약정 시 Event/MTU 중 최저 요금으로 월별 Dynamic Billing (Impression Event 별도 고려)',
+      ],
+    },
+    {
+      title: 'MetaData 관리/탐색 편의성',
+      details: [
+        'Event, Property 현황 및 형상(샘플/분포 등) 파악이 용이',
+        '다양한 분석용 Dataset(=Topic) 조정이 간편',
+      ],
+    },
+    {
+      title: '데이터 권한/보안 그룹 공유 기능',
+      details: [
+        'Classified/Privacy 데이터 접근 제한 및 관리',
+        'Organization/Project/Group 레벨 보안 설정',
+        '암호화·Masking(BYOK/CMK)로 실제 Value 노출 방지',
+      ],
+    },
+    {
+      title: 'General BI: 포괄적인 분석 기능',
+      details: [
+        'Tableau 유사 데이터 탐색 UX(Data Pane & Report Generation)',
+        '사용자정의 필드/복잡 조건(LOD, Bucket, Funnel 등) 설정 가능',
+        '다양한 외부 데이터 소스 통합 분석 지원',
+      ],
+    },
+  ];
   
   const homeMenu = getMenuByPath('/Direct link');
   
@@ -559,37 +607,27 @@ export default function Home({ locale }: HomeProps) {
       {/* Benefits Section */}
       <section className="section section-white">
         <div className="section-container">
-          <h2 className="section-title">
-            atsignal을 선택하는 이유
-          </h2>
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
-            gap: '1.5rem' 
-          }}>
-            <div className="benefit-item">
-              <div className="benefit-icon">✓</div>
-              <span className="benefit-text">App/Web Behavior Log 분석 특화</span>
-            </div>
-            <div className="benefit-item">
-              <div className="benefit-icon">✓</div>
-              <span className="benefit-text">자체 고성능 데이터 처리 엔진</span>
-            </div>
-            <div className="benefit-item">
-              <div className="benefit-icon">✓</div>
-              <span className="benefit-text">유연한 최적 요금제 (MTU, Event 모두 지원)</span>
-            </div>
-            <div className="benefit-item">
-              <div className="benefit-icon">✓</div>
-              <span className="benefit-text">MetaData 관리/탐색 편의성</span>
-            </div>
-            <div className="benefit-item">
-              <div className="benefit-icon">✓</div>
-              <span className="benefit-text">데이터 권한/보안 그룹 공유 기능</span>
-            </div>
-            <div className="benefit-item">
-              <div className="benefit-icon">✓</div>
-              <span className="benefit-text">General BI: 포괄적인 분석 기능</span>
+          <h2 className="section-title benefits-title">atsignal을 선택하는 이유</h2>
+          <div className="benefits-layout">
+            <div className="benefits-visual" aria-hidden="true" />
+            <div className="benefits-list">
+              <div className="benefits-list-items">
+                {benefits.map((benefit) => (
+                  <div className="benefit-item benefit-item-expandable" key={benefit.title} tabIndex={0}>
+                    <div className="benefit-row">
+                      <div className="benefit-icon">✓</div>
+                      <span className="benefit-text">{benefit.title}</span>
+                    </div>
+                    <div className="benefit-details">
+                      <ul>
+                        {benefit.details.map((detail) => (
+                          <li key={detail}>{detail}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
