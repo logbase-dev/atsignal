@@ -15,6 +15,7 @@ interface NewsletterModalProps {
   onClose: () => void;
   locale?: string;
   initialEmail?: string;
+  variant?: 'newsletter' | 'demo' | 'sales';
 }
 
 interface FormData {
@@ -22,6 +23,7 @@ interface FormData {
   company: string;
   email: string;
   phone: string;
+  inquiry: string;
   privacyConsent: boolean;
 }
 
@@ -30,18 +32,37 @@ export default function NewsletterModal({
   onClose,
   locale = defaultLocale,
   initialEmail = '',
+  variant = 'newsletter',
 }: NewsletterModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const currentLocale = locale || defaultLocale;
   const t = translations[currentLocale as keyof typeof translations]?.newsletter ?? 
             translations.ko.newsletter;
+  const isContactVariant = variant === 'demo' || variant === 'sales';
+  const modalTitle =
+    variant === 'demo'
+      ? '데모 요청하기'
+      : variant === 'sales'
+        ? '구입 문의하기'
+        : t.title || '뉴스레터 구독';
+  const submitLabel =
+    variant === 'demo'
+      ? '요청하기'
+      : variant === 'sales'
+        ? '문의하기'
+        : t.submitButton || '구독하기';
+  const modalDescription =
+    variant === 'newsletter'
+      ? t.description || '최신 소식과 업데이트를 받아보세요.'
+      : '필요한 내용을 작성해 주세요.';
 
   const [formData, setFormData] = useState<FormData>({
     name: '',
     company: '',
     email: '',
     phone: '',
+    inquiry: '',
     privacyConsent: false,
   });
 
@@ -73,19 +94,13 @@ export default function NewsletterModal({
         company: '',
         email: '',
         phone: '',
+        inquiry: '',
         privacyConsent: false,
       });
       setSubmitStatus('idle');
       setErrorMessage('');
     }
   }, [isOpen, initialEmail]);
-
-  // 모달 외부 클릭 시 닫기
-  const handleBackdropClick = (e: React.MouseEvent<HTMLDialogElement>) => {
-    if (e.target === dialogRef.current) {
-      onClose();
-    }
-  };
 
   // 전화번호 포맷팅 (010-1234-5678)
   const formatPhoneNumber = (value: string): string => {
@@ -123,6 +138,8 @@ export default function NewsletterModal({
           company: formData.company.trim(),
           email: formData.email.trim(),
           phone: formData.phone,
+          inquiry: formData.inquiry.trim(),
+          variant,
           privacyConsent: formData.privacyConsent,
         }),
       });
@@ -191,7 +208,7 @@ export default function NewsletterModal({
       ref={dialogRef}
       className="newsletter-modal"
       onClose={onClose}
-      onClick={handleBackdropClick}
+      onCancel={(e) => e.preventDefault()} // ESC로 닫히지 않도록 방지
       aria-labelledby="newsletter-modal-title"
       aria-describedby="newsletter-modal-description"
     >
@@ -206,10 +223,10 @@ export default function NewsletterModal({
         </button>
 
         <h2 id="newsletter-modal-title" className="newsletter-modal-title">
-          {t.title || '뉴스레터 구독'}
+          {modalTitle}
         </h2>
         <p id="newsletter-modal-description" className="newsletter-modal-description">
-          {t.description || '최신 소식과 업데이트를 받아보세요.'}
+          {modalDescription}
         </p>
 
         {submitStatus === 'success' ? (
@@ -296,6 +313,24 @@ export default function NewsletterModal({
               />
             </div>
 
+            {isContactVariant && (
+              <div className="newsletter-form-group">
+                <label htmlFor="newsletter-inquiry">
+                  문의/요청 내용 <span className="required">*</span>
+                </label>
+                <textarea
+                  id="newsletter-inquiry"
+                  required
+                  minLength={5}
+                  rows={4}
+                  value={formData.inquiry}
+                  onChange={(e) => setFormData({ ...formData, inquiry: e.target.value })}
+                  disabled={isSubmitting}
+                  placeholder="필요한 내용을 작성해 주세요"
+                />
+              </div>
+            )}
+
             <div className="newsletter-form-group newsletter-checkbox-group">
               <label className="newsletter-checkbox-label">
                 <input
@@ -335,7 +370,7 @@ export default function NewsletterModal({
             >
               {isSubmitting
                 ? t.submitting || '처리 중...'
-                : t.submitButton || '구독하기'}
+                : submitLabel}
             </button>
           </form>
         )}
@@ -343,4 +378,3 @@ export default function NewsletterModal({
     </dialog>
   );
 }
-
