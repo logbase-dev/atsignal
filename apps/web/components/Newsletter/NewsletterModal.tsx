@@ -16,6 +16,8 @@ interface NewsletterModalProps {
   locale?: string;
   initialEmail?: string;
   variant?: 'newsletter' | 'demo' | 'sales';
+  customTitle?: string;
+  customSubmitLabel?: string;
 }
 
 interface FormData {
@@ -33,6 +35,8 @@ export default function NewsletterModal({
   locale = defaultLocale,
   initialEmail = '',
   variant = 'newsletter',
+  customTitle,
+  customSubmitLabel,
 }: NewsletterModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -41,17 +45,19 @@ export default function NewsletterModal({
             translations.ko.newsletter;
   const isContactVariant = variant === 'demo' || variant === 'sales';
   const modalTitle =
-    variant === 'demo'
+    customTitle ||
+    (variant === 'demo'
       ? '데모 요청하기'
       : variant === 'sales'
         ? '구입 문의하기'
-        : t.title || '뉴스레터 구독';
+        : t.title || '뉴스레터 구독');
   const submitLabel =
-    variant === 'demo'
+    customSubmitLabel ||
+    (variant === 'demo'
       ? '요청하기'
       : variant === 'sales'
         ? '문의하기'
-        : t.submitButton || '구독하기';
+        : t.submitButton || '구독하기');
   const modalDescription =
     variant === 'newsletter'
       ? t.description || '최신 소식과 업데이트를 받아보세요.'
