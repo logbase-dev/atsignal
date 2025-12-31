@@ -8,7 +8,7 @@ exports.COLLECTIONS = {
     EVENTS: 'events',
     EVENT_PARTICIPANTS: 'eventParticipants',
     NOTICES: 'notices',
-    BLOGS: 'blogs',
+    BLOGS: 'blog',
     BLOG_CATEGORIES: 'blogCategories',
     FAQS: 'faqs',
     FAQ_CATEGORIES: 'faqCategories',

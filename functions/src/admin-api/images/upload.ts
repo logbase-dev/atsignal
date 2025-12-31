@@ -61,6 +61,9 @@ function parseMultipart(req: Request): Promise<{ file: Buffer; fileName: string;
 }
 
 export async function handle(request: Request, response: Response) {
+  const startTime = Date.now();
+  console.log("[Functions Image Upload] 업로드 시작");
+
   if (request.method !== "POST") {
     response.status(405).json({ error: "METHOD_NOT_ALLOWED" });
     return;
@@ -69,7 +72,16 @@ export async function handle(request: Request, response: Response) {
   try {
     // ✅ bucket은 핸들러 실행 시점에 생성 (초기화 타이밍/환경변수 문제로 인한 크래시 방지)
     const bucket = admin.storage().bucket();
+    console.log("[Functions Image Upload] Storage bucket 초기화 완료:", Date.now() - startTime, "ms");
+    
     const { file, fileName, mimeType, maxWidth } = await parseMultipart(request);
+    console.log("[Functions Image Upload] 파일 파싱 완료:", {
+      fileName,
+      mimeType,
+      fileSize: file.length,
+      maxWidth,
+      elapsed: Date.now() - startTime + "ms"
+    });
 
     if (!mimeType.startsWith("image/")) {
       response.status(400).json({ error: "이미지 파일만 업로드할 수 있습니다." });
@@ -82,6 +94,7 @@ export async function handle(request: Request, response: Response) {
 
     // 원본 크기 확인 (5MB 미만일 때만 저장)
     const shouldSaveOriginal = file.length < 5 * 1024 * 1024;
+    console.log("[Functions Image Upload] 원본 저장 여부:", shouldSaveOriginal, "파일 크기:", file.length);
 
     const sizes = [
       { name: "thumbnail", width: 300 },
@@ -89,28 +102,40 @@ export async function handle(request: Request, response: Response) {
       { name: "large", width: 1200 },
     ];
     const targetSizes = maxWidth ? sizes.filter((s) => s.width <= maxWidth) : sizes;
+    console.log("[Functions Image Upload] 대상 크기들:", targetSizes);
 
     const uploadOne = async (name: string, width: number) => {
+      const resizeStart = Date.now();
       const optimized = await sharp(file)
         .resize(width, null, { withoutEnlargement: true, fit: "inside" })
         .webp({ quality: 80 })
         .toBuffer();
+      console.log(`[Functions Image Upload] ${name} 리사이징 완료:`, Date.now() - resizeStart, "ms");
 
+      const uploadStart = Date.now();
       const storagePath = `images/${name}/${baseName}`;
       await bucket.file(storagePath).save(optimized, { contentType: "image/webp", resumable: false });
+      console.log(`[Functions Image Upload] ${name} 업로드 완료:`, Date.now() - uploadStart, "ms");
+      
+      const urlStart = Date.now();
       const [url] = await bucket.file(storagePath).getSignedUrl({
         action: "read",
         expires: Date.now() + 1000 * 60 * 60 * 24 * 30, // 30일
       });
+      console.log(`[Functions Image Upload] ${name} URL 생성 완료:`, Date.now() - urlStart, "ms");
+      
       return { name, url };
     };
 
+    console.log("[Functions Image Upload] 병렬 업로드 시작");
     const uploadPromises = targetSizes.map((s) => uploadOne(s.name, s.width));
     const results = await Promise.all(uploadPromises);
+    console.log("[Functions Image Upload] 모든 크기 업로드 완료:", Date.now() - startTime, "ms");
 
     let originalUrl: string | null = null;
     if (shouldSaveOriginal) {
       try {
+        const originalStart = Date.now();
         const storagePath = `images/original/${baseName}`;
         await bucket.file(storagePath).save(file, { contentType: mimeType, resumable: false });
         const [url] = await bucket.file(storagePath).getSignedUrl({
@@ -118,8 +143,9 @@ export async function handle(request: Request, response: Response) {
           expires: Date.now() + 1000 * 60 * 60 * 24 * 30,
         });
         originalUrl = url;
+        console.log("[Functions Image Upload] 원본 업로드 완료:", Date.now() - originalStart, "ms");
       } catch (err) {
-        console.error("[Image Upload] 원본 업로드 실패:", err);
+        console.error("[Functions Image Upload] 원본 업로드 실패:", err);
       }
     }
 
@@ -136,9 +162,11 @@ export async function handle(request: Request, response: Response) {
       originalSaved: shouldSaveOriginal,
     };
 
+    console.log("[Functions Image Upload] 전체 완료:", Date.now() - startTime, "ms");
     response.json(payload);
   } catch (error: any) {
-    console.error("[Image Upload] 에러:", error);
+    console.error("[Functions Image Upload] 에러:", error);
+    console.error("[Functions Image Upload] 에러 발생 시점:", Date.now() - startTime, "ms");
     response.status(500).json({ error: error.message || "이미지 업로드에 실패했습니다." });
   }
 }
