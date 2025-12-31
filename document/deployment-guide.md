@@ -542,14 +542,329 @@ pnpm build  # TypeScript 타입 체크 포함
 
 ---
 
+---
+
+## 8️⃣ 성공한 배포 구성 (2025-12-31)
+
+### 🎉 최종 성공 구성
+
+2025년 12월 31일, Firebase App Hosting에서 pnpm 모노레포 배포에 **완전히 성공**했습니다!
+
+#### 핵심 성공 요소
+
+1. **완전 독립 프로젝트 구조**
+2. **pnpm 빌드팩 사용**
+3. **모든 필수 의존성 포함**
+4. **올바른 .npmrc 설정**
+
+### 📁 필수 파일 구조
+
+```
+atsignal/
+├── apps/web/
+│   ├── package.json          # 모든 의존성 포함
+│   ├── pnpm-lock.yaml        # 독립적인 lockfile
+│   ├── .npmrc                # workspace 비활성화
+│   ├── apphosting.yaml       # pnpm 빌드 설정
+│   ├── next.config.js
+│   ├── tsconfig.json
+│   └── node_modules/         # 독립적인 node_modules
+└── apps/docs/
+    ├── package.json
+    ├── package-lock.json     # npm 사용
+    ├── apphosting.yaml       # npm 빌드 설정
+    └── node_modules/
+```
+
+### 🔧 핵심 설정 파일들
+
+#### 1. `apps/web/.npmrc` (필수!)
+
+```npmrc
+# Firebase App Hosting을 위한 완전 독립 프로젝트
+# workspace 완전 비활성화
+link-workspace-packages=false
+shared-workspace-lockfile=false
+save-workspace-protocol=false
+enable-pre-post-scripts=true
+```
+
+**중요 포인트:**
+
+- `link-workspace-packages=false`: workspace 패키지 링크 비활성화
+- `shared-workspace-lockfile=false`: 공유 lockfile 사용 안함
+- `save-workspace-protocol=false`: workspace 프로토콜 저장 안함
+- `enable-pre-post-scripts=true`: pre/post 스크립트 활성화
+
+#### 2. `apps/web/apphosting.yaml` (pnpm 사용)
+
+```yaml
+# Firebase App Hosting configuration for web app
+runtime: nodejs20
+
+# pnpm을 사용하여 빌드 (Firebase App Hosting)
+buildCommand: pnpm install && pnpm run build
+runCommand: pnpm start
+
+# Firebase 환경 변수
+env:
+  - variable: NODE_ENV
+    value: production
+  # Firebase 설정 (빌드 시점에 필요)
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: AIzaSyB_y1IIZ9-vjqkmhnb3Y4wnXB6ycaKJ93A
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: atsignal.firebaseapp.com
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: atsignal
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: atsignal.firebasestorage.app
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: "188493461836"
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: 1:188493461836:web:8c80b5912194bdf9e537e9
+  # App Hosting에서는 `/api/*` 경로가 403으로 막힐 수 있으므로
+  # 관리자 API는 `/admin-api/*` 프록시 경로를 사용한다.
+  - variable: NEXT_PUBLIC_ADMIN_USE_FUNCTIONS
+    value: "true"
+  # 미리보기 관련 환경 변수
+  - variable: NEXT_PUBLIC_PREVIEW_SECRET
+    value: "atsignal-preview"
+  - variable: NEXT_PUBLIC_WEB_PREVIEW_ORIGIN
+    value: "https://web-ssr--atsignal.asia-east1.hosted.app"
+  - variable: NEXT_PUBLIC_DOCS_PREVIEW_ORIGIN
+    value: "https://docs-ssr--atsignal.asia-east1.hosted.app"
+```
+
+#### 3. `apps/web/package.json` (모든 의존성 포함)
+
+```json
+{
+  "name": "@atsignal/web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -H 0.0.0.0 -p 3000",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@dnd-kit/core": "^6.1.0",
+    "@dnd-kit/sortable": "^8.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@toast-ui/react-editor": "^3.2.3",
+    "bcryptjs": "^2.4.3",
+    "browser-image-compression": "^2.0.2",
+    "firebase": "^10.7.0",
+    "firebase-admin": "^12.0.0",
+    "geist": "^1.3.0",
+    "next": "14.2.32",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "react-mark": "^0.0.4",
+    "react-markdown": "^9.0.1",
+    "rehype-slug": "^6.0.0",
+    "remark-gfm": "^4.0.0",
+    "sharp": "^0.33.5"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^20.10.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "typescript": "^5.3.0"
+  }
+}
+```
+
+**중요 의존성:**
+
+- `firebase-admin`: 서버사이드 Firebase 기능 (필수!)
+- `@toast-ui/react-editor`: 에디터 컴포넌트
+- `@dnd-kit/*`: 드래그 앤 드롭 기능
+- `bcryptjs`: 비밀번호 해싱
+- `browser-image-compression`: 이미지 압축
+- `react-markdown`, `remark-gfm`: 마크다운 렌더링
+
+### 🚀 성공적인 배포 과정
+
+#### 1단계: 독립 프로젝트 변환
+
+```bash
+# apps/web을 완전 독립 프로젝트로 변환
+cd apps/web
+
+# 기존 workspace 연결 제거
+rm -rf node_modules pnpm-lock.yaml
+
+# .npmrc 생성 (workspace 비활성화)
+cat > .npmrc << 'EOF'
+link-workspace-packages=false
+shared-workspace-lockfile=false
+save-workspace-protocol=false
+enable-pre-post-scripts=true
+EOF
+
+# 독립적인 의존성 설치
+pnpm install --ignore-workspace
+```
+
+#### 2단계: 빌드팩 선택 확인
+
+Firebase App Hosting 빌드 로그에서 확인:
+
+```
+4 of 6 buildpacks participating
+google.nodejs.runtime        1.0.0
+google.nodejs.firebasenextjs 0.0.1
+google.nodejs.pnpm           0.1.1  ← pnpm 빌드팩 선택됨!
+google.nodejs.firebasebundle 0.0.1
+```
+
+#### 3단계: 의존성 설치 성공
+
+```
+Installing application dependencies.
+Running "pnpm install (NODE_ENV=production)"
+Packages: +373
+Progress: resolved 399, reused 373, downloaded 0, added 373, done
+```
+
+#### 4단계: 빌드 성공
+
+```
+=== Node.js - Firebasenextjs (google.nodejs.firebasenextjs@0.0.1) ===
+Installing nextjs adaptor 14.0.21
+=== Node.js - Pnpm (google.nodejs.pnpm@0.1.1) ===
+Installing application dependencies.
+```
+
+### ⚠️ 해결된 주요 문제들
+
+#### 문제 1: Missing Lock File
+
+**이전 에러:**
+
+```
+{"reason":"Missing Lock File","code":"fah/missing-lock-file"}
+```
+
+**해결:**
+
+- `apps/web/pnpm-lock.yaml` 생성
+- `.npmrc`에서 `shared-workspace-lockfile=false` 설정
+
+#### 문제 2: npm/pnpm 빌드팩 혼동
+
+**이전 에러:**
+
+```
+google.nodejs.npm            1.1.1  ← 잘못된 빌드팩 선택
+```
+
+**해결:**
+
+- `apps/web/pnpm-lock.yaml` 존재 확인
+- `apphosting.yaml`에서 `pnpm` 명령어 사용
+
+#### 문제 3: React 버전 충돌
+
+**이전 에러:**
+
+```
+npm error ERESOLVE unable to resolve dependency tree
+peer react@"^17.0.1" from @toast-ui/react-editor@3.2.3
+```
+
+**해결:**
+
+- pnpm 사용으로 peer dependency 경고만 표시 (빌드 성공)
+- npm과 달리 pnpm은 peer dependency 충돌을 경고로만 처리
+
+#### 문제 4: firebase-admin 모듈 누락
+
+**이전 에러:**
+
+```
+Module not found: Can't resolve 'firebase-admin'
+```
+
+**해결:**
+
+- `apps/web/package.json`에 `firebase-admin@^12.0.0` 추가
+- `pnpm install` 실행하여 의존성 설치
+
+### 📊 성공 지표
+
+#### 빌드 성공 로그
+
+```
+✓ Compiled successfully
+✓ Linting and checking validity of types
+✓ Collecting page data
+✓ Generating static pages (52/52)
+✓ Collecting build traces
+✓ Finalizing page optimization
+
+Route (app)                              Size     First Load JS
+┌ ƒ /                                    164 B          87.9 kB
+├ ƒ /_not-found                          164 B          87.9 kB
+├ ● /[locale]                            6.1 kB          116 kB
+...
+ƒ  (Dynamic)  server-rendered on demand
+●  (SSG)      prerendered as static HTML
+```
+
+#### 배포 성공 확인
+
+- **URL**: https://web-ssr--atsignal.asia-east1.hosted.app
+- **상태**: 정상 동작
+- **빌드 시간**: 약 3-5분
+- **메모리 사용량**: 512MB
+- **타임아웃**: 300초
+
+### 🎯 핵심 성공 요소 요약
+
+1. **완전 독립 프로젝트**: workspace 연결 완전 차단
+2. **올바른 .npmrc**: workspace 기능 모두 비활성화
+3. **독립적인 lockfile**: `apps/web/pnpm-lock.yaml` 존재
+4. **모든 의존성 포함**: `firebase-admin` 등 누락 없음
+5. **pnpm 빌드팩**: Firebase가 올바른 빌드팩 선택
+
+### 🔄 향후 배포 시 주의사항
+
+1. **새 의존성 추가 시**:
+
+   ```bash
+   cd apps/web
+   pnpm add [package-name]
+   # 절대 루트에서 추가하지 말 것!
+   ```
+
+2. **lockfile 동기화**:
+
+   - `apps/web/pnpm-lock.yaml`만 관리
+   - 루트 `pnpm-lock.yaml`과 독립적
+
+3. **빌드 테스트**:
+   ```bash
+   cd apps/web
+   pnpm build  # 로컬에서 먼저 테스트
+   ```
+
+---
+
 ## 🔄 업데이트 이력
+
+- **2025-12-31**: 성공한 배포 구성 추가 ✅
+
+  - pnpm 모노레포 배포 완전 성공
+  - 핵심 설정 파일들 상세 문서화
+  - 해결된 주요 문제들 정리
+  - 성공 지표 및 향후 주의사항 추가
 
 - **2025-12-28**: 초기 문서 작성
   - 독립 앱 구조 설정 방법 추가
   - 배포 실패 원인 및 해결 방법 정리
   - 배포 스크립트 사용법 추가
-
-```
-
-이 문서를 `document/배포설명서.md`로 저장하세요. 필요하면 내용을 보완하거나 수정하세요.
-```

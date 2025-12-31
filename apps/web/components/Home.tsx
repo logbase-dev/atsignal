@@ -27,7 +27,7 @@ export default function Home({ locale }: HomeProps) {
   const rollingTexts = translation.home?.rollingTexts ?? translations.ko.home.rollingTexts;
   
   // 동적 배너 데이터 가져오기
-  const { bannerItems, isLoading: isBannerLoading } = useBannerData();
+  const { bannerItems, isLoading: isBannerLoading } = useBannerData(currentLocale);
   
   // 배너 아이템이 없거나 로딩 중일 때 기본값 사용
   const fallbackAnnouncements = [

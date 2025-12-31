@@ -10,7 +10,7 @@ export interface BannerItem {
   type: 'notice' | 'event';
 }
 
-export function useBannerData() {
+export function useBannerData(locale: string = 'ko') {
   const [bannerItems, setBannerItems] = useState<BannerItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -72,7 +72,7 @@ export function useBannerData() {
           .map((notice: Notice) => ({
             id: notice.id || '',
             text: `[공지] ${notice.oneLiner.ko}`,
-            link: `/notice/${notice.id}`,
+            link: `/${locale}/notice/${notice.id}`,
             type: 'notice' as const,
             publishedAt: notice.publishedAt ? new Date(notice.publishedAt) : notice.createdAt ? new Date(notice.createdAt) : new Date(0),
           }));
@@ -100,7 +100,7 @@ export function useBannerData() {
           .map((event: Event) => ({
             id: event.id || '',
             text: `[이벤트] ${event.oneLiner.ko}`,
-            link: `/event/${event.id}`,
+            link: `/${locale}/resources/events/${event.id}`,
             type: 'event' as const,
             publishedAt: event.publishedAt ? new Date(event.publishedAt) : event.createdAt ? new Date(event.createdAt) : new Date(0),
           }));
@@ -127,7 +127,7 @@ export function useBannerData() {
     };
     
     fetchBannerData();
-  }, []);
+  }, [locale]);
 
   return { bannerItems, isLoading };
 }

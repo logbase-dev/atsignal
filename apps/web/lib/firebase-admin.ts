@@ -37,3 +37,5 @@ if (admin.apps.length === 0) {
 }
 
 export { admin };
+export const db = admin.firestore();
+export const storage = admin.storage();

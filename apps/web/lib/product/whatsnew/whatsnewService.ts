@@ -1,6 +1,7 @@
 'use client';
 
 import type { WhatsNew } from '@/lib/admin/types';
+import { getPublicApiUrl } from '@/lib/utils/api';
 
 export interface GetWhatsNewResponse {
   items: WhatsNew[];
@@ -27,8 +28,9 @@ export async function getPublicWhatsNews(options?: {
   params.append('published', 'true');
 
   const qs = params.toString();
-  // 공개 API 엔드포인트 사용 (인증 불필요)
-  const response = await fetch(`/api/product/whatsnews${qs ? `?${qs}` : ''}`, {
+  // Firebase App Hosting에서 /api/* 경로 403 문제 해결을 위해 Functions API 사용
+  const apiUrl = getPublicApiUrl(`product/whatsnews${qs ? `?${qs}` : ''}`);
+  const response = await fetch(apiUrl, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

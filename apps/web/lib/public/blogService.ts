@@ -1,0 +1,50 @@
+import type { BlogPost } from '@/lib/admin/types';
+import { getPublicApiUrl } from '@/lib/utils/api';
+
+export async function getPublicBlogs(options?: { 
+  page?: number; 
+  limit?: number;
+  categoryId?: string;
+  search?: string;
+}): Promise<{ blogs: BlogPost[]; total: number; page: number; limit: number; totalPages: number }> {
+  const page = options?.page || 1;
+  const limit = options?.limit || 20;
+  const baseUrl = getPublicApiUrl('resources/blogs');
+  const params = new URLSearchParams();
+  params.append('page', String(page));
+  params.append('limit', String(limit));
+  if (options?.categoryId) params.append('categoryId', options.categoryId);
+  if (options?.search) params.append('search', options.search);
+  const url = `${baseUrl}?${params.toString()}`;
+  
+  const response = await fetch(url);
+  if (!response.ok) throw new Error('블로그를 불러오는데 실패했습니다.');
+  const data = await response.json().catch(() => ({}));
+  return {
+    blogs: (data.blogs || []) as BlogPost[],
+    total: data.total || 0,
+    page: data.page || page,
+    limit: data.limit || limit,
+    totalPages: data.totalPages || 0,
+  };
+}
+
+export async function getPublicFeaturedBlogsByCategory(categoryId: string, limit: number = 5): Promise<BlogPost[]> {
+  const response = await getPublicBlogs({ categoryId, limit: 100 }); // 많이 가져와서 필터링
+  return response.blogs.filter(blog => blog.isFeatured === true).slice(0, limit);
+}
+
+export async function getPublicBlogById(id: string): Promise<BlogPost | null> {
+  const response = await fetch(getPublicApiUrl(`resources/blogs/${id}`));
+  if (response.status === 404) return null;
+  if (!response.ok) throw new Error('블로그를 불러오는데 실패했습니다.');
+  const data = await response.json().catch(() => ({}));
+  return (data.blog || null) as BlogPost | null;
+}
+
+export async function getPublicBlogCategories(): Promise<any[]> {
+  const response = await fetch(getPublicApiUrl('resources/blog-categories'));
+  if (!response.ok) throw new Error('블로그 카테고리를 불러오는데 실패했습니다.');
+  const data = await response.json().catch(() => ({}));
+  return data.categories || [];
+}

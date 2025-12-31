@@ -443,6 +443,23 @@ export default function EventPage() {
             </span>
             <h3 style={{ margin: 0, flex: 1 }}>{mainEvent.title?.ko || '-'}</h3>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
+              {mainEvent.hasCtaButton && (
+                <Link
+                  href={`/admin/event/${mainEvent.id}/participants`}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    backgroundColor: '#28a745',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '0.25rem',
+                    cursor: 'pointer',
+                    textDecoration: 'none',
+                    fontSize: '0.875rem',
+                  }}
+                >
+                  참가신청자 ({participantCounts.get(mainEvent.id!) || 0})
+                </Link>
+              )}
               <Link
                 href={`/admin/event/${mainEvent.id}`}
                 style={{
@@ -468,11 +485,27 @@ export default function EventPage() {
             </div>
           </div>
           {mainEvent.thumbnailImage && (
-            <img
-              src={mainEvent.thumbnailImage}
-              alt="메인 이벤트 썸네일"
-              style={{ width: '100%', maxHeight: '300px', objectFit: 'cover', borderRadius: '0.5rem', marginBottom: '1rem' }}
-            />
+            <Link href={`/admin/event/${mainEvent.id}/view`}>
+              <img
+                src={mainEvent.thumbnailImage}
+                alt="메인 이벤트 썸네일"
+                style={{ 
+                  width: '100%', 
+                  maxHeight: '300px', 
+                  objectFit: 'cover', 
+                  borderRadius: '0.5rem', 
+                  marginBottom: '1rem',
+                  cursor: 'pointer',
+                  transition: 'opacity 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.opacity = '0.8';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.opacity = '1';
+                }}
+              />
+            </Link>
           )}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', fontSize: '0.875rem', color: '#666' }}>
             <div>한 줄 문구: {mainEvent.oneLiner?.ko || '-'}</div>
@@ -509,6 +542,24 @@ export default function EventPage() {
                           서브 {order}
                         </span>
                         <div style={{ display: 'flex', gap: '0.25rem' }}>
+                          {subEvent.hasCtaButton && (
+                            <Link
+                              href={`/admin/event/${subEvent.id}/participants`}
+                              style={{
+                                padding: '0.25rem 0.5rem',
+                                backgroundColor: '#28a745',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '0.25rem',
+                                cursor: 'pointer',
+                                textDecoration: 'none',
+                                fontSize: '0.75rem',
+                              }}
+                              title="참가신청자"
+                            >
+                              👥 {participantCounts.get(subEvent.id!) || 0}
+                            </Link>
+                          )}
                           <Link
                             href={`/admin/event/${subEvent.id}`}
                             style={{
@@ -534,11 +585,27 @@ export default function EventPage() {
                         </div>
                       </div>
                       {subEvent.thumbnailImage && (
-                        <img
-                          src={subEvent.thumbnailImage}
-                          alt="서브 이벤트 썸네일"
-                          style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '0.5rem', marginBottom: '0.75rem' }}
-                        />
+                        <Link href={`/admin/event/${subEvent.id}/view`}>
+                          <img
+                            src={subEvent.thumbnailImage}
+                            alt="서브 이벤트 썸네일"
+                            style={{ 
+                              width: '100%', 
+                              height: '120px', 
+                              objectFit: 'cover', 
+                              borderRadius: '0.5rem', 
+                              marginBottom: '0.75rem',
+                              cursor: 'pointer',
+                              transition: 'opacity 0.2s ease',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.opacity = '0.8';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.opacity = '1';
+                            }}
+                          />
+                        </Link>
                       )}
                       <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '1rem', fontWeight: 600 }}>{subEvent.title?.ko || '-'}</h4>
                       <div style={{ fontSize: '0.75rem', color: '#666', marginBottom: '0.5rem' }}>
@@ -623,9 +690,11 @@ export default function EventPage() {
                   </div>
                   {isExpanded && (
                     <div style={{ padding: '1rem', borderTop: '1px solid #e5e7eb', backgroundColor: '#f9fafb' }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', marginBottom: '1rem', fontSize: '0.875rem' }}>
+                      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', fontSize: '0.875rem' }}>
                         <div>한 줄 문구: {event.oneLiner?.ko || '-'}</div>
                         <div>이벤트 기간: {event.eventStartAt && event.eventEndAt ? `${new Date(event.eventStartAt).toLocaleDateString()} ~ ${new Date(event.eventEndAt).toLocaleDateString()}` : '-'}</div>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', marginBottom: '1rem', fontSize: '0.875rem' }}>
                         <div>배너 노출: {event.showInBanner ? <span style={{ color: '#28a745' }}>노출</span> : <span style={{ color: '#666' }}>미노출</span>}</div>
                         <div>CTA 버튼: {event.hasCtaButton ? <span style={{ color: '#28a745' }}>있음</span> : <span style={{ color: '#666' }}>없음</span>}</div>
                         <div>작성자: {event.createdBy ? admins.get(event.createdBy)?.name || '알 수 없음' : '-'}</div>
@@ -641,6 +710,23 @@ export default function EventPage() {
                         </div>
                       </div>
                       <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        {event.hasCtaButton && (
+                          <Link
+                            href={`/admin/event/${event.id}/participants`}
+                            style={{
+                              padding: '0.5rem 1rem',
+                              backgroundColor: '#28a745',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '0.25rem',
+                              cursor: 'pointer',
+                              textDecoration: 'none',
+                              fontSize: '0.875rem',
+                            }}
+                          >
+                            참가신청자 ({participantCounts.get(event.id!) || 0})
+                          </Link>
+                        )}
                         <Link
                           href={`/admin/event/${event.id}/view`}
                           style={{

@@ -1,6 +1,7 @@
 'use client';
 
 import type { FAQ, FAQCategory } from '@/lib/admin/types';
+import { getPublicApiUrl } from '@/lib/utils/api';
 
 export interface GetFAQsResponse {
   faqs: FAQ[];
@@ -40,8 +41,9 @@ export async function getPublicFAQs(options?: {
   if (options?.enabled?.en !== undefined) params.append('enabledEn', String(options.enabled.en));
 
   const qs = params.toString();
-  // 공개 API 엔드포인트 사용 (인증 불필요)
-  const response = await fetch(`/api/resources/faqs${qs ? `?${qs}` : ''}`, {
+  // Firebase App Hosting에서 /api/* 경로 403 문제 해결을 위해 Functions API 사용
+  const apiUrl = getPublicApiUrl(`resources/faqs${qs ? `?${qs}` : ''}`);
+  const response = await fetch(apiUrl, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -66,7 +68,9 @@ export async function getPublicFAQs(options?: {
  * 공개 FAQ 카테고리 API
  */
 export async function getPublicFAQCategories(): Promise<FAQCategory[]> {
-  const response = await fetch('/api/resources/faq-categories', {
+  // Firebase App Hosting에서 /api/* 경로 403 문제 해결을 위해 Functions API 사용
+  const apiUrl = getPublicApiUrl('resources/faq-categories');
+  const response = await fetch(apiUrl, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

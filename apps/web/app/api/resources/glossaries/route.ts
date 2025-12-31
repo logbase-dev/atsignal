@@ -1,103 +1,88 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const DEFAULT_PROJECT_ID = 'atsignal';
-const DEFAULT_FUNCTIONS_REGION = 'asia-northeast3';
-
-function getFunctionsBase(): string {
-  const envBase =
-    process.env.FUNCTIONS_API_BASE_URL ||
-    process.env.NEXT_PUBLIC_FUNCTIONS_EMULATOR_URL ||
-    process.env.NEXT_PUBLIC_FUNCTIONS_URL ||
-    '';
-
-  if (envBase) {
-    const trimmed = envBase.trim().replace(/\/+$/, '');
-    if (trimmed.includes('/api')) return trimmed;
-    try {
-      const u = new URL(trimmed);
-      const path = (u.pathname || '').replace(/\/+$/, '');
-      if (!path) {
-        u.pathname = `/${DEFAULT_PROJECT_ID}/${DEFAULT_FUNCTIONS_REGION}/api`;
-        return u.toString().replace(/\/+$/, '');
-      }
-      const parts = path.split('/').filter(Boolean);
-      if (parts.length === 1) {
-        u.pathname = `/${parts[0]}/${DEFAULT_FUNCTIONS_REGION}/api`;
-        return u.toString().replace(/\/+$/, '');
-      }
-      if (parts.length === 2) {
-        u.pathname = `/${parts[0]}/${parts[1]}/api`;
-        return u.toString().replace(/\/+$/, '');
-      }
-      return trimmed;
-    } catch {
-      return trimmed;
-    }
-  }
-
-  // 개발 환경에서는 에뮬레이터 URL 사용
-  if (process.env.NODE_ENV === 'development') {
-    return `http://127.0.0.1:5001/${DEFAULT_PROJECT_ID}/${DEFAULT_FUNCTIONS_REGION}/api`;
-  }
-
-  // 기본값: 프로덕션 Functions URL
-  return `https://${DEFAULT_FUNCTIONS_REGION}-${DEFAULT_PROJECT_ID}.cloudfunctions.net/api`;
-}
+import { db } from '@/lib/firebase-admin';
 
 /**
- * 공개 용어사전 API - 사용자 화면에서 사용 (인증 불필요)
+ * 공개 주요용어 목록 API
+ * GET /api/resources/glossaries
  */
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const functionsBase = getFunctionsBase();
-    const apiUrl = new URL(`${functionsBase}/admin/glossaries`);
-
-    // 쿼리 파라미터 전달
-    searchParams.forEach((value, key) => {
-      apiUrl.searchParams.append(key, value);
+    const { searchParams } = new URL(request.url);
+    
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '20');
+    const search = searchParams.get('search');
+    const categoryId = searchParams.get('categoryId');
+    const initialLetter = searchParams.get('initialLetter');
+    const enabledKo = searchParams.get('enabledKo');
+    const enabledEn = searchParams.get('enabledEn');
+    
+    console.log('[Glossaries API] Using Firebase Admin SDK with options:', { 
+      page, limit, search, categoryId, initialLetter, enabledKo, enabledEn 
     });
 
-    // 공개 API이므로 enabled 필터 추가 (활성화된 용어사전만)
-    if (!apiUrl.searchParams.has('enabledKo')) {
-      apiUrl.searchParams.append('enabledKo', 'true');
-    }
-    if (!apiUrl.searchParams.has('enabledEn')) {
-      apiUrl.searchParams.append('enabledEn', 'true');
-    }
+    // Firebase Admin SDK로 직접 조회
+    let query = db.collection('glossaries').orderBy('createdAt', 'desc');
 
-    const response = await fetch(apiUrl.toString(), {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+    const snapshot = await query.get();
+    let glossaries = snapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        createdAt: data.createdAt?.toDate(),
+        updatedAt: data.updatedAt?.toDate(),
+      };
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('[Glossary API] Functions error:', errorText);
-      return NextResponse.json(
-        { error: 'Failed to fetch glossaries', details: errorText },
-        { status: response.status }
+    // 필터링
+    if (categoryId) {
+      glossaries = glossaries.filter((glossary: any) => glossary.categoryId === categoryId);
+    }
+
+    if (enabledKo === 'true') {
+      glossaries = glossaries.filter((glossary: any) => glossary.enabled?.ko === true);
+    }
+
+    if (enabledEn === 'true') {
+      glossaries = glossaries.filter((glossary: any) => glossary.enabled?.en === true);
+    }
+
+    if (initialLetter) {
+      glossaries = glossaries.filter((glossary: any) => {
+        const term = glossary.term?.ko || glossary.term?.en || '';
+        return term.toLowerCase().startsWith(initialLetter.toLowerCase());
+      });
+    }
+
+    // 검색 필터링
+    if (search) {
+      const searchLower = search.toLowerCase();
+      glossaries = glossaries.filter((glossary: any) => 
+        glossary.term?.ko?.toLowerCase().includes(searchLower) ||
+        glossary.term?.en?.toLowerCase().includes(searchLower) ||
+        glossary.description?.ko?.toLowerCase().includes(searchLower) ||
+        glossary.description?.en?.toLowerCase().includes(searchLower)
       );
     }
 
-    const data = await response.json();
-    
-    // Admin API 응답 형식을 공개 API 형식으로 변환
-    const result = {
-      glossaries: data.items || [],
-      total: data.total || 0,
-      page: data.page || 1,
-      limit: data.limit || 20,
-      totalPages: data.totalPages || 1,
-    };
-    
-    return NextResponse.json(result);
-  } catch (error: any) {
-    console.error('[Glossary API] Error:', error);
+    const total = glossaries.length;
+    const totalPages = Math.ceil(total / limit);
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedGlossaries = glossaries.slice(startIndex, endIndex);
+
+    return NextResponse.json({
+      glossaries: paginatedGlossaries,
+      total,
+      page,
+      limit,
+      totalPages,
+    });
+  } catch (error) {
+    console.error('[Glossaries API] Error:', error);
     return NextResponse.json(
-      { error: 'Internal server error', message: error.message },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
