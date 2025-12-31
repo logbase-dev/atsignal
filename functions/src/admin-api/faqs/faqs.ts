@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { firestore } from "../../firebase";
 import type { FAQ } from "../../lib/admin/types";
+import { COLLECTIONS } from "../../lib/admin/types";
 import { Timestamp } from "firebase-admin/firestore";
 import * as admin from "firebase-admin";
 import { getRequestAdminId } from "../_shared/requestAuth";
@@ -22,8 +23,10 @@ async function handleGet(request: Request, response: Response) {
     const orderDirection = request.query.orderDirection as 'asc' | 'desc' | undefined;
     const page = parseInt(request.query.page as string) || 1;
     const limit = parseInt(request.query.limit as string) || 20;
+    const enabledKo = request.query.enabledKo === 'true';
+    const enabledEn = request.query.enabledEn === 'true';
 
-    let q: admin.firestore.Query = firestore.collection("faqs");
+    let q: admin.firestore.Query = firestore.collection(COLLECTIONS.FAQS);
 
     // 카테고리 필터링
     if (categoryId && categoryId !== '__no_category__') {
@@ -59,6 +62,20 @@ async function handleGet(request: Request, response: Response) {
     // 미분류 필터링 (클라이언트 측)
     if (categoryId === '__no_category__') {
       faqs = faqs.filter((faq) => !faq.categoryId || faq.categoryId.trim() === '');
+    }
+
+    // enabled 필터링 (클라이언트 측)
+    if (enabledKo || enabledEn) {
+      faqs = faqs.filter((faq) => {
+        if (enabledKo && enabledEn) {
+          return faq.enabled.ko && faq.enabled.en;
+        } else if (enabledKo) {
+          return faq.enabled.ko;
+        } else if (enabledEn) {
+          return faq.enabled.en;
+        }
+        return true;
+      });
     }
 
     // 검색 필터링 (클라이언트 측)
@@ -129,7 +146,7 @@ async function handlePost(request: Request, response: Response) {
     }
 
     const now = Timestamp.fromDate(new Date());
-    const faqsRef = firestore.collection("faqs");
+    const faqsRef = firestore.collection(COLLECTIONS.FAQS);
     const docRef = await faqsRef.add(
       removeUndefinedFields({
         ...body,

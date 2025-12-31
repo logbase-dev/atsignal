@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handle = handle;
 const firebase_1 = require("../../firebase");
+const types_1 = require("../../lib/admin/types");
 const firestore_1 = require("firebase-admin/firestore"); // ✅ 추가
 const requestAuth_1 = require("../_shared/requestAuth");
 const firestoreUtils_1 = require("../_shared/firestoreUtils");
@@ -11,7 +12,7 @@ const storageImageUtils_1 = require("../_shared/storageImageUtils");
 // GET /api/faqs/[id]
 async function handleGet(request, response, id) {
     try {
-        const faqRef = firebase_1.firestore.collection("faqs").doc(id);
+        const faqRef = firebase_1.firestore.collection(types_1.COLLECTIONS.FAQS).doc(id);
         const faqSnap = await faqRef.get();
         if (!faqSnap.exists) {
             response.status(404).json({ error: "FAQ를 찾을 수 없습니다." });
@@ -29,7 +30,7 @@ async function handleGet(request, response, id) {
 async function handlePut(request, response, id) {
     try {
         const adminId = (0, requestAuth_1.getRequestAdminId)(request);
-        const faqRef = firebase_1.firestore.collection("faqs").doc(id);
+        const faqRef = firebase_1.firestore.collection(types_1.COLLECTIONS.FAQS).doc(id);
         const faqSnap = await faqRef.get();
         if (!faqSnap.exists) {
             response.status(404).json({ error: "FAQ를 찾을 수 없습니다." });
@@ -74,7 +75,7 @@ async function handlePut(request, response, id) {
 async function handleDelete(request, response, id) {
     try {
         (0, requestAuth_1.getRequestAdminId)(request);
-        const faqRef = firebase_1.firestore.collection("faqs").doc(id);
+        const faqRef = firebase_1.firestore.collection(types_1.COLLECTIONS.FAQS).doc(id);
         const faqSnap = await faqRef.get();
         if (!faqSnap.exists) {
             response.status(404).json({ error: "FAQ를 찾을 수 없습니다." });

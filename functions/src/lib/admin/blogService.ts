@@ -1,6 +1,7 @@
 import { Timestamp, FieldValue } from "firebase-admin/firestore";
 import { firestore } from "../../firebase";
 import type { BlogPost } from "./types";
+import { COLLECTIONS } from "./types";
 
 type LocalizedField = { ko: string; en?: string };
 
@@ -69,7 +70,7 @@ function normalizeEnabled(value: any): { ko: boolean; en: boolean } {
 }
 
 async function slugExists(slug: string, excludeId?: string): Promise<boolean> {
-  const q = firestore.collection("blog").where("slug", "==", slug).limit(2);
+  const q = firestore.collection(COLLECTIONS.BLOGS).where("slug", "==", slug).limit(2);
   const snap = await withTimeout(q.get(), 5000);
   for (const d of snap.docs) {
     if (!excludeId || d.id !== excludeId) return true;
@@ -142,7 +143,7 @@ export async function getBlogPosts(options?: {
     const limit = options?.limit || 20;
     const offset = (page - 1) * limit;
 
-    let postsRef = firestore.collection("blog") as FirebaseFirestore.Query;
+    let postsRef = firestore.collection(COLLECTIONS.BLOGS) as FirebaseFirestore.Query;
     
     // 카테고리 필터
     if (options?.categoryId && options.categoryId.trim()) {
@@ -226,7 +227,7 @@ export async function getBlogPosts(options?: {
 
 export async function getBlogPostById(id: string): Promise<BlogPost | null> {
   try {
-    const docSnap = await withTimeout(firestore.collection("blog").doc(id).get(), 5000);
+    const docSnap = await withTimeout(firestore.collection(COLLECTIONS.BLOGS).doc(id).get(), 5000);
     if (!docSnap.exists) return null;
     return mapPost(docSnap.id, (docSnap.data() || {}) as Record<string, any>);
   } catch (error: any) {
@@ -255,7 +256,7 @@ export async function createBlogPost(post: Omit<BlogPost, "id">): Promise<string
     hasAuthorImage: 'authorImage' in data,
   });
   const docRef = await withTimeout(
-    firestore.collection("blog").add(data),
+    firestore.collection(COLLECTIONS.BLOGS).add(data),
     5000
   );
   return docRef.id;
@@ -280,12 +281,12 @@ export async function updateBlogPost(id: string, patch: Partial<BlogPost>): Prom
     hasAuthorImage: 'authorImage' in updateData,
   });
   
-  await withTimeout(firestore.collection("blog").doc(id).update(updateData), 5000);
+  await withTimeout(firestore.collection(COLLECTIONS.BLOGS).doc(id).update(updateData), 5000);
 }
 
 export async function incrementBlogPostViews(id: string): Promise<void> {
   try {
-    const docRef = firestore.collection("blog").doc(id);
+    const docRef = firestore.collection(COLLECTIONS.BLOGS).doc(id);
     await withTimeout(
       docRef.update({
         views: FieldValue.increment(1),
@@ -299,5 +300,5 @@ export async function incrementBlogPostViews(id: string): Promise<void> {
 }
 
 export async function deleteBlogPost(id: string): Promise<void> {
-  await withTimeout(firestore.collection("blog").doc(id).delete(), 5000);
+  await withTimeout(firestore.collection(COLLECTIONS.BLOGS).doc(id).delete(), 5000);
 }

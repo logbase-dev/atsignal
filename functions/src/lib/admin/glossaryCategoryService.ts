@@ -1,6 +1,7 @@
 import * as admin from "firebase-admin";
 import { firestore } from "../../firebase";
 import type { GlossaryCategory, LocalizedField } from "./types";
+import { COLLECTIONS } from "./types";
 
 // 타임아웃 헬퍼 함수
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 5000): Promise<T> {
@@ -41,7 +42,7 @@ function normalizeLocalizedField(field?: { ko?: string; en?: string }): Localize
 // 카테고리 목록 조회
 export async function getGlossaryCategories(): Promise<GlossaryCategory[]> {
   try {
-    const categoriesRef = firestore.collection("glossaryCategories");
+    const categoriesRef = firestore.collection(COLLECTIONS.GLOSSARY_CATEGORIES);
 
     // order 기준으로 정렬 (인덱스 문제 대비)
     let q = categoriesRef.orderBy("order", "asc");
@@ -85,7 +86,7 @@ export async function getGlossaryCategories(): Promise<GlossaryCategory[]> {
 // 카테고리 단건 조회
 export async function getGlossaryCategoryById(id: string): Promise<GlossaryCategory | null> {
   try {
-    const categoryRef = firestore.collection("glossaryCategories").doc(id);
+    const categoryRef = firestore.collection(COLLECTIONS.GLOSSARY_CATEGORIES).doc(id);
     const categorySnap = await withTimeout(categoryRef.get(), 5000);
 
     if (!categorySnap.exists) {
@@ -131,14 +132,14 @@ export async function updateGlossaryCategory(id: string, category: Partial<Gloss
 
 // 카테고리 삭제
 export async function deleteGlossaryCategory(id: string): Promise<void> {
-  const categoryRef = firestore.collection("glossaryCategories").doc(id);
+  const categoryRef = firestore.collection(COLLECTIONS.GLOSSARY_CATEGORIES).doc(id);
   await withTimeout(categoryRef.delete(), 5000);
 }
 
 // 카테고리 사용 여부 확인 (Glossary에서 사용 중인지)
 export async function isCategoryInUse(categoryId: string): Promise<boolean> {
   try {
-    const glossariesRef = firestore.collection("glossaries");
+    const glossariesRef = firestore.collection(COLLECTIONS.GLOSSARIES);
     const q = glossariesRef.where("categoryId", "==", categoryId);
     const querySnapshot = await withTimeout(q.get(), 5000);
 

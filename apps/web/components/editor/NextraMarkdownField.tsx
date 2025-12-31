@@ -26,7 +26,7 @@ export function NextraMarkdownField({
   helperText,
   placeholder = '# 제목\n본문을 작성하세요.',
   onChange,
-  height = '800px',
+  height = '500px',
 }: NextraMarkdownFieldProps) {
   const [mode, setMode] = useState<EditorMode>('write');
   const [isUploading, setIsUploading] = useState(false);

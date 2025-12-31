@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handle = handle;
 const firebase_1 = require("../../firebase");
+const types_1 = require("../../lib/admin/types");
 const firestore_1 = require("firebase-admin/firestore"); // ✅ 추가
 const requestAuth_1 = require("../_shared/requestAuth");
 const firestoreUtils_1 = require("../_shared/firestoreUtils");
@@ -9,7 +10,7 @@ const mappers_1 = require("../_shared/mappers");
 // GET /api/menus/[id]
 async function handleGet(request, response, id) {
     try {
-        const menuRef = firebase_1.firestore.collection("menus").doc(id);
+        const menuRef = firebase_1.firestore.collection(types_1.COLLECTIONS.MENUS).doc(id);
         const menuSnap = await menuRef.get();
         if (!menuSnap.exists) {
             response.status(404).json({ error: "메뉴를 찾을 수 없습니다." });
@@ -27,7 +28,7 @@ async function handleGet(request, response, id) {
 async function handlePut(request, response, id) {
     try {
         const adminId = (0, requestAuth_1.getRequestAdminId)(request);
-        const menuRef = firebase_1.firestore.collection("menus").doc(id);
+        const menuRef = firebase_1.firestore.collection(types_1.COLLECTIONS.MENUS).doc(id);
         const menuSnap = await menuRef.get();
         if (!menuSnap.exists) {
             response.status(404).json({ error: "메뉴를 찾을 수 없습니다." });
@@ -37,7 +38,7 @@ async function handlePut(request, response, id) {
         const body = request.body;
         // path 변경 시 연결된 페이지 slug 업데이트 (외부 링크 제외)
         if (body.path !== undefined && body.path !== existingMenu.path && existingMenu.pageType !== "links") {
-            const pagesRef = firebase_1.firestore.collection("pages");
+            const pagesRef = firebase_1.firestore.collection(types_1.COLLECTIONS.PAGES);
             const pagesQuery = pagesRef.where("menuId", "==", id);
             const pagesSnapshot = await pagesQuery.get();
             const updatePromises = pagesSnapshot.docs.map((pageDoc) => pageDoc.ref.update({ slug: body.path }));
@@ -60,7 +61,7 @@ async function handlePut(request, response, id) {
 async function handleDelete(request, response, id) {
     try {
         (0, requestAuth_1.getRequestAdminId)(request);
-        const menuRef = firebase_1.firestore.collection("menus").doc(id);
+        const menuRef = firebase_1.firestore.collection(types_1.COLLECTIONS.MENUS).doc(id);
         const menuSnap = await menuRef.get();
         if (!menuSnap.exists) {
             response.status(404).json({ error: "메뉴를 찾을 수 없습니다." });
@@ -68,7 +69,7 @@ async function handleDelete(request, response, id) {
         }
         // ✅ 하위 메뉴가 있는지 확인
         const childMenus = await firebase_1.firestore
-            .collection("menus")
+            .collection(types_1.COLLECTIONS.MENUS)
             .where("parentId", "==", id)
             .limit(1)
             .get();
@@ -80,7 +81,7 @@ async function handleDelete(request, response, id) {
         }
         // ✅ 연결된 페이지가 있는지 확인
         const connectedPages = await firebase_1.firestore
-            .collection("pages")
+            .collection(types_1.COLLECTIONS.PAGES)
             .where("menuId", "==", id)
             .limit(1)
             .get();

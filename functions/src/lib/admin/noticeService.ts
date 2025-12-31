@@ -2,6 +2,7 @@ import { Timestamp, FieldValue } from "firebase-admin/firestore";
 import type * as FirebaseFirestore from "firebase-admin/firestore";
 import { firestore } from "../../firebase";
 import type { Notice } from "./types";
+import { COLLECTIONS } from "./types";
 
 type LocalizedField = { ko: string; en?: string };
 
@@ -112,7 +113,7 @@ export async function getNotices(options?: {
     const limit = options?.limit || 20;
     const offset = (page - 1) * limit;
 
-    const noticesRef = firestore.collection("notices");
+    const noticesRef = firestore.collection(COLLECTIONS.NOTICES);
 
     // 필터링
     let query: FirebaseFirestore.Query = noticesRef;
@@ -222,7 +223,7 @@ export async function getNotices(options?: {
 export async function getNoticeById(id: string): Promise<Notice | null> {
   try {
     const docSnap = await withTimeout<FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData>>(
-      firestore.collection("notices").doc(id).get(), 
+      firestore.collection(COLLECTIONS.NOTICES).doc(id).get(), 
       5000
     );
     if (!docSnap.exists) return null;
@@ -259,7 +260,7 @@ export async function createNotice(notice: Omit<Notice, "id">): Promise<string> 
   
   console.log(`[createNotice] 생성 데이터:`, JSON.stringify(data, null, 2));
   const docRef = await withTimeout<FirebaseFirestore.DocumentReference<FirebaseFirestore.DocumentData>>(
-    firestore.collection("notices").add(data), 
+    firestore.collection(COLLECTIONS.NOTICES).add(data), 
     5000
   );
   return docRef.id;
@@ -304,14 +305,14 @@ export async function updateNotice(id: string, patch: Partial<Notice>): Promise<
   console.log(`[updateNotice] isTop 필드 존재 여부:`, 'isTop' in updateData, `값:`, updateData.isTop);
   console.log(`[updateNotice] Firestore 업데이트 시작 - 문서 ID: ${id}`);
   
-  await withTimeout(firestore.collection("notices").doc(id).update(updateData), 5000);
+  await withTimeout(firestore.collection(COLLECTIONS.NOTICES).doc(id).update(updateData), 5000);
   
   console.log(`[updateNotice] Firestore 업데이트 완료`);
 }
 
 export async function incrementNoticeViews(id: string): Promise<void> {
   try {
-    const docRef = firestore.collection("notices").doc(id);
+    const docRef = firestore.collection(COLLECTIONS.NOTICES).doc(id);
     await withTimeout(
       docRef.update({
         views: FieldValue.increment(1),
@@ -325,14 +326,14 @@ export async function incrementNoticeViews(id: string): Promise<void> {
 }
 
 export async function deleteNotice(id: string): Promise<void> {
-  await withTimeout(firestore.collection("notices").doc(id).delete(), 5000);
+  await withTimeout(firestore.collection(COLLECTIONS.NOTICES).doc(id).delete(), 5000);
 }
 
 // 배너 노출용 공지사항 조회
 export async function getBannerNotices(locale: "ko" | "en" = "ko"): Promise<Notice[]> {
   try {
     const now = new Date();
-    const noticesRef = firestore.collection("notices");
+    const noticesRef = firestore.collection(COLLECTIONS.NOTICES);
 
     // 배너 노출 조건: showInBanner=true, published=true, enabled[locale]=true
     let query: FirebaseFirestore.Query = noticesRef

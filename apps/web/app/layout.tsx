@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
+import { headers } from "next/headers";
 import "./globals.css";
 import Splash from "@/components/Splash";
 import { getMenusByLocale } from "@/lib/cms/getMenus";
@@ -94,10 +95,14 @@ export default async function RootLayout({
       }))
     : buildFallbackFooterMenus();
 
+  // Middleware에서 설정한 헤더 확인
+  const headersList = await headers();
+  const isAdminPath = headersList.get('x-is-admin') === 'true';
+
   return (
     <html lang="ko">
       <body
-        className={`${GeistSans.variable} ${GeistMono.variable} antialiased`}
+        className={`${GeistSans.variable} ${GeistMono.variable} antialiased${isAdminPath ? ' admin-mode' : ''}`}
       >
         <Splash />
         <WebLayoutWrapper menuTree={menuTree} footerMenus={footerMenus}>

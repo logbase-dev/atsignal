@@ -7,6 +7,7 @@ import { defaultLocale } from '@/lib/i18n/getLocale';
 import koMessages from '@/locales/ko.json';
 import enMessages from '@/locales/en.json';
 import NewsletterModal from '@/components/Newsletter/NewsletterModal';
+import { useBannerData } from './useBannerData';
 
 const translations = {
   ko: koMessages,
@@ -24,19 +25,36 @@ export default function Home({ locale }: HomeProps) {
   
   // ko.json은 항상 있으므로 fallback으로 사용 (en.json에 없을 수 있음)
   const rollingTexts = translation.home?.rollingTexts ?? translations.ko.home.rollingTexts;
-  const rollingAnnouncements = [
-    '[1.공지] atsignal 베타 서비스 오픈 안내',
-    '[2.이벤트] atsignal 무료 데모 체험 이벤트',
-    '[3.이벤트] 로그 진단 무료 컨설팅 이벤트 (선착순 10개 기업)',
-    '[4.공지] atsignal admin / CMS 업데이트 안내',
-    '[5.이벤트] atsignal 뉴스레터 구독 이벤트',
+  
+  // 동적 배너 데이터 가져오기
+  const { bannerItems, isLoading: isBannerLoading } = useBannerData();
+  
+  // 배너 아이템이 없거나 로딩 중일 때 기본값 사용
+  const fallbackAnnouncements = [
+    '',
+    '',
+    '',
+    '',
+    '',
   ];
+  
+  const rollingAnnouncements = isBannerLoading || bannerItems.length === 0 
+    ? fallbackAnnouncements 
+    : bannerItems.map(item => item.text);
+    
   const renderBannerItems = () =>
-    rollingAnnouncements.map((item, idx) => (
-      <a key={`banner-${idx}`} href={item} className="rolling-banner-link">
-        {item}
-      </a>
-    ));
+    (isBannerLoading || bannerItems.length === 0 
+      ? fallbackAnnouncements.map((item, idx) => (
+          <span key={`banner-fallback-${idx}`} className="rolling-banner-link">
+            {item}
+          </span>
+        ))
+      : bannerItems.map((item, idx) => (
+          <a key={`banner-${item.id}-${idx}`} href={item.link} className="rolling-banner-link">
+            {item.text}
+          </a>
+        ))
+    );
   const [isBannerPaused, setIsBannerPaused] = useState(false);
   const [isBannerCollapsed, setIsBannerCollapsed] = useState(false);
   const [dotCount, setDotCount] = useState(1);

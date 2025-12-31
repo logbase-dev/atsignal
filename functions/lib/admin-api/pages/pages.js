@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handle = handle;
 const firebase_1 = require("../../firebase");
+const types_1 = require("../../lib/admin/types");
 const firestore_1 = require("firebase-admin/firestore"); // ✅ 추가
 const requestAuth_1 = require("../_shared/requestAuth");
 const firestoreUtils_1 = require("../_shared/firestoreUtils");
@@ -17,7 +18,7 @@ async function handle(request, response) {
                 response.status(400).json({ error: "유효한 site 파라미터가 필요합니다 (web 또는 docs)." });
                 return;
             }
-            const pagesRef = firebase_1.firestore.collection("pages");
+            const pagesRef = firebase_1.firestore.collection(types_1.COLLECTIONS.PAGES);
             const q = pagesRef.where("site", "==", site);
             const snap = await q.get();
             const pages = snap.docs.map((docSnap) => {
@@ -67,7 +68,7 @@ async function handle(request, response) {
             const normalizedContent = (0, firestoreUtils_1.normalizeLocalizedField)(body.payload.content);
             const EMPTY_LOCALIZED = { ko: "", en: "" };
             const now = firestore_1.Timestamp.fromDate(new Date());
-            const pagesRef = firebase_1.firestore.collection("pages");
+            const pagesRef = firebase_1.firestore.collection(types_1.COLLECTIONS.PAGES);
             const docRef = await pagesRef.add((0, firestoreUtils_1.removeUndefinedFields)({
                 site: body.site,
                 menuId: body.payload.menuId,

@@ -1,6 +1,7 @@
 import * as admin from "firebase-admin";
 import { firestore } from "../../firebase";
 import type { Menu, Site } from "./types";
+import { COLLECTIONS } from "./types";
 
 // 타임아웃 헬퍼 함수
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 15000): Promise<T> {
@@ -72,7 +73,7 @@ export async function getMenus(site: Site): Promise<Menu[]> {
 
   return withRetry(async () => {
     try {
-      const menusRef = firestore.collection("menus");
+      const menusRef = firestore.collection(COLLECTIONS.MENUS);
       // orderBy를 제거하고 클라이언트 사이드에서 정렬 (인덱스 불필요)
       const q = menusRef.where("site", "==", site);
 
@@ -133,7 +134,7 @@ export async function updateMenu(id: string, menu: Partial<Menu>): Promise<void>
 export async function deleteMenu(id: string): Promise<void> {
   try {
     // 연결된 페이지 확인 및 삭제
-    const pagesRef = firestore.collection("pages");
+    const pagesRef = firestore.collection(COLLECTIONS.PAGES);
     const pagesQuery = pagesRef.where("menuId", "==", id);
     const pagesSnapshot = await withTimeout(pagesQuery.get(), 3000);
 
@@ -144,7 +145,7 @@ export async function deleteMenu(id: string): Promise<void> {
     await Promise.all(deletePagePromises);
 
     // 메뉴 삭제
-    const menuRef = firestore.collection("menus").doc(id);
+    const menuRef = firestore.collection(COLLECTIONS.MENUS).doc(id);
     await withTimeout(menuRef.delete(), 3000);
   } catch (error: any) {
     console.error("Error deleting menu:", error);

@@ -1,5 +1,6 @@
 import { admin, firestore } from "../../firebase";
 import type { LocalizedField, Page, Site } from "./types";
+import { COLLECTIONS } from "./types";
 
 // Firestore 타입 별칭
 type DocSnap = admin.firestore.DocumentSnapshot;
@@ -82,7 +83,7 @@ function extractFileNameFromUrl(url: string): string | null {
 
 // 페이지 목록 조회
 export async function getPages(site: Site): Promise<Page[]> {
-  const pagesRef = firestore.collection("pages");
+  const pagesRef = firestore.collection(COLLECTIONS.PAGES);
   const q = pagesRef.where("site", "==", site);
 
   const snap = await q.get();
@@ -91,7 +92,7 @@ export async function getPages(site: Site): Promise<Page[]> {
 
 // 단건 조회
 export async function getPageById(id: string): Promise<Page | null> {
-  const pageRef = firestore.collection("pages").doc(id);
+  const pageRef = firestore.collection(COLLECTIONS.PAGES).doc(id);
   const pageSnap = await pageRef.get();
 
   if (!pageSnap.exists) return null;
@@ -100,7 +101,7 @@ export async function getPageById(id: string): Promise<Page | null> {
 
 // 메뉴 ID로 조회
 export async function getPagesByMenuId(menuId: string): Promise<Page[]> {
-  const pagesRef = firestore.collection("pages");
+  const pagesRef = firestore.collection(COLLECTIONS.PAGES);
   const q = pagesRef.where("menuId", "==", menuId);
 
   const snap = await q.get();
@@ -123,7 +124,7 @@ export async function publishPage(): Promise<void> {
 
 // 페이지 삭제 (연결된 이미지 삭제 포함)
 export async function deletePage(id: string): Promise<void> {
-  const pageRef = firestore.collection("pages").doc(id);
+  const pageRef = firestore.collection(COLLECTIONS.PAGES).doc(id);
 
   // 페이지 데이터 가져오기 (이미지 URL 추출을 위해)
   const pageSnap = await pageRef.get();

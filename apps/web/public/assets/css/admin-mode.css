@@ -22,16 +22,37 @@ body.admin-mode .header {
   border-bottom: 0 !important;
 }
 
-body.admin-mode .logo {
+/* Header 내부 첫 번째 div width 설정 */
+body.admin-mode .header > div:first-child {
+  width: 280px !important; /* 원하는 width 값으로 변경 */
+}
+
+/* 더 구체적인 선택자 사용 - globals.css의 규칙을 덮어쓰기 */
+body.admin-mode .header .logo,
+body.admin-mode #header .logo {
   height: auto !important;
   line-height: 1 !important;
   text-decoration: none !important;
+  display: flex !important;
+  flex-direction: row !important; /* 가로 방향 명시 */
+  flex-wrap: nowrap !important; /* 줄바꿈 방지 */
+  align-items: center !important; /* 세로 중앙 정렬 */
 }
 
-body.admin-mode .logo img {
+body.admin-mode .header .logo img,
+body.admin-mode #header .logo img {
   max-height: 26px !important;
   margin-right: 6px !important;
   width: auto !important;
+  display: block !important;
+  flex-shrink: 0 !important; /* 이미지 크기 고정 */
+}
+
+body.admin-mode .header .logo span,
+body.admin-mode #header .logo span {
+  display: inline-block !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important; /* 텍스트 크기 고정 */
 }
 
 body.admin-mode .header-nav .nav-icon {
@@ -48,7 +69,7 @@ body.admin-mode .header-nav .badge-number {
 }
 
 body.admin-mode .header-nav .nav-profile img {
-  max-height: 36px !important;
+  max-height: 40px !important;
 }
 
 body.admin-mode .header-nav .nav-profile span {

@@ -60,7 +60,7 @@ export default function Header() {
             </a>
           </li>
 
-          <li className="nav-item dropdown">
+          {/* <li className="nav-item dropdown">
             <a className="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
               <i className="bi bi-bell"></i>
               <span className="badge bg-primary badge-number">0</span>
@@ -68,7 +68,7 @@ export default function Header() {
             <ul className="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
               <li className="dropdown-header">알림이 없습니다</li>
             </ul>
-          </li>
+          </li> */}
 
           <li className="nav-item dropdown pe-3">
             <a className="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">

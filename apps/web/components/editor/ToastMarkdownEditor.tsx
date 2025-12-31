@@ -20,7 +20,7 @@ export function ToastMarkdownEditor({
   saveFormat = "markdown",
   onSaveFormatChange,
   isNewPage = false,
-  height = "800px",
+  height = "500px",
 }: ToastMarkdownEditorProps) {
   const editorRef = useRef<Editor>(null);
   const isUserTypingRef = useRef(false);

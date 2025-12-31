@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handle = handle;
 const firebase_1 = require("../../firebase");
+const types_1 = require("../../lib/admin/types");
 const firestore_1 = require("firebase-admin/firestore");
 const requestAuth_1 = require("../_shared/requestAuth");
 const firestoreUtils_1 = require("../_shared/firestoreUtils");
@@ -10,7 +11,7 @@ const glossaryService_1 = require("../../lib/admin/glossaryService");
 // GET /api/admin/glossaries/[id]
 async function handleGet(request, response, id) {
     try {
-        const glossaryRef = firebase_1.firestore.collection("glossaries").doc(id);
+        const glossaryRef = firebase_1.firestore.collection(types_1.COLLECTIONS.GLOSSARIES).doc(id);
         const glossarySnap = await glossaryRef.get();
         if (!glossarySnap.exists) {
             response.status(404).json({ error: "용어를 찾을 수 없습니다." });
@@ -28,7 +29,7 @@ async function handleGet(request, response, id) {
 async function handlePut(request, response, id) {
     try {
         const adminId = (0, requestAuth_1.getRequestAdminId)(request);
-        const glossaryRef = firebase_1.firestore.collection("glossaries").doc(id);
+        const glossaryRef = firebase_1.firestore.collection(types_1.COLLECTIONS.GLOSSARIES).doc(id);
         const glossarySnap = await glossaryRef.get();
         if (!glossarySnap.exists) {
             response.status(404).json({ error: "용어를 찾을 수 없습니다." });
@@ -59,7 +60,7 @@ async function handlePut(request, response, id) {
 async function handleDelete(request, response, id) {
     try {
         (0, requestAuth_1.getRequestAdminId)(request);
-        const glossaryRef = firebase_1.firestore.collection("glossaries").doc(id);
+        const glossaryRef = firebase_1.firestore.collection(types_1.COLLECTIONS.GLOSSARIES).doc(id);
         const glossarySnap = await glossaryRef.get();
         if (!glossarySnap.exists) {
             response.status(404).json({ error: "용어를 찾을 수 없습니다." });

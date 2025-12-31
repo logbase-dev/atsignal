@@ -1,6 +1,7 @@
 import { Timestamp } from "firebase-admin/firestore";
 import { firestore } from "../../firebase";
 import type { BlogCategory, LocalizedField } from "./types";
+import { COLLECTIONS } from "./types";
 
 function stripUndefinedDeep<T>(value: T): T {
   if (value === undefined) return value;
@@ -79,7 +80,7 @@ function mapCategory(id: string, data: Record<string, any>): BlogCategory {
 
 export async function getBlogCategories(): Promise<BlogCategory[]> {
   try {
-    const ref = firestore.collection("blogCategories");
+    const ref = firestore.collection(COLLECTIONS.BLOG_CATEGORIES);
     let q: FirebaseFirestore.Query = ref.orderBy("order", "asc");
     const snap = await withTimeout(q.get(), 5000);
     return snap.docs.map((d) => mapCategory(d.id, d.data() as Record<string, any>));
@@ -91,7 +92,7 @@ export async function getBlogCategories(): Promise<BlogCategory[]> {
 
 export async function getBlogCategoryById(id: string): Promise<BlogCategory | null> {
   try {
-    const snap = await withTimeout(firestore.collection("blogCategories").doc(id).get(), 5000);
+    const snap = await withTimeout(firestore.collection(COLLECTIONS.BLOG_CATEGORIES).doc(id).get(), 5000);
     if (!snap.exists) return null;
     return mapCategory(snap.id, (snap.data() || {}) as Record<string, any>);
   } catch (error: any) {
@@ -101,7 +102,7 @@ export async function getBlogCategoryById(id: string): Promise<BlogCategory | nu
 }
 
 async function slugExists(slug: string, excludeId?: string): Promise<boolean> {
-  const q = firestore.collection("blogCategories").where("slug", "==", slug).limit(2);
+  const q = firestore.collection(COLLECTIONS.BLOG_CATEGORIES).where("slug", "==", slug).limit(2);
   const snap = await withTimeout(q.get(), 5000);
   for (const d of snap.docs) {
     if (!excludeId || d.id !== excludeId) return true;
@@ -124,7 +125,7 @@ export async function createBlogCategory(category: Omit<BlogCategory, "id">): Pr
   const now = Timestamp.fromDate(new Date());
   const uniqueSlug = await ensureUniqueSlug(category.slug);
   const docRef = await withTimeout(
-    firestore.collection("blogCategories").add({
+    firestore.collection(COLLECTIONS.BLOG_CATEGORIES).add({
       ...stripUndefinedDeep(category),
       slug: uniqueSlug,
       enabled: category.enabled ?? { ko: true, en: true },
@@ -143,11 +144,11 @@ export async function updateBlogCategory(id: string, patch: Partial<BlogCategory
     updateData.slug = await ensureUniqueSlug(String(patch.slug), id);
   }
   if (patch.enabled !== undefined) updateData.enabled = normalizeEnabled(patch.enabled);
-  await withTimeout(firestore.collection("blogCategories").doc(id).update(updateData), 5000);
+  await withTimeout(firestore.collection(COLLECTIONS.BLOG_CATEGORIES).doc(id).update(updateData), 5000);
 }
 
 export async function deleteBlogCategory(id: string): Promise<void> {
-  await withTimeout(firestore.collection("blogCategories").doc(id).delete(), 5000);
+  await withTimeout(firestore.collection(COLLECTIONS.BLOG_CATEGORIES).doc(id).delete(), 5000);
 }
 
 

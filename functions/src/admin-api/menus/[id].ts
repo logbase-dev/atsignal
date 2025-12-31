@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { firestore } from "../../firebase";
 import type { Menu } from "../../lib/admin/types";
+import { COLLECTIONS } from "../../lib/admin/types";
 import { Timestamp } from "firebase-admin/firestore"; // ✅ 추가
 import { getRequestAdminId } from "../_shared/requestAuth";
 import { removeUndefinedFields } from "../_shared/firestoreUtils";
@@ -9,7 +10,7 @@ import { mapMenuDoc } from "../_shared/mappers";
 // GET /api/menus/[id]
 async function handleGet(request: Request, response: Response, id: string) {
   try {
-    const menuRef = firestore.collection("menus").doc(id);
+    const menuRef = firestore.collection(COLLECTIONS.MENUS).doc(id);
     const menuSnap = await menuRef.get();
 
     if (!menuSnap.exists) {
@@ -30,7 +31,7 @@ async function handlePut(request: Request, response: Response, id: string) {
   try {
     const adminId = getRequestAdminId(request);
 
-    const menuRef = firestore.collection("menus").doc(id);
+    const menuRef = firestore.collection(COLLECTIONS.MENUS).doc(id);
     const menuSnap = await menuRef.get();
 
     if (!menuSnap.exists) {
@@ -43,7 +44,7 @@ async function handlePut(request: Request, response: Response, id: string) {
 
     // path 변경 시 연결된 페이지 slug 업데이트 (외부 링크 제외)
     if (body.path !== undefined && body.path !== existingMenu.path && existingMenu.pageType !== "links") {
-      const pagesRef = firestore.collection("pages");
+      const pagesRef = firestore.collection(COLLECTIONS.PAGES);
       const pagesQuery = pagesRef.where("menuId", "==", id);
       const pagesSnapshot = await pagesQuery.get();
 
@@ -74,7 +75,7 @@ async function handleDelete(request: Request, response: Response, id: string) {
   try {
     getRequestAdminId(request);
 
-    const menuRef = firestore.collection("menus").doc(id);
+    const menuRef = firestore.collection(COLLECTIONS.MENUS).doc(id);
     const menuSnap = await menuRef.get();
 
     if (!menuSnap.exists) {
@@ -84,7 +85,7 @@ async function handleDelete(request: Request, response: Response, id: string) {
 
     // ✅ 하위 메뉴가 있는지 확인
     const childMenus = await firestore
-      .collection("menus")
+      .collection(COLLECTIONS.MENUS)
       .where("parentId", "==", id)
       .limit(1)
       .get();
@@ -98,7 +99,7 @@ async function handleDelete(request: Request, response: Response, id: string) {
 
     // ✅ 연결된 페이지가 있는지 확인
     const connectedPages = await firestore
-      .collection("pages")
+      .collection(COLLECTIONS.PAGES)
       .where("menuId", "==", id)
       .limit(1)
       .get();

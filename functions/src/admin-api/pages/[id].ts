@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { firestore } from "../../firebase";
 import type { PageDraftPayload } from "../../lib/admin/types";
+import { COLLECTIONS } from "../../lib/admin/types";
 import { Timestamp } from "firebase-admin/firestore"; // ✅ 추가
 import { getRequestAdminId } from "../_shared/requestAuth";
 import { normalizeLocalizedField, removeUndefinedFields } from "../_shared/firestoreUtils";
@@ -11,7 +12,7 @@ import { deleteImagesForFileName } from "../_shared/storageImageUtils";
 // GET /api/pages/[id]
 export async function handleGet(_req: Request, res: Response, id: string) {
   try {
-    const pageRef = firestore.collection("pages").doc(id);
+    const pageRef = firestore.collection(COLLECTIONS.PAGES).doc(id);
     const pageSnap = await pageRef.get();
 
     if (!pageSnap.exists) {
@@ -32,7 +33,7 @@ export async function handlePut(req: Request, res: Response, id: string) {
   try {
     const adminId = getRequestAdminId(req);
 
-    const pageRef = firestore.collection("pages").doc(id);
+    const pageRef = firestore.collection(COLLECTIONS.PAGES).doc(id);
     const pageSnap = await pageRef.get();
 
     if (!pageSnap.exists) {
@@ -131,7 +132,7 @@ export async function handleDelete(req: Request, res: Response, id: string) {
     // Router already enforced auth; this is just a sanity check.
     getRequestAdminId(req);
 
-    const pageRef = firestore.collection("pages").doc(id);
+    const pageRef = firestore.collection(COLLECTIONS.PAGES).doc(id);
     const pageSnap = await pageRef.get();
 
     if (!pageSnap.exists) {

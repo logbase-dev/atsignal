@@ -225,7 +225,7 @@ export function FAQForm({ initialFAQ, onSubmit, onCancel, submitting }: FAQFormP
       tags: formData.tags.length ? formData.tags : undefined,
       order: Number(formData.order) || 0,
       editorType,
-      saveFormat,
+      saveFormat: editorType === 'nextra' ? 'markdown' : saveFormat,
     });
   };
 
@@ -297,7 +297,12 @@ export function FAQForm({ initialFAQ, onSubmit, onCancel, submitting }: FAQFormP
             <span style={{ fontSize: '0.85rem', color: '#6b7280' }}>에디터 타입:</span>
             <select
               value={editorType}
-              onChange={(e) => setEditorType(e.target.value as 'nextra' | 'toast')}
+              onChange={(e) => {
+                const newType = e.target.value as 'nextra' | 'toast';
+                const message =
+                  '에디터를 전환하면 현재 입력된 내용이 그대로 유지됩니다.\n\n⚠️ 주의사항:\n- 에디터 간 호환성 문제가 발생할 수 있습니다.\n- 전환 후 반드시 내용을 확인하세요.\n\n계속하시겠습니까?';
+                if (window.confirm(message)) setEditorType(newType);
+              }}
               style={{ padding: '0.5rem 1rem', borderRadius: '0.5rem', border: '1px solid #d1d5db', fontSize: '0.9rem', backgroundColor: '#fff' }}
             >
               <option value="toast">TOAST UI Editor</option>
@@ -355,6 +360,7 @@ export function FAQForm({ initialFAQ, onSubmit, onCancel, submitting }: FAQFormP
               onChange={(next) =>
                 setFormData((p) => (activeLocale === 'ko' ? { ...p, answerKo: next } : { ...p, answerEn: next }))
               }
+              height="250px"
             />
           ) : (
             <ToastMarkdownEditor
@@ -365,6 +371,7 @@ export function FAQForm({ initialFAQ, onSubmit, onCancel, submitting }: FAQFormP
               saveFormat={saveFormat}
               onSaveFormatChange={setSaveFormat}
               isNewPage={!initialFAQ}
+              height="250px"
             />
           )}
         </div>

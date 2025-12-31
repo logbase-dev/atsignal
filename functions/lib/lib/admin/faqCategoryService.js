@@ -41,6 +41,7 @@ exports.deleteFAQCategory = deleteFAQCategory;
 exports.isCategoryInUse = isCategoryInUse;
 const admin = __importStar(require("firebase-admin"));
 const firebase_1 = require("../../firebase");
+const types_1 = require("./types");
 // 타임아웃 헬퍼 함수
 function withTimeout(promise, timeoutMs = 5000) {
     return Promise.race([
@@ -78,7 +79,7 @@ function normalizeLocalizedField(field) {
 // 카테고리 목록 조회
 async function getFAQCategories() {
     try {
-        const categoriesRef = firebase_1.firestore.collection("faqCategories");
+        const categoriesRef = firebase_1.firestore.collection(types_1.COLLECTIONS.FAQ_CATEGORIES);
         // order 기준으로 정렬 (인덱스 문제 대비)
         let q = categoriesRef.orderBy("order", "asc");
         try {
@@ -116,7 +117,7 @@ async function getFAQCategories() {
 // 카테고리 단건 조회
 async function getFAQCategoryById(id) {
     try {
-        const categoryRef = firebase_1.firestore.collection("faqCategories").doc(id);
+        const categoryRef = firebase_1.firestore.collection(types_1.COLLECTIONS.FAQ_CATEGORIES).doc(id);
         const categorySnap = await withTimeout(categoryRef.get(), 5000);
         if (!categorySnap.exists) {
             return null;
@@ -156,13 +157,13 @@ async function updateFAQCategory(id, category) {
 }
 // 카테고리 삭제
 async function deleteFAQCategory(id) {
-    const categoryRef = firebase_1.firestore.collection("faqCategories").doc(id);
+    const categoryRef = firebase_1.firestore.collection(types_1.COLLECTIONS.FAQ_CATEGORIES).doc(id);
     await withTimeout(categoryRef.delete(), 5000);
 }
 // 카테고리 사용 여부 확인 (FAQ에서 사용 중인지)
 async function isCategoryInUse(categoryId) {
     try {
-        const faqsRef = firebase_1.firestore.collection("faqs");
+        const faqsRef = firebase_1.firestore.collection(types_1.COLLECTIONS.FAQS);
         const q = faqsRef.where("categoryId", "==", categoryId);
         const querySnapshot = await withTimeout(q.get(), 5000);
         return querySnapshot.size > 0;

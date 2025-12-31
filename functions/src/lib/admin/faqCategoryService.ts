@@ -1,6 +1,7 @@
 import * as admin from "firebase-admin";
 import { firestore } from "../../firebase";
 import type { FAQCategory, LocalizedField } from "./types";
+import { COLLECTIONS } from "./types";
 
 // 타임아웃 헬퍼 함수
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 5000): Promise<T> {
@@ -41,7 +42,7 @@ function normalizeLocalizedField(field?: { ko?: string; en?: string }): Localize
 // 카테고리 목록 조회
 export async function getFAQCategories(): Promise<FAQCategory[]> {
   try {
-    const categoriesRef = firestore.collection("faqCategories");
+    const categoriesRef = firestore.collection(COLLECTIONS.FAQ_CATEGORIES);
 
     // order 기준으로 정렬 (인덱스 문제 대비)
     let q = categoriesRef.orderBy("order", "asc");
@@ -83,7 +84,7 @@ export async function getFAQCategories(): Promise<FAQCategory[]> {
 // 카테고리 단건 조회
 export async function getFAQCategoryById(id: string): Promise<FAQCategory | null> {
   try {
-    const categoryRef = firestore.collection("faqCategories").doc(id);
+    const categoryRef = firestore.collection(COLLECTIONS.FAQ_CATEGORIES).doc(id);
     const categorySnap = await withTimeout(categoryRef.get(), 5000);
 
     if (!categorySnap.exists) {
@@ -127,14 +128,14 @@ export async function updateFAQCategory(id: string, category: Partial<FAQCategor
 
 // 카테고리 삭제
 export async function deleteFAQCategory(id: string): Promise<void> {
-  const categoryRef = firestore.collection("faqCategories").doc(id);
+  const categoryRef = firestore.collection(COLLECTIONS.FAQ_CATEGORIES).doc(id);
   await withTimeout(categoryRef.delete(), 5000);
 }
 
 // 카테고리 사용 여부 확인 (FAQ에서 사용 중인지)
 export async function isCategoryInUse(categoryId: string): Promise<boolean> {
   try {
-    const faqsRef = firestore.collection("faqs");
+    const faqsRef = firestore.collection(COLLECTIONS.FAQS);
     const q = faqsRef.where("categoryId", "==", categoryId);
     const querySnapshot = await withTimeout(q.get(), 5000);
 

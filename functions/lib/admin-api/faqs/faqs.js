@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handle = handle;
 const firebase_1 = require("../../firebase");
+const types_1 = require("../../lib/admin/types");
 const firestore_1 = require("firebase-admin/firestore");
 const requestAuth_1 = require("../_shared/requestAuth");
 const firestoreUtils_1 = require("../_shared/firestoreUtils");
@@ -21,7 +22,9 @@ async function handleGet(request, response) {
         const orderDirection = request.query.orderDirection;
         const page = parseInt(request.query.page) || 1;
         const limit = parseInt(request.query.limit) || 20;
-        let q = firebase_1.firestore.collection("faqs");
+        const enabledKo = request.query.enabledKo === 'true';
+        const enabledEn = request.query.enabledEn === 'true';
+        let q = firebase_1.firestore.collection(types_1.COLLECTIONS.FAQS);
         // 카테고리 필터링
         if (categoryId && categoryId !== '__no_category__') {
             q = q.where("categoryId", "==", categoryId);
@@ -55,6 +58,21 @@ async function handleGet(request, response) {
         // 미분류 필터링 (클라이언트 측)
         if (categoryId === '__no_category__') {
             faqs = faqs.filter((faq) => !faq.categoryId || faq.categoryId.trim() === '');
+        }
+        // enabled 필터링 (클라이언트 측)
+        if (enabledKo || enabledEn) {
+            faqs = faqs.filter((faq) => {
+                if (enabledKo && enabledEn) {
+                    return faq.enabled.ko && faq.enabled.en;
+                }
+                else if (enabledKo) {
+                    return faq.enabled.ko;
+                }
+                else if (enabledEn) {
+                    return faq.enabled.en;
+                }
+                return true;
+            });
         }
         // 검색 필터링 (클라이언트 측)
         if (search) {
@@ -116,7 +134,7 @@ async function handlePost(request, response) {
             return;
         }
         const now = firestore_1.Timestamp.fromDate(new Date());
-        const faqsRef = firebase_1.firestore.collection("faqs");
+        const faqsRef = firebase_1.firestore.collection(types_1.COLLECTIONS.FAQS);
         const docRef = await faqsRef.add((0, firestoreUtils_1.removeUndefinedFields)({
             ...body,
             level: body.level ?? 999,

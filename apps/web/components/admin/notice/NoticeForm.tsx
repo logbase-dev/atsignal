@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import type { Notice, LocalizedField } from '@/lib/admin/types';
 import { createNotice, getNoticeById, updateNotice } from '@/lib/admin/noticeService';
 import { adminFetch } from '@/lib/admin/api';
+import { NextraMarkdownField } from '@/components/editor/NextraMarkdownField';
 
 type Locale = 'ko' | 'en';
 
@@ -164,7 +165,7 @@ export function NoticeForm({ mode, id }: NoticeFormProps) {
       displayEndAt: displayEndAt ? new Date(displayEndAt) : undefined,
       published: publishedOverride !== undefined ? publishedOverride : published,
       editorType,
-      saveFormat,
+      saveFormat: editorType === 'nextra' ? 'markdown' : saveFormat,
       enabled: { ko: enabledKo, en: enabledEn },
       isTop,
     };
@@ -431,7 +432,7 @@ export function NoticeForm({ mode, id }: NoticeFormProps) {
         <div style={{ ...rowStyle, marginTop: '1.5rem' }}>
           <div>
             <label style={labelStyle}>노출 시작일시 (선택사항)</label>
-            <p style={helpTextStyle}>이 날짜 이후부터 노출됩니다.</p>
+            <p style={helpTextStyle}>이 날짜 이후부터 노출됩니다.(미선택시 즉시 노출)</p>
             <input
               type="datetime-local"
               value={displayStartAt}
@@ -441,7 +442,7 @@ export function NoticeForm({ mode, id }: NoticeFormProps) {
           </div>
           <div>
             <label style={labelStyle}>노출 종료일시 (선택사항)</label>
-            <p style={helpTextStyle}>이 날짜까지 노출됩니다.</p>
+            <p style={helpTextStyle}>이 날짜까지 노출됩니다.(미선택시 무기한 노출)</p>
             <input
               type="datetime-local"
               value={displayEndAt}
@@ -460,7 +461,12 @@ export function NoticeForm({ mode, id }: NoticeFormProps) {
             <span style={{ fontSize: '0.85rem', color: '#6b7280' }}>에디터 타입:</span>
             <select
               value={editorType}
-              onChange={(e) => setEditorType(e.target.value as 'nextra' | 'toast')}
+              onChange={(e) => {
+                const newType = e.target.value as 'nextra' | 'toast';
+                const message =
+                  '에디터를 전환하면 현재 입력된 내용이 그대로 유지됩니다.\n\n⚠️ 주의사항:\n- 에디터 간 호환성 문제가 발생할 수 있습니다.\n- 전환 후 반드시 내용을 확인하세요.\n\n계속하시겠습니까?';
+                if (window.confirm(message)) setEditorType(newType);
+              }}
               style={{ padding: '0.5rem 1rem', borderRadius: '0.5rem', border: '1px solid #d1d5db', fontSize: '0.9rem', backgroundColor: '#fff' }}
             >
               <option value="toast">TOAST UI Editor</option>
@@ -511,14 +517,27 @@ export function NoticeForm({ mode, id }: NoticeFormProps) {
           </label>
           <p style={helpTextStyle}>현재 언어({localeTab.toUpperCase()}) 기준 본문을 입력합니다.</p>
           <div style={{ border: '1px solid #e5e7eb', borderRadius: '0.5rem', overflow: 'hidden' }}>
-            <ToastMarkdownEditor
-              value={(localeTab === 'ko' ? content.ko : content.en) || ''}
-              onChange={(next) => setContent((p) => ({ ...p, [localeTab]: next } as any))}
-              saveFormat={saveFormat}
-              onSaveFormatChange={setSaveFormat}
-              isNewPage={mode === 'create'}
-              height="680px"
-            />
+            {editorType === 'nextra' ? (
+              <NextraMarkdownField
+                id={`content-${localeTab}`}
+                label={`본문 ${localeTab === 'ko' ? '(ko)' : '(en)'}`}
+                locale={localeTab}
+                required={localeTab === 'ko'}
+                helperText={`현재 언어(${localeTab.toUpperCase()}) 기준 본문을 입력합니다.`}
+                value={(localeTab === 'ko' ? content.ko : content.en) || ''}
+                onChange={(next) => setContent((p) => ({ ...p, [localeTab]: next } as any))}
+                height="500px"
+              />
+            ) : (
+              <ToastMarkdownEditor
+                value={(localeTab === 'ko' ? content.ko : content.en) || ''}
+                onChange={(next) => setContent((p) => ({ ...p, [localeTab]: next } as any))}
+                saveFormat={saveFormat}
+                onSaveFormatChange={setSaveFormat}
+                isNewPage={mode === 'create'}
+                height="500px"
+              />
+            )}
           </div>
         </div>
       </div>

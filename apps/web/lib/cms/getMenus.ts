@@ -1,5 +1,6 @@
 import { collection, query, where, orderBy, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { COLLECTIONS } from "@/lib/admin/types";
 
 export type Site = 'web' | 'docs';
 export type Locale = 'ko' | 'en';
@@ -10,7 +11,7 @@ export async function getMenusByLocale(site: Site, locale: Locale) {
     return [];
   }
 
-  const menusRef = collection(db, "menus");
+  const menusRef = collection(db, COLLECTIONS.MENUS);
   // orderBy를 제거하고 클라이언트 사이드에서 정렬 (인덱스 불필요)
   // enabled 필터링도 클라이언트 사이드에서 처리 (객체 구조이므로)
   const q = query(
