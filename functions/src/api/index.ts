@@ -184,7 +184,7 @@ app.use(async (req: Request, res: Response, next: NextFunction) => {
 export const api = functions
   .region("asia-northeast3")
   .runWith({
-    timeoutSeconds: 60,
-    memory: "256MB", // 기본 메모리 (이미지 업로드는 Next.js API Route에서 처리)
+    timeoutSeconds: 300, // 5분으로 증가 (이미지 업로드용)
+    memory: "512MB", // 메모리 증가 (이미지 처리용)
   })
   .https.onRequest(app);

@@ -139,11 +139,13 @@ export async function getBlogPosts(options?: {
   published?: boolean;
 }): Promise<{ posts: BlogPost[]; total: number; page: number; limit: number; totalPages: number }> {
   try {
+    console.log("[getBlogPosts] 시작, 옵션:", options);
     const page = options?.page || 1;
     const limit = options?.limit || 20;
     const offset = (page - 1) * limit;
 
     let postsRef = firestore.collection(COLLECTIONS.BLOGS) as FirebaseFirestore.Query;
+    console.log("[getBlogPosts] 컬렉션 참조 생성:", COLLECTIONS.BLOGS);
     
     // 카테고리 필터
     if (options?.categoryId && options.categoryId.trim()) {
@@ -166,6 +168,7 @@ export async function getBlogPosts(options?: {
       // 검색어가 있으면 더 많은 데이터를 가져와서 필터링
       console.log("[getBlogPosts] 검색어 필터 적용:", options.search);
       const searchSnap = await withTimeout(postsRef.orderBy("createdAt", "desc").limit(1000).get(), 10000);
+      console.log("[getBlogPosts] 검색용 문서 조회 완료, 개수:", searchSnap.size);
       let allPosts = searchSnap.docs.map((d) => mapPost(d.id, d.data() as Record<string, any>));
       
       const searchLower = options.search.toLowerCase().trim();
@@ -188,24 +191,31 @@ export async function getBlogPosts(options?: {
       const startIdx = offset;
       const endIdx = offset + limit;
       posts = allPosts.slice(startIdx, endIdx);
+      console.log("[getBlogPosts] 검색 결과:", { total, posts: posts.length });
     } else {
       // 검색어가 없으면 기존 방식 사용
+      console.log("[getBlogPosts] 일반 조회 시작");
       // 총 개수 조회 (count()가 지원되지 않을 수 있으므로 전체 조회로 대체)
       try {
         const countSnap = await withTimeout(postsRef.count().get(), 5000);
         total = countSnap.data().count;
+        console.log("[getBlogPosts] count() 사용, 총 개수:", total);
       } catch (countError) {
         // count()가 지원되지 않으면 전체 문서를 가져와서 개수 계산 (성능상 비효율적이지만 작동함)
         console.warn("[getBlogPosts] count() not supported, using fallback method");
         const allSnap = await withTimeout(postsRef.get(), 10000);
         total = allSnap.size;
+        console.log("[getBlogPosts] fallback 방식, 총 개수:", total);
       }
       
       const q = postsRef.orderBy("createdAt", "desc").limit(limit).offset(offset);
+      console.log("[getBlogPosts] 페이지네이션 쿼리 실행, limit:", limit, "offset:", offset);
       const snap = await withTimeout(q.get(), 5000);
+      console.log("[getBlogPosts] 문서 조회 완료, 개수:", snap.size);
       posts = snap.docs.map((d) => mapPost(d.id, d.data() as Record<string, any>));
     }
 
+    console.log("[getBlogPosts] 최종 결과:", { posts: posts.length, total, page, limit });
     return {
       posts,
       total,
@@ -215,6 +225,7 @@ export async function getBlogPosts(options?: {
     };
   } catch (error: any) {
     console.error("[getBlogPosts] 에러:", error?.message || error);
+    console.error("[getBlogPosts] 에러 스택:", error?.stack);
     return {
       posts: [],
       total: 0,
