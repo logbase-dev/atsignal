@@ -148,14 +148,17 @@ body:not(.admin-mode) .logo-text:not(#header .logo-text):not(.header .logo-text)
 }
 
 .nav {
-  display: flex;
+  display: none;
   align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  background: #0b0f14; /* deep navy-black */
-  padding: 0.75rem 1.25rem;
-  border-radius: 9999px; /* pill */
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06), 0 8px 24px rgba(0, 0, 0, 0.15);
+  gap: 2rem;
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+  justify-content: center;
+  white-space: nowrap;
+  width: auto;
+  margin: 0 auto;
 }
 
 /* Admin mode에서 .nav 스타일 제외 */
@@ -165,6 +168,19 @@ body.admin-mode .header-nav .nav {
   padding: 0 !important;
   border-radius: 0 !important;
   box-shadow: none !important;
+}
+
+.nav-wrapper {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.nav-overflow {
+  display: flex !important;
+  overflow-x: auto;
+  white-space: nowrap;
 }
 
 .nav-menu-items {
@@ -186,6 +202,12 @@ body.admin-mode .header-nav .nav {
 /* Admin mode에서 .nav-item 스타일 제외 */
 body:not(.admin-mode) .nav-item {
   position: relative;
+}
+
+@media (min-width: 768px) {
+  .nav {
+    display: flex;
+  }
 }
 
 .nav-button {
@@ -248,20 +270,22 @@ body.admin-mode .header-nav .nav-link:hover {
 
 /* Admin mode에서는 .dropdown 스타일 적용 안 함 */
 body:not(.admin-mode) .dropdown {
+  --dropdown-pad: 0.5rem;
+  --dropdown-fg: #e5e7eb;
+  --dropdown-fg-hover: #ffffff;
   position: absolute;
   top: 100%;
   left: 0;
   margin-top: 0.25rem;
-  min-width: 16rem;
-  background: #1a1a1a; /* 어두운 배경색으로 변경 */
-  border: 1px solid rgba(255, 255, 255, 0.1); /* 테두리 색상 변경 */
+  width: auto;
+  min-width: 10rem;
+  max-width: 14rem;
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 0.5rem;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   z-index: 50;
-  padding: 0.5rem;
-  transform-origin: top center;
-  animation: dropdownFade 180ms ease both;
-  will-change: opacity, transform;
+  padding: var(--dropdown-pad) 0;
 }
 
 /* Admin mode에서는 .dropdown-section 스타일 적용 안 함 */
@@ -285,31 +309,58 @@ body:not(.admin-mode) .dropdown-section {
   display: block;
   padding: 0.375rem 0.5rem;
   font-size: 0.875rem;
-  color: #d1d5db; /* 밝은 회색으로 변경 (gray-300) */
+  color: var(--dropdown-fg, var(--gray-700));
   text-decoration: none;
   border-radius: 0.25rem;
   transition: background 0.2s;
 }
 
 .dropdown-link:hover {
-  background: rgba(255, 255, 255, 0.1); /* hover 시 배경색 변경 */
-  color: #ffffff; /* hover 시 폰트 색상 변경 */
+  background: transparent;
+  color: var(--dropdown-fg-hover, var(--gray-900));
 }
 
 .dropdown-item-wrapper {
-  /* position 속성을 제거하여 자식 요소가 기준을 잡지 않도록 합니다. */
+  position: relative;
 }
 
 /* Admin mode에서는 .dropdown-item 스타일 적용 안 함 */
 body:not(.admin-mode) .dropdown-item {
   display: block;
-  position: relative; /* 하위 메뉴의 위치 기준점이 되도록 설정합니다. */
-  /* .dropdown-link에서 스타일을 처리하므로 여기서는 제거합니다. */
+  position: relative;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  color: var(--dropdown-fg, var(--gray-700));
+  text-decoration: none;
+  transition: background 0.2s, border-left 0.2s;
+  border-left: 3px solid transparent;
 }
 
 /* Admin mode에서는 .dropdown-item:hover 스타일 적용 안 함 */
 body:not(.admin-mode) .dropdown-item:hover {
-  /* .dropdown-link:hover에서 처리하므로 여기서는 제거합니다. */
+  background: rgba(255, 255, 255, 0.08);
+  border-left: 3px solid var(--blue-600);
+  color: var(--dropdown-fg-hover, var(--gray-900));
+}
+
+/* Leaf items: keep panel only, hide inner hover chip */
+.dropdown-item-wrapper:not(:has(.cascading-dropdown-nested)) .dropdown-item:hover,
+.dropdown-item-wrapper:not(:has(.cascading-dropdown-nested)) .dropdown-item:focus {
+  background: rgba(255, 255, 255, 0.08) !important; /* 리버스 배경만 유지 */
+  border-left-color: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+.dropdown-item-wrapper:not(:has(.cascading-dropdown-nested)) .dropdown-item:hover .dropdown-link,
+.dropdown-item-wrapper:not(:has(.cascading-dropdown-nested)) .dropdown-item:focus .dropdown-link {
+  background: transparent !important; /* 내부 리버스 색 제거 */
+}
+
+.dropdown-item-wrapper .cascading-dropdown-nested {
+  position: absolute;
+  left: 100%;
+  top: 0;
+  margin-left: 0.25rem;
 }
 
 .cta-button {
@@ -419,6 +470,7 @@ body:not(.admin-mode) .dropdown-item:hover {
 .header--notch {
   --notch-header-h: 72px;
   --notch-body-width: min(1280px, calc(100% - 120px));
+  --notch-gap: 25px;
   --notch-side-span: calc(1440px * 0.05);
   --notch-side-depth: 9px;
   --notch-bg: #0e0e0e;
@@ -467,16 +519,32 @@ body:not(.admin-mode) .dropdown-item:hover {
   height: var(--notch-header-h);
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   padding: 0 22px;
   box-sizing: border-box;
   color: var(--notch-text);
   pointer-events: auto;
   transform: translateX(-50%);
+  overflow: visible;
+}
+
+.notch-nav .header-content {
+  width: var(--notch-body-width);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
 }
 
 .nav {
   position: relative;
+}
+
+.nav-wrapper {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
 }
 
 .notch-nav-menu-items .nav-button,
@@ -501,13 +569,18 @@ body:not(.admin-mode) .dropdown-item:hover {
 }
 
 .logo.notch-logo {
-  margin-left: 25px; /* shifted further right */
+  margin-left: var(--notch-gap);
 }
 
 .header--notch .nav-actions {
-  margin-right: 40px; /* shifted further left */
+  margin-right: 0;
   transform: none;
 }
+
+.nav-actions-outside {
+  display: none;
+}
+
 
 @media (max-width: 767px) {
   .notch-nav {
@@ -563,18 +636,69 @@ body:not(.admin-mode) .dropdown-item:hover {
 
 /* Benefit Item */
 .benefit-item {
-  padding: 1.5rem;
+  padding: 1rem 1.25rem; /* lowered height ~30% */
   background: white;
   border-radius: 0.5rem;
   border: 1px solid var(--gray-200);
   display: flex;
-  align-items: center;
-  gap: 1rem;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.5rem;
 }
 
 .dark-mode .benefit-item {
   background: var(--card-bg);
   border-color: var(--border-color);
+}
+
+.benefits-layout {
+  display: grid;
+  grid-template-columns: 3fr 7fr;
+  align-items: start; /* prevent left visual from shifting when accordion height changes */
+  gap: 2rem;
+}
+
+.benefits-title {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.benefits-visual {
+  min-height: 320px;
+  background: linear-gradient(135deg, rgba(0, 161, 239, 0.1), rgba(0, 125, 199, 0.18));
+  border-radius: 16px;
+  border: 1px dashed rgba(0, 161, 239, 0.35);
+}
+
+.benefits-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.benefits-list-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.benefits-list .benefit-item {
+  margin: 0;
+}
+
+.dark-mode .benefits-visual {
+  background: linear-gradient(135deg, rgba(0, 161, 239, 0.08), rgba(0, 125, 199, 0.12));
+  border-color: rgba(0, 161, 239, 0.25);
+}
+
+@media (max-width: 960px) {
+  .benefits-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .benefits-visual {
+    min-height: 200px;
+  }
 }
 
 .benefit-icon {
@@ -600,8 +724,43 @@ body:not(.admin-mode) .dropdown-item:hover {
   color: var(--gray-900);
 }
 
+.benefit-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.benefit-item-expandable .benefit-details {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  padding-left: 3rem;
+  color: #ffffff;
+  font-size: 0.95rem;
+  transition: max-height 360ms ease, opacity 320ms ease;
+}
+
+.benefit-item-expandable:hover .benefit-details,
+.benefit-item-expandable:focus-within .benefit-details {
+  max-height: 400px;
+  opacity: 1;
+}
+
+.benefit-item-expandable ul {
+  list-style: disc;
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.benefit-item-expandable li + li {
+  margin-top: 0.35rem;
+}
 .dark-mode .benefit-text {
   color: var(--text-primary);
+}
+
+.dark-mode .benefit-item-expandable .benefit-details {
+  color: #ffffff;
 }
 
 /* CTA Description */
@@ -769,18 +928,69 @@ body:not(.admin-mode) .dropdown-item:hover {
   white-space: pre-line;
 }
 
+.rolling-banner-wrap {
+  --notice-space: 86px;
+  --rolling-width: 93vw;
+  position: relative;
+  width: var(--rolling-width);
+  margin: -1.1rem auto 0.75rem auto;
+  display: flex;
+  align-items: center;
+  transform: translateX(calc(-0.5 * (var(--notice-space) - 60px))); /* balance left label vs right toggle overhang */
+  gap: 8px;
+}
+
+.rolling-label {
+  position: absolute;
+  left: calc(-1 * var(--notice-space) + 12px);
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 4px 10px;
+  background: rgba(10, 20, 32, 0.6); /* 어두운 톤의 칩 배경 */
+  color: #eaf3ff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+  z-index: 3;
+  border: 1px solid rgba(255, 255, 255, 0.12); /* 얇은 보더 */
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25); /* 떠 있는 느낌 */
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rolling-label-button {
+  border: none;
+  background: rgba(10, 20, 32, 0.6);
+  cursor: pointer;
+  outline: none;
+}
+
+.rolling-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.rolling-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(234, 243, 255, 0.8);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+
 .rolling-banner {
   display: block;
-  overflow: visible;
-  width: 100vw; /* span full viewport */
-  margin: -1.1rem 0 0.75rem; /* pull even closer to the notch bar */
-  margin-left: calc(50% - 50vw); /* align full-width band with viewport edges */
+  overflow: hidden;
+  width: 100%;
   position: relative;
   height: 2.5em; /* reserve space so layout doesn't shift */
   min-height: 2.5em;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.4));
-  border-radius: 0;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  background: linear-gradient(135deg, rgba(32, 189, 255, 0.12), rgba(0, 125, 199, 0.18));
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 125, 199, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
   text-decoration: none;
   color: inherit;
   transition: max-height 0.2s ease, opacity 0.2s ease, padding 0.2s ease;
@@ -797,20 +1007,27 @@ body:not(.admin-mode) .dropdown-item:hover {
   overflow: visible; /* keep toggle visible */
 }
 
-.rolling-banner.collapsed::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 2px;
-  background: rgba(255, 255, 255, 0.35); /* thin line above toggle */
-}
-
 .rolling-banner.collapsed .rolling-track {
   visibility: hidden;
   opacity: 0;
   pointer-events: none;
+}
+
+.rolling-banner::after {
+  content: 'Notice';
+  position: absolute;
+  left: calc(-1 * var(--notice-space) + 12px);
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #eaf3ff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+  z-index: 3;
+  pointer-events: none; /* 버튼 클릭을 가리지 않도록 */
 }
 
 .rolling-track {
@@ -819,14 +1036,18 @@ body:not(.admin-mode) .dropdown-item:hover {
   gap: 48px;
   white-space: pre;
   position: absolute;
-  --roll-start-offset: 96px; /* distance from right edge to start point (aligns just left of toggle) */
-  left: calc(100vw - var(--roll-start-offset)); /* start just left of the toggle on the right */
+  --roll-start-offset: calc(96px + var(--notice-space)); /* start further right to clear label mask */
+  left: calc(var(--rolling-width, 95vw) - var(--roll-start-offset)); /* align start with banner width */
   top: 50%;
   animation: rollingTicker 38s linear infinite;
-  font-size: 1.25rem;
-  color: #0a0a0a;
+  font-size: 1.125rem;
+  color: #f5f8ff;
   min-width: max-content;
   animation-play-state: var(--rolling-state, running);
+}
+.rolling-track a.rolling-banner-link {
+  color: inherit;
+  text-decoration: none;
 }
 
 .rolling-track span {
@@ -835,17 +1056,22 @@ body:not(.admin-mode) .dropdown-item:hover {
 
 .rolling-toggle {
   position: absolute;
-  right: 8px; /* align close to rolling start */
-  top: 50%; /* vertically center inside the band */
+  right: 8px;
+  top: 50%;
   transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(0, 0, 0, 0.25);
-  color: #0b0b0b;
-  border-radius: 8px;
-  padding: 2px 8px;
-  font-size: 0.85rem;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #eaf3ff;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+  box-shadow: none;
+}
+
+.rolling-toggle-outside {
+  display: none;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -1439,6 +1665,8 @@ body:not(.admin-mode) .dropdown-item:hover {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  align-items: center;
+  text-align: center;
 }
 
 .footer-logo {
@@ -1459,7 +1687,8 @@ body:not(.admin-mode) .dropdown-item:hover {
   color: var(--gray-400);
   font-size: 0.875rem;
   line-height: 1.6;
-  max-width: 20rem;
+  max-width: 26rem;
+  text-align: center;
 }
 
 .footer-links {
@@ -1939,6 +2168,43 @@ body:not(.admin-mode) .dropdown-item:hover {
   gap: 0.5rem;
 }
 
+.newsletter-form-inline {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.newsletter-form-inline label {
+  width: 120px;
+  margin: 0;
+  text-align: left;
+  flex-shrink: 0;
+}
+
+.newsletter-form-inline input {
+  flex: 1;
+}
+
+.newsletter-form-inline {
+  flex-wrap: wrap;
+}
+
+.newsletter-form-inline label {
+  flex-basis: 120px;
+}
+
+@media (max-width: 640px) {
+  .newsletter-form-inline {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .newsletter-form-inline label {
+    flex-basis: auto;
+    width: auto;
+  }
+}
+
 .newsletter-form-group label {
   font-size: 0.875rem;
   font-weight: 500;
@@ -1960,6 +2226,31 @@ body:not(.admin-mode) .dropdown-item:hover {
   transition: all 0.2s ease;
   background: var(--background);
   color: var(--foreground);
+}
+
+.newsletter-form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--gray-300);
+  border-radius: 6px;
+  font-size: 1rem;
+  min-height: 7rem;
+  transition: all 0.2s ease;
+  background: var(--background);
+  color: var(--foreground);
+  resize: vertical;
+}
+
+.newsletter-form-group textarea:focus {
+  outline: none;
+  border-color: var(--main-500);
+  box-shadow: 0 0 0 3px rgba(0, 161, 239, 0.1);
+}
+
+.newsletter-form-group textarea:disabled {
+  background: var(--gray-100);
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .newsletter-form-group input:focus {
@@ -2504,20 +2795,19 @@ body:not(.admin-mode) .dropdown-item:hover {
 /* Cascading Dropdown 스타일 */
 .cascading-dropdown {
   position: absolute;
-  top: -0.5rem; /* 부모 드롭다운의 패딩(0.5rem)만큼 위치를 보정합니다. */
+  top: 0;
   left: 100%;
+  margin-top: 0;
   margin-left: 0.25rem;
-  /* .dropdown 스타일과 일치시키기 위해 아래 속성들로 변경합니다. */
-  min-width: 16rem;
-  background: #1a1a1a; /* 어두운 배경색으로 변경 */
-  border: 1px solid rgba(255, 255, 255, 0.1); /* 테두리 색상 변경 */
+  width: auto;
+  min-width: 10rem;
+  max-width: 14rem;
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 0.5rem;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   z-index: 50;
-  padding: 0.5rem;
-  transform-origin: top center;
-  animation: dropdownFade 180ms ease both;
-  will-change: opacity, transform;
+  padding: var(--dropdown-pad, 0.5rem) 0;
 }
 
 .cascading-dropdown-nested {
@@ -2525,6 +2815,10 @@ body:not(.admin-mode) .dropdown-item:hover {
   top: 0;
   left: 100%;
   margin-left: 0.25rem;
+}
+
+.dropdown-item-container {
+  position: relative;
 }
 
 .dropdown-item-wrapper {
@@ -2581,10 +2875,15 @@ body:not(.admin-mode) .dropdown-item:hover {
 }
 
 .history-year::after {
-  content: '﹀';
-  font-size: 0.7rem;
-  opacity: 0.4;
+  content: '';
+}
+
+.history-chevron {
+  font-size: 0.8rem;
+  opacity: 0.45;
   transition: transform 0.2s ease, opacity 0.2s ease;
+  padding: 0 4px;
+  margin-left: auto;
 }
 
 .history-body {
@@ -2620,9 +2919,14 @@ body:not(.admin-mode) .dropdown-item:hover {
   margin-top: 6px;
 }
 
-.history-item:hover .history-year::after {
+.history-item:hover .history-chevron {
   transform: rotate(180deg);
-  opacity: 0.7;
+  opacity: 0.75;
+}
+
+.history-item:hover .history-year::after {
+  transform: none;
+  opacity: 1;
 }
 
 @media (max-width: 640px) {
@@ -2634,35 +2938,10 @@ body:not(.admin-mode) .dropdown-item:hover {
     font-size: 0.8rem;
   }
 }
-
-.rolling-track {
-  display: inline-flex;
-  align-items: center;
-  gap: 48px;
-  white-space: pre;
+.dropdown-item-wrapper .cascading-dropdown-nested {
   position: absolute;
-  --roll-start-offset: 96px;
-  left: calc(100vw - var(--roll-start-offset));
-  top: 50%;
-  animation: rollingTicker 38s linear infinite;
-  font-size: 1.25rem;
-  color: #0a0a0a;
-  min-width: max-content;
-  animation-play-state: var(--rolling-state, running);
-}
-
-.rolling-item {
-  text-decoration: none;
-  color: inherit;
-  white-space: nowrap;
-  margin-right: 48px;
-  flex-shrink: 0;
-}
-
-.rolling-item:hover {
-  text-decoration: none;
-}
-
-.rolling-track span {
-  padding-right: 48px;
+  left: 100%;
+  top: 0;
+  margin-top: -0.5rem; /* 부모 아이템과 수직 정렬을 위한 미세 조정 */
+  margin-left: 0.25rem;
 }

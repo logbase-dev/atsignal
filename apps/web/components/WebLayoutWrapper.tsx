@@ -13,6 +13,8 @@ interface WebLayoutWrapperProps {
 export default function WebLayoutWrapper({ children, menuTree, footerMenus }: WebLayoutWrapperProps) {
   const pathname = usePathname();
   const isAdminPage = pathname?.startsWith('/admin') ?? false;
+   const normalizedPath = pathname?.replace(/\/+$/, '') || '';
+   const isPrivacyPage = normalizedPath.endsWith('/privacy');
 
   if (isAdminPage) {
     // 관리자 페이지는 Header/Footer 없이 children만 렌더링
@@ -22,7 +24,7 @@ export default function WebLayoutWrapper({ children, menuTree, footerMenus }: We
   // 일반 웹 페이지는 Header/Footer 포함
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <Header menuTree={menuTree} />
+      {!isPrivacyPage && <Header menuTree={menuTree} />}
       <main className="min-h-screen bg-gray-50 dark:bg-gray-900" style={{ flex: 1 }}>
         {children}
       </main>
@@ -30,4 +32,3 @@ export default function WebLayoutWrapper({ children, menuTree, footerMenus }: We
     </div>
   );
 }
-

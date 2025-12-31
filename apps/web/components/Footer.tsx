@@ -197,7 +197,7 @@ export default function Footer({ menus = [] }: FooterProps) {
             <p>© {currentYear} Nethru. All rights reserved.</p>
           </div>
           <div className="footer-legal">
-            <Link href={pathToUrl("/Product/Security&Privacy", locale)} className="footer-legal-link">
+            <Link href={`/${locale}/privacy`} className="footer-legal-link">
               Privacy Policy
             </Link>
             <span className="footer-separator">·</span>
@@ -210,6 +210,5 @@ export default function Footer({ menus = [] }: FooterProps) {
     </footer>
   );
 }
-
 
 
