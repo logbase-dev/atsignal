@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { FAQCardCarousel } from '@/components/Resources/faq/FAQCardCarousel';
-import { FAQAccordion } from '@/components/Resources/faq/FAQAccordion';
-import { FAQCardView } from '@/components/Resources/faq/FAQCardView';
+import { FAQCardCarousel } from '@/components/resources/faq/FAQCardCarousel';
+import { FAQAccordion } from '@/components/resources/faq/FAQAccordion';
+import { FAQCardView } from '@/components/resources/faq/FAQCardView';
 import { getPublicFAQs, getPublicFAQCategories } from '@/lib/resources/faq/faqService';
 import type { FAQ, FAQCategory } from '@/lib/admin/types';
 
