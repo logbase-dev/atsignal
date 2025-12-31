@@ -1,9 +1,10 @@
 # Firebase App Hosting configuration for web app
 runtime: nodejs20
 
-# pnpm을 사용하여 빌드
-buildCommand: pnpm install && pnpm run build
-runCommand: pnpm start
+# npm을 사용하여 빌드 (Firebase App Hosting 권장)
+# --legacy-peer-deps로 의존성 충돌 해결
+buildCommand: npm install --legacy-peer-deps && npm run build
+runCommand: npm start
 
 # Firebase 환경 변수
 env:
