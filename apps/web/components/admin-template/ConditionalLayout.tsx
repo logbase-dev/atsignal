@@ -1,15 +1,44 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
-import { useLayoutEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useLayoutEffect, useEffect, useState } from 'react';
 import Script from 'next/script';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import Footer from './Footer';
+import { adminFetch } from '@/lib/admin/api';
 
 export default function ConditionalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const isLoginPage = pathname === '/admin/login';
+
+  // 인증 체크
+  useEffect(() => {
+    if (isLoginPage) {
+      setIsAuthenticated(true); // 로그인 페이지는 인증 체크 안함
+      return;
+    }
+
+    const checkAuth = async () => {
+      try {
+        const response = await adminFetch('auth/me');
+        if (response.ok) {
+          setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
+          router.push('/admin/login');
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        setIsAuthenticated(false);
+        router.push('/admin/login');
+      }
+    };
+
+    checkAuth();
+  }, [pathname, router, isLoginPage]);
 
   // useLayoutEffect를 사용하여 DOM 업데이트 전에 실행 (hydration 불일치 방지)
   useLayoutEffect(() => {
@@ -35,6 +64,52 @@ export default function ConditionalLayout({ children }: { children: React.ReactN
       }
     })();
   `;
+
+  // 인증 체크 중이면 로딩 표시
+  if (isAuthenticated === null && !isLoginPage) {
+    return (
+      <>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: adminModeScript,
+          }}
+        />
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          height: '100vh',
+          fontSize: '1.2rem',
+          color: '#666'
+        }}>
+          인증 확인 중...
+        </div>
+      </>
+    );
+  }
+
+  // 인증되지 않았으면 빈 화면 (리다이렉트 중)
+  if (isAuthenticated === false && !isLoginPage) {
+    return (
+      <>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: adminModeScript,
+          }}
+        />
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          height: '100vh',
+          fontSize: '1.2rem',
+          color: '#666'
+        }}>
+          로그인 페이지로 이동 중...
+        </div>
+      </>
+    );
+  }
 
   if (isLoginPage) {
     return (
