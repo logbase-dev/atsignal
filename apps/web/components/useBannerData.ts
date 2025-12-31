@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { getNotices } from '@/lib/admin/noticeService';
-import { getEvents } from '@/lib/admin/eventService';
+import { getPublicNotices } from '@/lib/public/noticeService';
+import { getPublicEvents } from '@/lib/public/eventService';
 import type { Notice, Event } from '@/lib/admin/types';
 
 export interface BannerItem {
@@ -20,21 +20,34 @@ export function useBannerData() {
         setIsLoading(true);
         const now = new Date();
         
+        console.log('[useBannerData] API 호출 시작');
+        
         // 공지사항과 이벤트를 병렬로 가져오기
         const [noticesResponse, eventsResponse] = await Promise.all([
-          getNotices({
+          getPublicNotices({
             page: 1,
             limit: 10,
             published: true,
             showInBanner: true,
+          }).catch(err => {
+            console.error('[useBannerData] Notice API 실패:', err);
+            return { notices: [], total: 0, page: 1, limit: 10, totalPages: 0 };
           }),
-          getEvents({
+          getPublicEvents({
             page: 1,
             limit: 10,
             published: true,
             showInBanner: true,
+          }).catch(err => {
+            console.error('[useBannerData] Event API 실패:', err);
+            return { events: [], total: 0, page: 1, limit: 10, totalPages: 0 };
           }),
         ]);
+        
+        console.log('[useBannerData] API 호출 성공:', {
+          notices: noticesResponse.notices.length,
+          events: eventsResponse.events.length,
+        });
         
         // 공지사항 필터링 및 변환
         const validNotices: BannerItem[] = noticesResponse.notices

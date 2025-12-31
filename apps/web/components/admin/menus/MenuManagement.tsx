@@ -55,7 +55,7 @@ export function MenuManagement({ site, title }: MenuManagementProps) {
       setPages(pageData);
     } catch (error: any) {
       console.error('Failed to load menus:', error);
-      alert(`메뉴를 불러오는 중 오류가 발생했습니다: ${error?.message || '알 수 없는 오류'}`);
+      // alert(`메뉴를 불러오는 중 오류가 발생했습니다: ${error?.message || '알 수 없는 오류'}`);
       setMenus([]);
       setPages([]);
     } finally {
