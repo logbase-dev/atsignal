@@ -41,7 +41,7 @@ export async function getPublicFAQs(options?: {
 
   const qs = params.toString();
   // 공개 API 엔드포인트 사용 (인증 불필요)
-  const response = await fetch(`/api/faqs${qs ? `?${qs}` : ''}`, {
+  const response = await fetch(`/api/resources/faqs${qs ? `?${qs}` : ''}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -66,7 +66,7 @@ export async function getPublicFAQs(options?: {
  * 공개 FAQ 카테고리 API
  */
 export async function getPublicFAQCategories(): Promise<FAQCategory[]> {
-  const response = await fetch('/api/faq-categories', {
+  const response = await fetch('/api/resources/faq-categories', {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

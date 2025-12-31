@@ -4,8 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { FAQCardCarousel } from '@/components/Resources/faq/FAQCardCarousel';
 import { FAQAccordion } from '@/components/Resources/faq/FAQAccordion';
 import { FAQCardView } from '@/components/Resources/faq/FAQCardView';
-import { FAQSearchBar } from '@/components/Resources/faq/FAQSearchBar';
-import { getPublicFAQs, getPublicFAQCategories } from '@/lib/faq/faqService';
+import { getPublicFAQs, getPublicFAQCategories } from '@/lib/resources/faq/faqService';
 import type { FAQ, FAQCategory } from '@/lib/admin/types';
 
 interface PageProps {
@@ -34,6 +33,7 @@ export default function FAQPage({ params }: PageProps) {
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchInput, setSearchInput] = useState(''); // 입력값과 실제 검색값 분리
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'card' | 'accordion'>('accordion');
   const itemsPerPage = 12;
@@ -151,8 +151,17 @@ export default function FAQPage({ params }: PageProps) {
     void loadFAQs();
   }, [loadFAQs]);
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
+  const handleSearch = () => {
+    setSearchQuery(searchInput);
+  };
+
+  const handleClearSearch = () => {
+    setSearchInput('');
+    setSearchQuery('');
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') handleSearch();
   };
 
   const handleCategoryChange = (categoryId: string) => {
@@ -187,7 +196,7 @@ export default function FAQPage({ params }: PageProps) {
           }}>
             FAQ
           </h1> */}
-          <p style={{
+          {/* <p style={{
             fontSize: '1.125rem',
             color: '#666',
             margin: '0 0 2rem 0',
@@ -196,17 +205,78 @@ export default function FAQPage({ params }: PageProps) {
               ? 'Find answers to frequently asked questions' 
               : '자주 묻는 질문에 대한 답변을 찾아보세요'
             }
-          </p>
-          <div style={{ 
-            display: 'flex',
-            justifyContent: 'center',
-            marginBottom: '2rem',
-          }}>
-            <FAQSearchBar 
-              onSearch={handleSearch}
+          </p> */}
+        {/* 검색바 */}
+        <div style={{
+          backgroundColor: '#fff',
+          borderRadius: '12px',
+          padding: '2rem',
+          marginBottom: '2rem',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+        }}>
+          <div style={{ display: 'flex', gap: '0.5rem', maxWidth: '500px', margin: '0 auto' }}>
+            <input 
+              type="text" 
+              value={searchInput} 
+              onChange={(e) => setSearchInput(e.target.value)} 
+              onKeyDown={handleKeyDown}
               placeholder={locale === 'en' ? 'Search FAQs...' : 'FAQ 검색...'}
+              style={{ 
+                flex: 1, 
+                padding: '0.75rem 1rem', 
+                border: '2px solid #e5e5e5', 
+                borderRadius: '8px',
+                fontSize: '1rem',
+                outline: 'none',
+                transition: 'border-color 0.2s ease',
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#20BDFF';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#e5e5e5';
+              }}
             />
+            <button 
+              onClick={handleSearch}
+              style={{ 
+                padding: '0.75rem 1.5rem', 
+                backgroundColor: '#20BDFF', 
+                color: 'white', 
+                border: 'none', 
+                borderRadius: '8px', 
+                cursor: 'pointer',
+                fontSize: '1rem',
+                fontWeight: '500',
+                transition: 'background-color 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#1a9de6';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#20BDFF';
+              }}
+            >
+              {locale === 'en' ? 'Search' : '검색'}
+            </button>
+            {searchQuery && (
+              <button 
+                onClick={handleClearSearch}
+                style={{ 
+                  padding: '0.75rem 1rem', 
+                  backgroundColor: '#6c757d', 
+                  color: 'white', 
+                  border: 'none', 
+                  borderRadius: '8px', 
+                  cursor: 'pointer',
+                  fontSize: '1rem',
+                }}
+              >
+                {locale === 'en' ? 'Clear' : '초기화'}
+              </button>
+            )}
           </div>
+        </div>
         </div>
 
         {/* 상단 고정 FAQ 캐러셀 */}
@@ -246,10 +316,10 @@ export default function FAQPage({ params }: PageProps) {
                 color: '#666',
                 marginLeft: '0.5rem',
               }}>
-                ({locale === 'en' 
+                {locale === 'en' 
                   ? `${total} items, Page ${currentPage}/${totalPages}`
-                  : `총 ${total}개, ${currentPage}/${totalPages} 페이지`
-                })
+                  : `총 ${total}개의 FAQ (${currentPage}/${totalPages} 페이지)`
+                }
               </span>
             )}
           </h3>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { getPublicGlossaries, getPublicGlossaryCategories } from '@/lib/glossary/glossaryService';
+import { getPublicGlossaries, getPublicGlossaryCategories } from '@/lib/resources/glossary/glossaryService';
 import type { Glossary, GlossaryCategory } from '@/lib/admin/types';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';

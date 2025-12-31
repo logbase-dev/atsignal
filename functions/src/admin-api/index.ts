@@ -72,7 +72,7 @@ export async function router(request: Request, response: Response, path: string)
     }
 
     // 공개 API 경로 (GET 요청만 인증 없이 접근 가능)
-    const publicPaths = ["faqs", "faq-categories", "glossaries", "glossary-categories"];
+    const publicPaths = ["faqs", "faq-categories", "glossaries", "glossary-categories", "whatsnew"];
     const isPublicGetRequest = 
       request.method === "GET" && 
       pathParts.length > 0 && 

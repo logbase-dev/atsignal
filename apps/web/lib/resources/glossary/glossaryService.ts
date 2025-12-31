@@ -39,7 +39,7 @@ export async function getPublicGlossaries(options?: {
 
   const qs = params.toString();
   // 공개 API 엔드포인트 사용 (인증 불필요)
-  const response = await fetch(`/api/glossaries${qs ? `?${qs}` : ''}`, {
+  const response = await fetch(`/api/resources/glossaries${qs ? `?${qs}` : ''}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -64,7 +64,7 @@ export async function getPublicGlossaries(options?: {
  * 공개 용어사전 카테고리 API
  */
 export async function getPublicGlossaryCategories(): Promise<GlossaryCategory[]> {
-  const response = await fetch('/api/glossary-categories', {
+  const response = await fetch('/api/resources/glossary-categories', {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
