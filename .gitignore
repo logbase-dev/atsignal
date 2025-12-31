@@ -49,3 +49,6 @@ restore-latest-files.py
 
 # Large video files (use Google Drive or CDN instead)
 apps/web/public/videos/UF 시스템 아키텍처.mp4
+
+# Kiro AI assistant files
+.kiro/
