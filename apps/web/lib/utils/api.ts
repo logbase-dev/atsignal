@@ -17,6 +17,13 @@ export function getPublicApiUrl(path: string): string {
     return `/api/${cleanPath}`;
   }
 
+  // 프로덕션에서 Functions 직접 호출이 안되면 프록시 경로 사용
+  // 환경변수로 제어 가능하게 함
+  const useProxy = process.env.NEXT_PUBLIC_USE_API_PROXY === "true";
+  if (useProxy) {
+    return `/api/${cleanPath}`;
+  }
+
   // 프로덕션에서는 Functions API 사용
   return `https://asia-northeast3-atsignal.cloudfunctions.net/api/${cleanPath}`;
 }
@@ -33,9 +40,28 @@ export async function publicFetch(path: string, init: RequestInit = {}) {
     headers.set("Content-Type", "application/json");
   }
 
-  return fetch(getPublicApiUrl(path), {
-    ...init,
-    headers,
-    mode: 'cors', // CORS 모드 명시적 설정
-  });
+  try {
+    const response = await fetch(getPublicApiUrl(path), {
+      ...init,
+      headers,
+      mode: 'cors', // CORS 모드 명시적 설정
+    });
+
+    // 에러 로깅 추가
+    if (!response.ok) {
+      console.error(`API Error: ${response.status} ${response.statusText}`, {
+        url: getPublicApiUrl(path),
+        method: init.method || 'GET',
+        headers: Object.fromEntries(headers.entries())
+      });
+    }
+
+    return response;
+  } catch (error) {
+    console.error('Network Error:', error, {
+      url: getPublicApiUrl(path),
+      method: init.method || 'GET'
+    });
+    throw error;
+  }
 }

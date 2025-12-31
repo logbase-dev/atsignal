@@ -855,7 +855,277 @@ Route (app)                              Size     First Load JS
 
 ---
 
+---
+
+## 9️⃣ Firebase Functions 배포 성공 (2025-01-01)
+
+### 🎉 Functions 배포 완전 성공!
+
+2025년 1월 1일, Firebase Functions 배포에서 발생했던 `@google-cloud/functions-framework` 의존성 문제를 **완전히 해결**하고 성공적으로 배포했습니다!
+
+### 🚨 발생했던 문제
+
+#### 문제 1: `@google-cloud/functions-framework` 의존성 누락
+
+**에러 메시지:**
+
+```
+Build failed: This project is using pnpm but you have not included the Functions Framework in your dependencies. Please add it by running: 'pnpm add @google-cloud/functions-framework'
+```
+
+**원인:**
+
+- Firebase Functions가 pnpm 사용 시 `@google-cloud/functions-framework`를 명시적으로 요구하도록 변경됨
+- 이전에는 Firebase가 자동으로 처리했지만, 현재는 명시적 의존성 필요
+
+#### 문제 2: 잘못된 위치에 package-lock.json 생성
+
+**문제 상황:**
+
+```bash
+# functions 디렉토리에서 npm install 실행했는데
+cd atsignal/functions
+npm install @google-cloud/functions-framework
+
+# 루트에 package-lock.json이 생성됨 (잘못됨)
+atsignal/package-lock.json  ← 잘못된 위치
+```
+
+**원인:**
+
+- npm이 workspace 설정을 따라서 루트에서 설치
+- functions는 독립적인 프로젝트로 관리되어야 함
+
+#### 문제 3: pnpm-lock.yaml과 package.json 불일치
+
+**에러 메시지:**
+
+```
+ERR_PNPM_OUTDATED_LOCKFILE Cannot install with "frozen-lockfile" because pnpm-lock.yaml is not up to date with package.json
+Failure reason:
+specifiers in the lockfile don't match specifiers in package.json:
+* 1 dependencies were added: @google-cloud/functions-framework@^5.0.0
+```
+
+**원인:**
+
+- functions 디렉토리에 `pnpm-lock.yaml`과 `package-lock.json`이 동시 존재
+- Firebase가 pnpm을 우선 선택했지만 lockfile이 동기화되지 않음
+
+### ✅ 해결 과정
+
+#### 1단계: 잘못 생성된 파일 정리
+
+```bash
+# 루트의 잘못된 package-lock.json 삭제
+rm atsignal/package-lock.json
+
+# functions의 pnpm-lock.yaml 삭제 (npm 사용으로 통일)
+rm atsignal/functions/pnpm-lock.yaml
+```
+
+#### 2단계: 올바른 의존성 설치
+
+```bash
+# functions 디렉토리에서 올바르게 설치
+cd atsignal/functions
+npm install --no-workspaces @google-cloud/functions-framework
+```
+
+**결과:**
+
+- `functions/package-lock.json` 올바르게 생성 ✅
+- `functions/package.json`에 의존성 추가 ✅
+
+#### 3단계: 배포 실행
+
+```bash
+# 배포 스크립트 실행
+./scripts/deploy-functions.sh
+```
+
+### 🎯 성공한 최종 구성
+
+#### Functions 디렉토리 구조
+
+```
+atsignal/functions/
+├── package.json              # @google-cloud/functions-framework 포함
+├── package-lock.json         # npm lockfile (pnpm-lock.yaml 제거됨)
+├── node_modules/             # 독립적인 node_modules
+├── src/                      # 소스 코드
+├── lib/                      # 빌드된 JavaScript
+└── tsconfig.json
+```
+
+#### 업데이트된 package.json
+
+```json
+{
+  "name": "functions",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": "20"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "@google-cloud/functions-framework": "^5.0.0", // ← 새로 추가됨
+    "@google-cloud/storage": "^7.0.0",
+    "@opentelemetry/api": "^1.9.0",
+    "bcryptjs": "^2.4.3",
+    "busboy": "^1.6.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "firebase-admin": "^12.0.0",
+    "firebase-functions": "^5.1.1",
+    "sharp": "^0.33.5"
+  }
+}
+```
+
+### 🚀 배포 성공 로그
+
+```bash
+🚀 Firebase Functions 배포 시작...
+🔨 Functions 빌드 중...
+> functions@0.1.0 build
+> tsc
+
+📤 Firebase Functions 배포 중...
+=== Deploying to 'atsignal'...
+
+i  deploying functions
+i  functions: preparing codebase default for deployment
+i  functions: ensuring required API cloudfunctions.googleapis.com is enabled...
+i  functions: ensuring required API cloudbuild.googleapis.com is enabled...
+i  artifactregistry: ensuring required API artifactregistry.googleapis.com is enabled...
+
+i  functions: preparing functions directory for uploading...
+i  functions: packaged /Users/leemingyu/Project/NEXTJS/atsignal/functions (439.55 KB) for uploading
+✔  functions: functions source uploaded successfully
+
+i  functions: updating Node.js 20 (1st Gen) function api(asia-northeast3)...
+i  functions: updating Node.js 20 (1st Gen) function subscribeNewsletterApi(asia-northeast3)...
+i  functions: updating Node.js 20 (1st Gen) function processImage(us-central1)...
+
+✔  functions[api(asia-northeast3)] Successful update operation.
+✔  functions[subscribeNewsletterApi(asia-northeast3)] Successful update operation.
+✔  functions[processImage(us-central1)] Successful update operation.
+
+Function URL (api(asia-northeast3)): https://asia-northeast3-atsignal.cloudfunctions.net/api
+Function URL (subscribeNewsletterApi(asia-northeast3)): https://asia-northeast3-atsignal.cloudfunctions.net/subscribeNewsletterApi
+
+✔  Deploy complete!
+✅ Functions 배포 완료!
+```
+
+### 📊 배포된 Functions
+
+| Function Name            | Region          | URL                                                                          | 용도                                                 |
+| ------------------------ | --------------- | ---------------------------------------------------------------------------- | ---------------------------------------------------- |
+| `api`                    | asia-northeast3 | `https://asia-northeast3-atsignal.cloudfunctions.net/api`                    | 메인 API 엔드포인트 (블로그, FAQ, 용어집, 이벤트 등) |
+| `subscribeNewsletterApi` | asia-northeast3 | `https://asia-northeast3-atsignal.cloudfunctions.net/subscribeNewsletterApi` | 뉴스레터 구독 API                                    |
+| `processImage`           | us-central1     | N/A                                                                          | 이미지 처리 Function                                 |
+
+### 🔧 Functions API 엔드포인트
+
+배포된 `api` Function은 다음 엔드포인트들을 제공합니다:
+
+#### 블로그 API
+
+- `GET /api/resources/blogs` - 블로그 목록 조회
+- `GET /api/resources/blogs/:id` - 블로그 상세 조회
+- `GET /api/resources/blog-categories` - 블로그 카테고리 목록
+
+#### 기존 API들
+
+- `GET /api/resources/faq-categories` - FAQ 카테고리
+- `GET /api/resources/faqs` - FAQ 목록
+- `GET /api/resources/glossaries` - 용어집 목록
+- `GET /api/resources/glossary-categories` - 용어집 카테고리
+- `GET /api/resources/events` - 이벤트 목록
+- `GET /api/product/whatsnews` - 새소식 목록
+- `POST /api/events/participate` - 이벤트 참가 신청
+
+### 🎯 핵심 해결 포인트
+
+1. **의존성 명시적 추가**: `@google-cloud/functions-framework@^5.0.0`
+2. **올바른 설치 위치**: `functions` 디렉토리에서 `--no-workspaces` 옵션 사용
+3. **lockfile 통일**: `pnpm-lock.yaml` 제거하고 `package-lock.json`만 사용
+4. **독립 프로젝트 관리**: functions를 완전히 독립적인 npm 프로젝트로 관리
+
+### ⚠️ Functions 배포 시 주의사항
+
+#### 1. 의존성 추가 방법
+
+```bash
+# ✅ 올바른 방법
+cd atsignal/functions
+npm install --no-workspaces [package-name]
+
+# ❌ 잘못된 방법
+cd atsignal
+npm install [package-name]  # 루트에 설치됨
+```
+
+#### 2. lockfile 관리
+
+- `functions/package-lock.json`만 사용
+- `functions/pnpm-lock.yaml`은 삭제
+- 루트의 `pnpm-lock.yaml`과 독립적으로 관리
+
+#### 3. 빌드 확인
+
+```bash
+cd atsignal/functions
+npm run build  # TypeScript 컴파일 확인
+```
+
+#### 4. 배포 스크립트 사용
+
+```bash
+# 루트에서 실행
+./scripts/deploy-functions.sh
+```
+
+### 🔮 향후 Functions 개발 시 가이드라인
+
+1. **새 API 엔드포인트 추가**:
+
+   - `functions/src/api/index.ts`에 라우트 추가
+   - 로컬 테스트: `npm run serve`
+   - 배포: `./scripts/deploy-functions.sh`
+
+2. **새 의존성 추가**:
+
+   ```bash
+   cd functions
+   npm install --no-workspaces [package-name]
+   ```
+
+3. **환경 변수 관리**:
+
+   - `functions/.env.local` (로컬 개발용)
+   - Firebase Console에서 프로덕션 환경 변수 설정
+
+4. **로그 확인**:
+   ```bash
+   firebase functions:log
+   ```
+
+---
+
 ## 🔄 업데이트 이력
+
+- **2025-01-01**: Firebase Functions 배포 성공 가이드 추가 ✅
+
+  - `@google-cloud/functions-framework` 의존성 문제 해결
+  - 올바른 package-lock.json 생성 방법
+  - pnpm/npm lockfile 충돌 해결
+  - 성공적인 Functions 배포 과정 상세 문서화
+  - Functions API 엔드포인트 목록 정리
+  - 향후 Functions 개발 가이드라인 추가
 
 - **2025-12-31**: 성공한 배포 구성 추가 ✅
 

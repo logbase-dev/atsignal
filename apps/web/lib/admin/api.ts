@@ -70,11 +70,32 @@ export async function adminFetch(path: string, init: RequestInit = {}) {
     if (token) headers.set("Authorization", `Bearer ${token}`);
   }
 
-  return fetch(getAdminApiUrl(path), {
-    ...init,
-    headers,
-    credentials: mode === "cookie" ? "include" : "omit",
-  });
+  try {
+    const response = await fetch(getAdminApiUrl(path), {
+      ...init,
+      headers,
+      credentials: mode === "cookie" ? "include" : "omit",
+    });
+
+    // 에러 로깅 추가
+    if (!response.ok) {
+      console.error(`Admin API Error: ${response.status} ${response.statusText}`, {
+        url: getAdminApiUrl(path),
+        method: init.method || 'GET',
+        mode,
+        headers: Object.fromEntries(headers.entries())
+      });
+    }
+
+    return response;
+  } catch (error) {
+    console.error('Admin Network Error:', error, {
+      url: getAdminApiUrl(path),
+      method: init.method || 'GET',
+      mode
+    });
+    throw error;
+  }
 }
 
 
