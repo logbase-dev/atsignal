@@ -137,7 +137,8 @@ export default function Footer({ menus = [] }: FooterProps) {
               />
             </Link>
             <p className="footer-description">
-              {footerDescription}
+              Nethru의 데이터분석 기술과 노하우가 집약된<br />
+              통합 행동데이터 플랫폼
             </p>
           </div>
 
@@ -200,15 +201,9 @@ export default function Footer({ menus = [] }: FooterProps) {
             <Link href={`/${locale}/privacy`} className="footer-legal-link">
               Privacy Policy
             </Link>
-            <span className="footer-separator">·</span>
-            <Link href={pathToUrl("/Pricing/Contact Sales", locale)} className="footer-legal-link">
-              Terms of Service
-            </Link>
           </div>
         </div>
       </div>
     </footer>
   );
 }
-
-
