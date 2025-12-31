@@ -24,8 +24,11 @@ export function getPublicApiUrl(path: string): string {
     return `/api/${cleanPath}`;
   }
 
-  // 프로덕션에서는 Functions API 사용
-  return `https://asia-northeast3-atsignal.cloudfunctions.net/api/${cleanPath}`;
+  // CORS 문제로 인해 임시로 프록시 사용 (긴급 수정)
+  return `/api/${cleanPath}`;
+
+  // 프로덕션에서는 Functions API 사용 (CORS 해결 후 활성화)
+  // return `https://asia-northeast3-atsignal.cloudfunctions.net/api/${cleanPath}`;
 }
 
 /**
