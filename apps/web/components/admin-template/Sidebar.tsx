@@ -91,7 +91,7 @@ export default function Sidebar() {
         <li className="nav-item">
           <Link href="/admin/glossary" className={`nav-link ${pathname?.startsWith('/admin/glossary') ? '' : 'collapsed'}`}>
             <i className="bi bi-book"></i>
-            <span>용어사전</span>
+            <span>주요용어</span>
             </Link>
         </li>
 

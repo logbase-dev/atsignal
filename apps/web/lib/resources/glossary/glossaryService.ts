@@ -1,6 +1,7 @@
 'use client';
 
 import type { Glossary, GlossaryCategory } from '@/lib/admin/types';
+import { getPublicApiUrl } from '@/lib/utils/api';
 
 export interface GetGlossariesResponse {
   glossaries: Glossary[];
@@ -38,8 +39,9 @@ export async function getPublicGlossaries(options?: {
   if (options?.enabled?.en !== undefined) params.append('enabledEn', String(options.enabled.en));
 
   const qs = params.toString();
-  // 공개 API 엔드포인트 사용 (인증 불필요)
-  const response = await fetch(`/api/resources/glossaries${qs ? `?${qs}` : ''}`, {
+  // Firebase App Hosting에서 /api/* 경로 403 문제 해결을 위해 Functions API 사용
+  const apiUrl = getPublicApiUrl(`resources/glossaries${qs ? `?${qs}` : ''}`);
+  const response = await fetch(apiUrl, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -64,7 +66,9 @@ export async function getPublicGlossaries(options?: {
  * 공개 용어사전 카테고리 API
  */
 export async function getPublicGlossaryCategories(): Promise<GlossaryCategory[]> {
-  const response = await fetch('/api/resources/glossary-categories', {
+  // Firebase App Hosting에서 /api/* 경로 403 문제 해결을 위해 Functions API 사용
+  const apiUrl = getPublicApiUrl('resources/glossary-categories');
+  const response = await fetch(apiUrl, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -76,5 +80,5 @@ export async function getPublicGlossaryCategories(): Promise<GlossaryCategory[]>
   }
 
   const data = await response.json().catch(() => ({}));
-  return (data.data || data.categories || []) as GlossaryCategory[];
+  return (data.categories || []) as GlossaryCategory[];
 }

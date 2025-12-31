@@ -15,9 +15,10 @@ interface NewsletterModalProps {
   onClose: () => void;
   locale?: string;
   initialEmail?: string;
-  variant?: 'newsletter' | 'demo' | 'sales';
+  variant?: 'newsletter' | 'demo' | 'sales' | 'event';
   customTitle?: string;
   customSubmitLabel?: string;
+  eventId?: string; // 이벤트 참가 신청시 필요
 }
 
 interface FormData {
@@ -37,6 +38,7 @@ export default function NewsletterModal({
   variant = 'newsletter',
   customTitle,
   customSubmitLabel,
+  eventId,
 }: NewsletterModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -50,18 +52,24 @@ export default function NewsletterModal({
       ? '데모 요청하기'
       : variant === 'sales'
         ? '구입 문의하기'
-        : t.title || '뉴스레터 구독');
+        : variant === 'event'
+          ? '이벤트 참가 신청'
+          : t.title || '뉴스레터 구독');
   const submitLabel =
     customSubmitLabel ||
     (variant === 'demo'
       ? '요청하기'
       : variant === 'sales'
         ? '문의하기'
-        : t.submitButton || '구독하기');
+        : variant === 'event'
+          ? '참가 신청하기'
+          : t.submitButton || '구독하기');
   const modalDescription =
     variant === 'newsletter'
       ? t.description || '최신 소식과 업데이트를 받아보세요.'
-      : '필요한 내용을 작성해 주세요.';
+      : variant === 'event'
+        ? '이벤트 참가를 위한 정보를 입력해 주세요.'
+        : '필요한 내용을 작성해 주세요.';
 
   const [formData, setFormData] = useState<FormData>({
     name: '',
@@ -128,26 +136,46 @@ export default function NewsletterModal({
     setErrorMessage('');
   
     try {
-      // 로컬 개발 환경에서는 Next.js API Route 프록시 사용 (같은 origin)
-      const apiUrl = process.env.NODE_ENV === 'development'
-        ? '/api/subscribe'  // ← 프록시 사용
-        : process.env.NEXT_PUBLIC_SUBSCRIBE_API_URL || 
-          'https://asia-northeast3-atsignal.cloudfunctions.net/subscribeNewsletterApi';
-  
+      // API URL 결정
+      let apiUrl: string;
+      if (variant === 'event') {
+        // 이벤트 참가 신청 API
+        apiUrl = process.env.NODE_ENV === 'development'
+          ? '/api/events/participate'
+          : 'https://asia-northeast3-atsignal.cloudfunctions.net/api/events/participate';
+      } else {
+        // 기존 뉴스레터/문의 API
+        apiUrl = process.env.NODE_ENV === 'development'
+          ? '/api/subscribe'
+          : process.env.NEXT_PUBLIC_SUBSCRIBE_API_URL || 
+            'https://asia-northeast3-atsignal.cloudfunctions.net/subscribeNewsletterApi';
+      }
+
+      const requestBody = variant === 'event' 
+        ? {
+            eventId,
+            name: formData.name.trim(),
+            company: formData.company.trim(),
+            email: formData.email.trim(),
+            phone: formData.phone,
+            privacyConsent: formData.privacyConsent,
+          }
+        : {
+            name: formData.name.trim(),
+            company: formData.company.trim(),
+            email: formData.email.trim(),
+            phone: formData.phone,
+            inquiry: formData.inquiry.trim(),
+            variant,
+            privacyConsent: formData.privacyConsent,
+          };
+
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          name: formData.name.trim(),
-          company: formData.company.trim(),
-          email: formData.email.trim(),
-          phone: formData.phone,
-          inquiry: formData.inquiry.trim(),
-          variant,
-          privacyConsent: formData.privacyConsent,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       const data = await response.json();
@@ -158,6 +186,20 @@ export default function NewsletterModal({
         setTimeout(() => {
           onClose();
         }, 2000);
+      } else if (variant === 'event') {
+        // 이벤트 참가 신청 에러 처리
+        setSubmitStatus('error');
+        if (response.status === 409) {
+          setErrorMessage(data.message || '이미 해당 이벤트에 참가신청 했습니다.');
+        } else if (response.status === 403) {
+          setErrorMessage(data.message || '권한이 없습니다.');
+        } else if (response.status === 404) {
+          setErrorMessage(data.message || '이벤트를 찾을 수 없습니다.');
+        } else if (response.status === 400) {
+          setErrorMessage(data.message || '입력 정보를 확인해 주세요.');
+        } else {
+          setErrorMessage(data.message || '참가 신청 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+        }
       } else if (response.status === 409 && data.error === 'ALREADY_SUBSCRIBED') {
         // ✅ 이미 구독 중인 경우 특별 처리
         setSubmitStatus('error');
@@ -250,7 +292,12 @@ export default function NewsletterModal({
                 d="M5 13l4 4L19 7"
               />
             </svg>
-            <p>{t.successMessage || '구독 신청이 완료되었습니다!'}</p>
+            <p>
+              {variant === 'event' 
+                ? '이벤트 참가 신청이 완료되었습니다!'
+                : t.successMessage || '구독 신청이 완료되었습니다!'
+              }
+            </p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="newsletter-form">

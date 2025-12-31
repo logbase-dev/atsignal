@@ -1,91 +1,78 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
+import Image from 'next/image';
 import Link from 'next/link';
-import ReactMarkdown from 'react-markdown';
-import rehypeSlug from 'rehype-slug';
-import remarkGfm from 'remark-gfm';
-import dynamic from 'next/dynamic';
-import { getEventById, deleteEvent } from '@/lib/admin/eventService';
+import { getEventById } from '@/lib/admin/eventService';
 import type { Event } from '@/lib/admin/types';
-import { adminFetch } from '@/lib/admin/api';
 
-// Toast UI Viewer는 SSR에서 문제가 있을 수 있으므로 동적 import
-const ToastViewer = dynamic(
-  () => import('@toast-ui/react-editor').then((mod) => mod.Viewer),
-  { ssr: false }
-);
-
-export default function ViewEventPage({ params }: { params: { id: string } }) {
+export default function EventViewPage() {
+  const params = useParams();
   const router = useRouter();
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [admins, setAdmins] = useState<Map<string, { name: string; username: string }>>(new Map());
-  const [locale, setLocale] = useState<'ko' | 'en'>('ko');
+  const [imageError, setImageError] = useState(false);
 
-  // Toast UI Viewer CSS를 클라이언트에서만 동적으로 로드
-  useEffect(() => {
-    if (event?.saveFormat === 'html' && typeof window !== 'undefined') {
-      const existingLink = document.querySelector('link[href*="toastui-editor-viewer.css"]');
-      if (!existingLink) {
-        // @ts-ignore - CSS 파일 타입 선언 없음
-        require('@toast-ui/editor/dist/toastui-editor-viewer.css');
-      }
-    }
-  }, [event?.saveFormat]);
+  const eventId = params?.id as string;
 
   useEffect(() => {
-    void loadEvent();
-    void loadAdmins();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.id]);
-
-  const loadAdmins = async () => {
-    try {
-      const response = await adminFetch('admins');
-      if (response.ok) {
-        const data = await response.json().catch(() => ({}));
-        const adminMap = new Map<string, { name: string; username: string }>();
-        (data.admins || []).forEach((admin: { id?: string; name: string; username: string }) => {
-          if (admin.id) adminMap.set(admin.id, { name: admin.name, username: admin.username });
-        });
-        setAdmins(adminMap);
-      }
-    } catch (err) {
-      console.error('Failed to load admins:', err);
+    if (eventId) {
+      void loadEvent();
     }
-  };
+  }, [eventId]);
 
   const loadEvent = async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await getEventById(params.id);
-      if (!data) {
+      const eventData = await getEventById(eventId);
+      if (!eventData) {
         setError('이벤트를 찾을 수 없습니다.');
         return;
       }
-      setEvent(data);
-    } catch (e: any) {
-      setError(e?.message || '이벤트를 불러오는데 실패했습니다.');
+      setEvent(eventData);
+    } catch (err: any) {
+      console.error('Failed to load event:', err);
+      setError(err.message || '이벤트를 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async () => {
-    if (!event?.id) return;
-    if (!confirm('정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
-      return;
+  const formatDate = (date: Date | undefined) => {
+    if (!date) return '';
+    return new Intl.DateTimeFormat('ko', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(new Date(date));
+  };
+
+  const formatDateOnly = (date: Date | undefined) => {
+    if (!date) return '';
+    return new Intl.DateTimeFormat('ko', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }).format(new Date(date));
+  };
+
+  const getEventStatus = () => {
+    if (!event) return 'unknown';
+    const now = new Date();
+    const startDate = event.eventStartAt ? new Date(event.eventStartAt) : null;
+    const endDate = event.eventEndAt ? new Date(event.eventEndAt) : null;
+
+    if (endDate && now > endDate) {
+      return 'ended';
+    } else if (startDate && now < startDate) {
+      return 'upcoming';
     }
-    try {
-      await deleteEvent(event.id);
-      router.push('/admin/event');
-    } catch (e: any) {
-      alert('삭제 중 오류가 발생했습니다: ' + (e?.message || '알 수 없는 오류'));
-    }
+    return 'active';
   };
 
   if (loading) {
@@ -99,393 +86,391 @@ export default function ViewEventPage({ params }: { params: { id: string } }) {
   if (error || !event) {
     return (
       <div style={{ padding: '2rem', maxWidth: '1200px' }}>
-        <div
+        <div style={{
+          padding: '2rem',
+          backgroundColor: '#fff3cd',
+          border: '1px solid #ffc107',
+          borderRadius: '0.5rem',
+          color: '#856404',
+          marginBottom: '2rem',
+        }}>
+          <strong>오류:</strong> {error || '이벤트를 찾을 수 없습니다.'}
+        </div>
+        <Link
+          href="/admin/event"
           style={{
-            padding: '1rem',
-            backgroundColor: '#fee2e2',
-            border: '1px solid #fca5a5',
+            padding: '0.75rem 1.5rem',
+            backgroundColor: '#6c757d',
+            color: 'white',
+            textDecoration: 'none',
             borderRadius: '0.5rem',
-            color: '#991b1b',
+            display: 'inline-block',
           }}
         >
-          {error || '이벤트를 찾을 수 없습니다.'}
-        </div>
-        <div style={{ marginTop: '1rem' }}>
-          <Link
-            href="/admin/event"
-            style={{
-              padding: '0.5rem 1rem',
-              borderRadius: '0.375rem',
-              border: '1px solid #d1d5db',
-              backgroundColor: '#fff',
-              cursor: 'pointer',
-              textDecoration: 'none',
-              display: 'inline-block',
-            }}
-          >
-            ← 목록으로
-          </Link>
-        </div>
+          이벤트 목록으로 돌아가기
+        </Link>
       </div>
     );
   }
 
+  const eventStatus = getEventStatus();
+
   return (
-    <div style={{ padding: '2rem', maxWidth: '1400px', margin: '0 auto' }}>
-      <div style={{ marginBottom: '2rem' }}>
-        <div style={{ textAlign: 'right', marginBottom: '1rem' }}>
+    <div style={{ padding: '2rem', maxWidth: '1200px' }}>
+      {/* 헤더 */}
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        marginBottom: '2rem' 
+      }}>
+        <div>
           <Link
             href="/admin/event"
             style={{
-              padding: '0.5rem 1rem',
-              borderRadius: '0.375rem',
-              border: '1px solid #d1d5db',
-              backgroundColor: '#fff',
-              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              color: '#0070f3',
               textDecoration: 'none',
-              display: 'inline-block',
+              fontSize: '0.875rem',
+              fontWeight: '500',
+              marginBottom: '0.5rem',
             }}
           >
-            ← 목록으로
+            <svg style={{ width: '1.25rem', height: '1.25rem', marginRight: '0.5rem' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            이벤트 목록으로
+          </Link>
+          <h1 style={{ fontSize: '2rem', margin: 0 }}>이벤트 상세보기</h1>
+        </div>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <Link
+            href={`/admin/event/${event.id}`}
+            style={{
+              padding: '0.75rem 1.5rem',
+              backgroundColor: '#0070f3',
+              color: 'white',
+              textDecoration: 'none',
+              borderRadius: '0.5rem',
+            }}
+          >
+            수정하기
+          </Link>
+          <Link
+            href={`/admin/event/${event.id}/participants`}
+            style={{
+              padding: '0.75rem 1.5rem',
+              backgroundColor: '#28a745',
+              color: 'white',
+              textDecoration: 'none',
+              borderRadius: '0.5rem',
+            }}
+          >
+            참가신청자 보기
           </Link>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h1 style={{ fontSize: '2rem', margin: 0 }}>{event.title?.[locale] || event.title?.ko || '제목 없음'}</h1>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <Link
-              href={`/admin/event/${event.id}`}
+      </div>
+
+      {/* 메인 이미지 */}
+      <div style={{
+        position: 'relative',
+        height: '400px',
+        marginBottom: '2rem',
+        borderRadius: '12px',
+        overflow: 'hidden',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+        backgroundColor: '#f8f9fa',
+      }}>
+        {event.featuredImage && !imageError ? (
+          <Image
+            src={event.featuredImage}
+            alt={event.title?.ko || '이벤트 이미지'}
+            fill
+            style={{ objectFit: 'cover' }}
+            onError={() => setImageError(true)}
+          />
+        ) : (
+          <div style={{
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#9ca3af',
+          }}>
+            <div style={{ textAlign: 'center' }}>
+              <svg style={{ width: '4rem', height: '4rem', margin: '0 auto 1rem' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span>이미지 없음</span>
+            </div>
+          </div>
+        )}
+        
+        {/* 이벤트 상태 배지 */}
+        <div style={{
+          position: 'absolute',
+          top: '1rem',
+          right: '1rem',
+          display: 'flex',
+          gap: '0.5rem',
+        }}>
+          {/* 발행 상태 */}
+          <span style={{
+            padding: '0.5rem 1rem',
+            borderRadius: '20px',
+            fontSize: '0.875rem',
+            fontWeight: '500',
+            backgroundColor: event.published ? '#d1f2eb' : '#fff3cd',
+            color: event.published ? '#155724' : '#856404',
+            border: `1px solid ${event.published ? '#c3e6cb' : '#ffeaa7'}`,
+          }}>
+            {event.published ? '발행됨' : '초안'}
+          </span>
+          
+          {/* 이벤트 진행 상태 */}
+          {eventStatus !== 'active' && (
+            <span style={{
+              padding: '0.5rem 1rem',
+              borderRadius: '20px',
+              fontSize: '0.875rem',
+              fontWeight: '500',
+              backgroundColor: eventStatus === 'ended' ? '#f8d7da' : '#d4edda',
+              color: eventStatus === 'ended' ? '#721c24' : '#155724',
+              border: `1px solid ${eventStatus === 'ended' ? '#f5c6cb' : '#c3e6cb'}`,
+            }}>
+              {eventStatus === 'ended' ? '종료됨' : '예정됨'}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* 이벤트 정보 */}
+      <div style={{
+        backgroundColor: '#fff',
+        borderRadius: '12px',
+        padding: '2rem',
+        marginBottom: '2rem',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+      }}>
+        {/* 제목 */}
+        <h1 style={{
+          fontSize: '2.5rem',
+          fontWeight: '700',
+          color: '#1a1a1a',
+          marginBottom: '1rem',
+          lineHeight: '1.2',
+        }}>
+          {event.title?.ko || '제목 없음'}
+        </h1>
+
+        {/* 한 줄 설명 */}
+        {event.oneLiner?.ko && (
+          <p style={{
+            fontSize: '1.25rem',
+            color: '#666',
+            marginBottom: '2rem',
+            lineHeight: '1.5',
+          }}>
+            {event.oneLiner.ko}
+          </p>
+        )}
+
+        {/* 이벤트 메타 정보 */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gap: '1.5rem',
+          marginBottom: '2rem',
+        }}>
+          {/* 기간 */}
+          {(event.eventStartAt || event.eventEndAt) && (
+            <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+              <svg style={{
+                width: '1.25rem',
+                height: '1.25rem',
+                color: '#9ca3af',
+                marginTop: '0.125rem',
+                marginRight: '0.75rem',
+                flexShrink: 0,
+              }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <div>
+                <div style={{
+                  fontWeight: '600',
+                  color: '#1a1a1a',
+                  marginBottom: '0.25rem',
+                }}>
+                  이벤트 기간
+                </div>
+                <div style={{ color: '#666', fontSize: '0.875rem', lineHeight: '1.4' }}>
+                  {event.eventStartAt && formatDate(event.eventStartAt)}
+                  {event.eventEndAt && (
+                    <>
+                      <br />
+                      ~ {formatDate(event.eventEndAt)}
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 장소 */}
+          {event.location?.ko && (
+            <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+              <svg style={{
+                width: '1.25rem',
+                height: '1.25rem',
+                color: '#9ca3af',
+                marginTop: '0.125rem',
+                marginRight: '0.75rem',
+                flexShrink: 0,
+              }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <div>
+                <div style={{
+                  fontWeight: '600',
+                  color: '#1a1a1a',
+                  marginBottom: '0.25rem',
+                }}>
+                  장소
+                </div>
+                <div style={{ color: '#666', fontSize: '0.875rem' }}>
+                  {event.location.ko}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 조회수 */}
+          <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+            <svg style={{
+              width: '1.25rem',
+              height: '1.25rem',
+              color: '#9ca3af',
+              marginTop: '0.125rem',
+              marginRight: '0.75rem',
+              flexShrink: 0,
+            }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+            <div>
+              <div style={{
+                fontWeight: '600',
+                color: '#1a1a1a',
+                marginBottom: '0.25rem',
+              }}>
+                조회수
+              </div>
+              <div style={{ color: '#666', fontSize: '0.875rem' }}>
+                {event.views !== undefined ? event.views.toLocaleString() : '0'}회
+              </div>
+            </div>
+          </div>
+
+          {/* 생성일 */}
+          {event.createdAt && (
+            <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+              <svg style={{
+                width: '1.25rem',
+                height: '1.25rem',
+                color: '#9ca3af',
+                marginTop: '0.125rem',
+                marginRight: '0.75rem',
+                flexShrink: 0,
+              }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div>
+                <div style={{
+                  fontWeight: '600',
+                  color: '#1a1a1a',
+                  marginBottom: '0.25rem',
+                }}>
+                  생성일
+                </div>
+                <div style={{ color: '#666', fontSize: '0.875rem' }}>
+                  {formatDate(event.createdAt)}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* 상세 내용 */}
+        {event.content?.ko && (
+          <div style={{ marginBottom: '2rem' }}>
+            <h2 style={{
+              fontSize: '1.5rem',
+              fontWeight: '600',
+              color: '#1a1a1a',
+              marginBottom: '1rem',
+            }}>
+              상세 내용
+            </h2>
+            <div 
               style={{
-                padding: '0.5rem 1rem',
-                borderRadius: '0.375rem',
-                border: '1px solid #d1d5db',
-                backgroundColor: '#fff',
-                cursor: 'pointer',
-                textDecoration: 'none',
-                display: 'inline-block',
+                color: '#374151',
+                lineHeight: '1.7',
+                fontSize: '1rem',
+                padding: '1.5rem',
+                backgroundColor: '#f8f9fa',
+                borderRadius: '8px',
+                border: '1px solid #e9ecef',
               }}
-            >
-              수정
-            </Link>
-            {event.hasCtaButton && event.id && (
-              <Link
-                href={`/admin/event/${event.id}/participants`}
-                style={{
-                  padding: '0.5rem 1rem',
-                  borderRadius: '0.375rem',
-                  border: '1px solid #d1d5db',
-                  backgroundColor: '#0070f3',
-                  color: '#fff',
-                  cursor: 'pointer',
-                  textDecoration: 'none',
-                  display: 'inline-block',
-                }}
-              >
-                참가자 목록
-              </Link>
-            )}
-            <button
-              onClick={handleDelete}
-              style={{
-                padding: '0.5rem 1rem',
-                borderRadius: '0.375rem',
-                border: 'none',
-                backgroundColor: '#dc2626',
-                color: '#fff',
-                cursor: 'pointer',
+              dangerouslySetInnerHTML={{ 
+                __html: event.content.ko.replace(/\n/g, '<br />') 
               }}
-            >
-              삭제
-            </button>
+            />
           </div>
-        </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center', marginTop: '0.5rem', color: '#6b7280', fontSize: '0.85rem' }}>
-          {event.createdAt && <span>작성일: {new Date(event.createdAt).toLocaleDateString()}</span>}
-          {event.updatedAt && event.updatedAt !== event.createdAt && (
-            <span>수정일: {new Date(event.updatedAt).toLocaleDateString()}</span>
-          )}
-          {event.createdBy && <span>작성자: {admins.get(event.createdBy)?.name || '알 수 없음'}</span>}
-          {event.updatedBy && event.updatedBy !== event.createdBy && (
-            <span>수정자: {admins.get(event.updatedBy)?.name || '알 수 없음'}</span>
-          )}
-          {event.views !== undefined && <span>조회수: {event.views.toLocaleString()}</span>}
-        </div>
-      </div>
+        )}
 
-      {/* 이미지 표시 */}
-      {(event.featuredImage || event.thumbnailImage) && (
-        <div style={{ marginBottom: '1.5rem', display: 'flex', gap: '1rem' }}>
-          {event.featuredImage && (
-            <div style={{ flex: 1 }}>
-              <h3 style={{ marginTop: 0, marginBottom: '0.5rem', fontSize: '1rem', color: '#6b7280' }}>대표 이미지</h3>
-              <img
-                src={event.featuredImage}
-                alt="대표 이미지"
-                style={{ width: '100%', maxHeight: '300px', objectFit: 'cover', borderRadius: '0.5rem' }}
-              />
-            </div>
-          )}
-          {event.thumbnailImage && (
-            <div style={{ flex: 1 }}>
-              <h3 style={{ marginTop: 0, marginBottom: '0.5rem', fontSize: '1rem', color: '#6b7280' }}>썸네일 이미지</h3>
-              <img
-                src={event.thumbnailImage}
-                alt="썸네일 이미지"
-                style={{ width: '100%', maxHeight: '300px', objectFit: 'cover', borderRadius: '0.5rem' }}
-              />
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* 언어 탭 */}
-      <div style={{ display: 'inline-flex', gap: '0.25rem', backgroundColor: '#e2e8f0', borderRadius: '999px', padding: '0.25rem', marginBottom: '1.5rem' }}>
-        <button
-          type="button"
-          onClick={() => setLocale('ko')}
-          style={{
-            border: 'none',
-            background: locale === 'ko' ? '#ffffff' : 'transparent',
-            padding: '0.5rem 1.5rem',
-            borderRadius: '999px',
-            fontSize: '0.95rem',
-            fontWeight: 600,
-            color: locale === 'ko' ? '#0f172a' : '#475569',
-            cursor: 'pointer',
-            boxShadow: locale === 'ko' ? '0 1px 3px rgba(15, 23, 42, 0.12)' : 'none',
-          }}
-        >
-          한국어
-        </button>
-        <button
-          type="button"
-          onClick={() => setLocale('en')}
-          style={{
-            border: 'none',
-            background: locale === 'en' ? '#ffffff' : 'transparent',
-            padding: '0.5rem 1.5rem',
-            borderRadius: '999px',
-            fontSize: '0.95rem',
-            fontWeight: 600,
-            color: locale === 'en' ? '#0f172a' : '#475569',
-            cursor: 'pointer',
-            boxShadow: locale === 'en' ? '0 1px 3px rgba(15, 23, 42, 0.12)' : 'none',
-          }}
-        >
-          English
-        </button>
-      </div>
-
-      {/* 한 줄 문구 */}
-      {event.oneLiner?.[locale] || event.oneLiner?.ko ? (
-        <div style={{ marginBottom: '1.5rem', padding: '1rem', backgroundColor: '#f9fafb', borderRadius: '0.5rem' }}>
-          <h3 style={{ marginTop: 0, marginBottom: '0.5rem', fontSize: '1rem', color: '#6b7280' }}>한 줄 문구</h3>
-          <p style={{ margin: 0, fontSize: '1.1rem' }}>{event.oneLiner?.[locale] || event.oneLiner?.ko || ''}</p>
-        </div>
-      ) : null}
-
-      {/* 상세 내용 */}
-      <div style={{ marginBottom: '1.5rem', padding: '1.5rem', backgroundColor: '#fff', borderRadius: '0.5rem', border: '1px solid #e5e7eb' }}>
-        <h3 style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1.25rem' }}>상세 내용</h3>
-        <div
-          style={{
-            fontSize: '1.125rem',
-            lineHeight: '1.8',
-            color: '#111827',
-          }}
-        >
-          {event.saveFormat === 'html' ? (
-            <div style={{ marginTop: '1rem' }}>
-              <ToastViewer initialValue={event.content?.[locale] || event.content?.ko || ''} />
-            </div>
-          ) : (
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              rehypePlugins={[rehypeSlug]}
-              components={{
-                h1: ({ node, ...props }) => (
-                  <h1 id={props.id} style={{ fontSize: '2rem', fontWeight: 700, marginTop: '2rem', marginBottom: '1rem', scrollMarginTop: '100px' }} {...props} />
-                ),
-                h2: ({ node, ...props }) => (
-                  <h2 id={props.id} style={{ fontSize: '1.75rem', fontWeight: 600, marginTop: '1.5rem', marginBottom: '0.75rem', scrollMarginTop: '100px' }} {...props} />
-                ),
-                h3: ({ node, ...props }) => (
-                  <h3 id={props.id} style={{ fontSize: '1.5rem', fontWeight: 600, marginTop: '1.25rem', marginBottom: '0.5rem', scrollMarginTop: '100px' }} {...props} />
-                ),
-                h4: ({ node, ...props }) => (
-                  <h4 id={props.id} style={{ fontSize: '1.25rem', fontWeight: 600, marginTop: '1rem', marginBottom: '0.5rem', scrollMarginTop: '100px' }} {...props} />
-                ),
-                h5: ({ node, ...props }) => (
-                  <h5 id={props.id} style={{ fontSize: '1.125rem', fontWeight: 600, marginTop: '1rem', marginBottom: '0.5rem', scrollMarginTop: '100px' }} {...props} />
-                ),
-                h6: ({ node, ...props }) => (
-                  <h6 id={props.id} style={{ fontSize: '1rem', fontWeight: 600, marginTop: '1rem', marginBottom: '0.5rem', scrollMarginTop: '100px' }} {...props} />
-                ),
-                p: ({ node, ...props }) => (
-                  <p style={{ marginBottom: '1rem' }} {...props} />
-                ),
-                img: ({ node, ...props }) => (
-                  <img style={{ maxWidth: '100%', borderRadius: '0.5rem', margin: '1rem 0' }} {...props} />
-                ),
-                code: ({ node, inline, ...props }: any) => {
-                  if (inline) {
-                    return (
-                      <code
-                        style={{
-                          padding: '0.2rem 0.4rem',
-                          backgroundColor: '#e2e8f0',
-                          borderRadius: '0.35rem',
-                          fontSize: '0.875em',
-                          fontFamily: 'monospace',
-                        }}
-                        {...props}
-                      />
-                    );
-                  }
-                  return <code {...props} />;
-                },
-                pre: ({ node, ...props }) => (
-                  <pre
-                    {...props}
-                    style={{
-                      background: '#f3f4f6',
-                      border: '1px solid #d1d5db',
-                      color: '#111827',
-                      padding: '1rem',
-                      borderRadius: '0.75rem',
-                      overflow: 'auto',
-                      fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-                      fontSize: '0.875rem',
-                      lineHeight: 1.5,
-                      margin: '1rem 0',
-                    }}
-                  />
-                ),
-                table: ({ node, ...props }: any) => (
-                  <div style={{ overflowX: 'auto', margin: '1.5rem 0' }}>
-                    <table
-                      {...props}
-                      style={{
-                        width: '100%',
-                        borderCollapse: 'collapse',
-                        border: '1px solid #d1d5db',
-                        fontSize: '0.95rem',
-                      }}
-                    />
-                  </div>
-                ),
-                thead: ({ node, ...props }: any) => (
-                  <thead
-                    {...props}
-                    style={{
-                      backgroundColor: '#f9fafb',
-                      borderBottom: '2px solid #d1d5db',
-                    }}
-                  />
-                ),
-                tbody: ({ node, ...props }: any) => <tbody {...props} />,
-                tr: ({ node, ...props }: any) => (
-                  <tr
-                    {...props}
-                    style={{
-                      borderBottom: '1px solid #e5e7eb',
-                    }}
-                  />
-                ),
-                th: ({ node, ...props }: any) => (
-                  <th
-                    {...props}
-                    style={{
-                      padding: '0.75rem 1rem',
-                      textAlign: 'left',
-                      fontWeight: 600,
-                      borderRight: '1px solid #e5e7eb',
-                    }}
-                  />
-                ),
-                td: ({ node, ...props }: any) => (
-                  <td
-                    {...props}
-                    style={{
-                      padding: '0.75rem 1rem',
-                      borderRight: '1px solid #e5e7eb',
-                    }}
-                  />
-                ),
-                hr: ({ node, ...props }: any) => (
-                  <hr
-                    {...props}
-                    style={{
-                      border: 'none',
-                      borderTop: '3px solid #e5e7eb',
-                      margin: '2rem 0',
-                    }}
-                  />
-                ),
-                blockquote: ({ node, ...props }: any) => (
-                  <blockquote
-                    {...props}
-                    style={{
-                      borderLeft: '4px solid #3b82f6',
-                      paddingLeft: '1rem',
-                      margin: '1.5rem 0',
-                      color: '#4b5563',
-                      fontStyle: 'italic',
-                    }}
-                  />
-                ),
-              }}
-            >
-              {event.content?.[locale] || event.content?.ko || ''}
-            </ReactMarkdown>
-          )}
-        </div>
-      </div>
-
-      {/* 노출 정보 */}
-      <div style={{ marginBottom: '1.5rem', padding: '1.5rem', backgroundColor: '#f9fafb', borderRadius: '0.5rem' }}>
-        <h3 style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1.25rem' }}>노출 정보</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem' }}>
+        {/* 설정 정보 */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '1rem',
+          padding: '1.5rem',
+          backgroundColor: '#f8f9fa',
+          borderRadius: '8px',
+          border: '1px solid #e9ecef',
+        }}>
           <div>
-            <strong>배너 노출:</strong> {event.showInBanner ? <span style={{ color: '#28a745' }}>노출</span> : <span style={{ color: '#666' }}>미노출</span>}
+            <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>메인 이벤트</div>
+            <div style={{ color: '#666', fontSize: '0.875rem' }}>
+              {event.isMainEvent ? '예' : '아니오'}
+            </div>
           </div>
-          {event.showInBanner && (
+          <div>
+            <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>서브 이벤트 순서</div>
+            <div style={{ color: '#666', fontSize: '0.875rem' }}>
+              {event.subEventOrder || '-'}
+            </div>
+          </div>
+          <div>
+            <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>배너 노출</div>
+            <div style={{ color: '#666', fontSize: '0.875rem' }}>
+              {event.showInBanner ? '예' : '아니오'}
+            </div>
+          </div>
+          <div>
+            <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>CTA 버튼</div>
+            <div style={{ color: '#666', fontSize: '0.875rem' }}>
+              {event.hasCtaButton ? '있음' : '없음'}
+            </div>
+          </div>
+          {event.hasCtaButton && event.ctaButtonText?.ko && (
             <div>
-              <strong>배너 우선순위:</strong> {event.bannerPriority}
-            </div>
-          )}
-          <div>
-            <strong>발행 상태:</strong> {event.published ? <span style={{ color: '#28a745' }}>발행</span> : <span style={{ color: '#666' }}>초안</span>}
-          </div>
-          {event.publishedAt && (
-            <div>
-              <strong>발행일:</strong> {new Date(event.publishedAt).toLocaleDateString()}
-            </div>
-          )}
-          {event.displayStartAt && (
-            <div>
-              <strong>노출 시작일시:</strong> {new Date(event.displayStartAt).toLocaleString()}
-            </div>
-          )}
-          {event.displayEndAt && (
-            <div>
-              <strong>노출 종료일시:</strong> {new Date(event.displayEndAt).toLocaleString()}
-            </div>
-          )}
-          <div>
-            <strong>언어 활성화:</strong> 한국어 {event.enabled?.ko ? '✓' : '✗'}, English {event.enabled?.en ? '✓' : '✗'}
-          </div>
-          <div>
-            <strong>메인 이벤트:</strong> {event.isMainEvent ? <span style={{ color: '#28a745' }}>메인</span> : <span style={{ color: '#666' }}>일반</span>}
-          </div>
-          <div>
-            <strong>서브 이벤트:</strong> {event.subEventOrder ? <span style={{ color: '#3b82f6' }}>서브 {event.subEventOrder}</span> : <span style={{ color: '#666' }}>없음</span>}
-          </div>
-          <div>
-            <strong>CTA 버튼:</strong> {event.hasCtaButton ? <span style={{ color: '#28a745' }}>활성화</span> : <span style={{ color: '#666' }}>비활성화</span>}
-          </div>
-          {event.hasCtaButton && event.ctaButtonText && (
-            <div>
-              <strong>CTA 버튼 텍스트:</strong> {event.ctaButtonText?.[locale] || event.ctaButtonText?.ko || '-'}
+              <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>CTA 버튼 텍스트</div>
+              <div style={{ color: '#666', fontSize: '0.875rem' }}>
+                {event.ctaButtonText.ko}
+              </div>
             </div>
           )}
         </div>
@@ -493,4 +478,3 @@ export default function ViewEventPage({ params }: { params: { id: string } }) {
     </div>
   );
 }
-
