@@ -53,7 +53,7 @@ export async function handle(request: Request, response: Response, id: string) {
       console.log('[Blog Update] body.authorName:', body.authorName, 'body.authorImage:', body.authorImage);
       console.log('[Blog Update] processed authorName:', authorName, 'authorImage:', authorImage);
       
-      await updateBlogPost(id, {
+      const updatePayload = {
         title: body.title !== undefined ? normalizeLocalized(body.title) : undefined,
         slug: body.slug !== undefined ? String(body.slug) : undefined,
         content: body.content !== undefined ? normalizeLocalized(body.content) : undefined,
@@ -84,7 +84,9 @@ export async function handle(request: Request, response: Response, id: string) {
         order: body.order !== undefined && typeof body.order === "number" ? body.order : undefined,
         published: body.published !== undefined ? Boolean(body.published) : undefined,
         updatedBy: adminId,
-      });
+      };
+      
+      await updateBlogPost(id, updatePayload);
       response.json({ success: true });
       return;
     }

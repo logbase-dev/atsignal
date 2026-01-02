@@ -10,8 +10,9 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20', 10);
     const categoryId = searchParams.get('categoryId');
     const search = searchParams.get('search');
+    const isFeatured = searchParams.get('isFeatured');
 
-    console.log('[Blogs API] 파라미터:', { page, limit, categoryId, search });
+    console.log('[Blogs API] 파라미터:', { page, limit, categoryId, search, isFeatured });
 
     let query = db.collection('blog')
       .where('published', '==', true)
@@ -20,6 +21,11 @@ export async function GET(request: NextRequest) {
     if (categoryId) {
       query = query.where('categoryId', '==', categoryId);
     }
+
+    // isFeatured 필터는 클라이언트 사이드에서 처리 (Firestore 인덱스 이슈 방지)
+    // if (isFeatured === 'true') {
+    //   query = query.where('isFeatured', '==', true);
+    // }
 
     console.log('[Blogs API] Firestore 쿼리 실행 중...');
 
@@ -67,6 +73,11 @@ export async function GET(request: NextRequest) {
                contentKo.includes(searchLower) ||
                contentEn.includes(searchLower);
       });
+    }
+
+    // isFeatured 필터링 (클라이언트 사이드)
+    if (isFeatured === 'true') {
+      blogs = blogs.filter((blog: any) => blog.isFeatured === true);
     }
 
     const total = blogs.length;

@@ -10,39 +10,32 @@ import { getGlossaries, getGlossaryById } from "../lib/admin/glossaryService";
 import { getGlossaryCategories } from "../lib/admin/glossaryCategoryService";
 import { getBlogPosts, getBlogPostById, incrementBlogPostViews } from "../lib/admin/blogService";
 import { getBlogCategories } from "../lib/admin/blogCategoryService";
+import { getNotices, getNoticeById, incrementNoticeViews } from "../lib/admin/noticeService";
 import { URL } from "url";
 
 const app = express();
 
+// ❌ Firebase Functions에서는 body parsing 미들웨어 사용하면 안됨!
+// Firebase 내부에서 이미 request body를 처리하므로 중복 파싱 시 충돌 발생
+// app.use(express.json({ limit: '10mb' }));
+// app.use(express.urlencoded({ extended: true }));
+
 /**
- * 멀티파트 데이터를 Buffer로 변환하는 커스텀 미들웨어
- * multipart/form-data인 경우에만 Buffer로 변환
+ * Query parameter parsing 미들웨어
+ * Express는 GET 요청의 쿼리 파라미터를 자동으로 파싱하지 않으므로 수동으로 파싱
  */
 app.use((req: Request, res: Response, next: NextFunction) => {
-  const contentType = req.headers['content-type'] || '';
-  
-  // multipart/form-data인 경우에만 Buffer로 변환
-  if (contentType.includes('multipart/form-data')) {
-    const chunks: Buffer[] = [];
-    
-    req.on('data', (chunk: Buffer) => {
-      chunks.push(chunk);
-    });
-    
-    req.on('end', () => {
-      req.body = Buffer.concat(chunks);
-      console.log('[API] multipart/form-data를 Buffer로 변환, 크기:', req.body.length, 'bytes');
-      next();
-    });
-    
-    req.on('error', (err: Error) => {
-      console.error('[API] req 스트림 읽기 에러:', err);
-      res.status(500).json({ error: '요청 body를 읽을 수 없습니다.' });
-    });
-  } else {
-    // 다른 Content-Type은 JSON 파싱
-    express.json({ limit: '10mb' })(req, res, next);
+  // Express가 자동으로 파싱하지 않은 경우에만 수동 파싱
+  if (!req.query || Object.keys(req.query).length === 0) {
+    try {
+      const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+      req.query = Object.fromEntries(url.searchParams.entries());
+    } catch (error) {
+      console.error('[API] Query parsing error:', error);
+      req.query = {};
+    }
   }
+  next();
 });
 
 /**
@@ -602,6 +595,66 @@ app.use(async (req: Request, res: Response, next: NextFunction) => {
     return;
   }
 
+  // Resources API - Notices
+  if (path.startsWith("/resources/notices")) {
+    if (req.method === "GET") {
+      const noticeIdMatch = path.match(/^\/resources\/notices\/([^\/]+)$/);
+      
+      if (noticeIdMatch) {
+        // 개별 공지사항 조회
+        const noticeId = noticeIdMatch[1];
+        try {
+          const notice = await getNoticeById(noticeId);
+          if (!notice) {
+            res.status(404).json({ error: "Notice not found" });
+            return;
+          }
+          
+          // 공개된 공지사항만 반환
+          if (!notice.published) {
+            res.status(404).json({ error: "Notice not found" });
+            return;
+          }
+          
+          // 조회수 증가
+          try {
+            await incrementNoticeViews(noticeId);
+          } catch (viewError) {
+            console.error('[API] Error incrementing notice views:', viewError);
+            // 조회수 증가 실패는 무시하고 계속 진행
+          }
+          
+          res.json({ notice });
+        } catch (error) {
+          console.error('[API] Error fetching notice:', error);
+          res.status(500).json({ error: "Failed to fetch notice" });
+        }
+        return;
+      } else if (path === "/resources/notices") {
+        // 공지사항 목록 조회
+        try {
+          const query = url.searchParams;
+          const options = {
+            search: query.get('search') || undefined,
+            page: query.get('page') ? parseInt(query.get('page')!) : 1,
+            limit: query.get('limit') ? parseInt(query.get('limit')!) : 20,
+            published: true, // 공개 API는 항상 published=true
+          };
+          
+          const result = await getNotices(options);
+          res.json(result);
+        } catch (error) {
+          console.error('[API] Error fetching notices:', error);
+          res.status(500).json({ error: "Failed to fetch notices" });
+        }
+        return;
+      }
+    }
+    
+    res.status(404).json({ error: "Notice endpoint not found" });
+    return;
+  }
+
   // 기본 응답
   res.json({
     message: "API endpoint",
@@ -616,7 +669,8 @@ app.use(async (req: Request, res: Response, next: NextFunction) => {
       "/resources/glossaries",
       "/resources/glossary-categories",
       "/resources/blogs",
-      "/resources/blog-categories"
+      "/resources/blog-categories",
+      "/resources/notices"
     ],
   });
 });

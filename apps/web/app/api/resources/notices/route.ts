@@ -2,6 +2,36 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/firebase-admin';
 
 /**
+ * 관리자 정보 조회 (캐시)
+ */
+const adminCache = new Map<string, { name: string; timestamp: number }>();
+const CACHE_TTL = 5 * 60 * 1000; // 5분
+
+async function getAdminName(adminId: string): Promise<string | undefined> {
+  // 캐시 확인
+  const cached = adminCache.get(adminId);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.name;
+  }
+
+  try {
+    const adminDoc = await db.collection('admins').doc(adminId).get();
+    if (adminDoc.exists) {
+      const adminData = adminDoc.data();
+      const name = adminData?.name;
+      if (name) {
+        adminCache.set(adminId, { name, timestamp: Date.now() });
+        return name;
+      }
+    }
+  } catch (error) {
+    console.error(`[getAdminName] 관리자 정보 조회 실패 (ID: ${adminId}):`, error);
+  }
+  
+  return undefined;
+}
+
+/**
  * 공개 공지사항 목록 API
  * GET /api/resources/notices
  */
@@ -19,13 +49,13 @@ export async function GET(request: NextRequest) {
     console.log('[Notices API] 파라미터:', { page, limit, published, showInBanner, search });
 
     let query = db.collection('notices')
+      .where('published', '==', true) // 공개된 공지사항만 조회
       .orderBy('createdAt', 'desc');
 
-    // published 필터
-    if (published !== null) {
-      const isPublished = published === 'true';
-      query = query.where('published', '==', isPublished);
-      console.log('[Notices API] published 필터 적용:', isPublished);
+    // published 필터 (이미 기본적으로 published=true로 필터링됨)
+    if (published !== null && published !== 'true') {
+      // published=false를 명시적으로 요청한 경우에만 다른 처리
+      console.log('[Notices API] published=false 요청은 무시됨 (공개 API)');
     }
 
     // showInBanner 필터
@@ -45,7 +75,7 @@ export async function GET(request: NextRequest) {
       docs: snapshot.docs.length
     });
 
-    let notices = snapshot.docs.map(doc => {
+    let notices = await Promise.all(snapshot.docs.map(async (doc) => {
       const data = doc.data();
       console.log('[Notices API] 문서 데이터 샘플:', {
         id: doc.id,
@@ -54,12 +84,20 @@ export async function GET(request: NextRequest) {
         published: data.published,
         showInBanner: data.showInBanner,
         createdAt: data.createdAt,
-        createdAtType: typeof data.createdAt
+        createdAtType: typeof data.createdAt,
+        createdBy: data.createdBy
       });
+      
+      // 관리자 이름 조회
+      let authorName: string | undefined;
+      if (data.createdBy) {
+        authorName = await getAdminName(data.createdBy);
+      }
       
       return {
         id: doc.id,
         ...data,
+        authorName, // 관리자 이름 추가
         // 날짜 변환
         createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : data.createdAt,
         updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate() : data.updatedAt,
@@ -67,7 +105,7 @@ export async function GET(request: NextRequest) {
         displayStartAt: data.displayStartAt?.toDate ? data.displayStartAt.toDate() : data.displayStartAt,
         displayEndAt: data.displayEndAt?.toDate ? data.displayEndAt.toDate() : data.displayEndAt,
       } as any;
-    });
+    }));
 
     console.log('[Notices API] 매핑된 공지사항 수:', notices.length);
 

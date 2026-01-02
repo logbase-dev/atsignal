@@ -237,7 +237,7 @@ export function BlogForm({ mode, id }: BlogFormProps) {
   };
 
   const buildPayload = (publishedOverride?: boolean): Omit<BlogPost, 'id'> => {
-    return {
+    const payload = {
       title: { ko: title.ko.trim(), ...(title.en?.trim() ? { en: title.en.trim() } : {}) },
       slug: slug.trim(),
       content: { ko: content.ko.trim(), ...(content.en?.trim() ? { en: content.en.trim() } : {}) },
@@ -270,8 +270,10 @@ export function BlogForm({ mode, id }: BlogFormProps) {
           : undefined,
       metaKeywords: metaKeywords.length ? metaKeywords : undefined,
 
-      isFeatured: isFeatured || undefined,
+      isFeatured: isFeatured, // 항상 포함
     };
+    
+    return payload;
   };
 
   const handleSave = async (publishedOverride?: boolean) => {

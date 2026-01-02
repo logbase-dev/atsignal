@@ -137,6 +137,7 @@ export async function getBlogPosts(options?: {
   categoryId?: string;
   search?: string;
   published?: boolean;
+  isFeatured?: boolean;
 }): Promise<{ posts: BlogPost[]; total: number; page: number; limit: number; totalPages: number }> {
   try {
     console.log("[getBlogPosts] 시작, 옵션:", options);
@@ -157,6 +158,12 @@ export async function getBlogPosts(options?: {
     if (options?.published !== undefined) {
       postsRef = postsRef.where("published", "==", options.published);
       console.log("[getBlogPosts] 발행 상태 필터 적용:", options.published);
+    }
+    
+    // 추천 블로그 필터
+    if (options?.isFeatured !== undefined) {
+      postsRef = postsRef.where("isFeatured", "==", options.isFeatured);
+      console.log("[getBlogPosts] 추천 블로그 필터 적용:", options.isFeatured);
     }
     
     // 검색어 필터링을 위해 더 많은 데이터를 가져와서 필터링
@@ -276,6 +283,7 @@ export async function createBlogPost(post: Omit<BlogPost, "id">): Promise<string
 export async function updateBlogPost(id: string, patch: Partial<BlogPost>): Promise<void> {
   const now = Timestamp.fromDate(new Date());
   const updateData: Record<string, any> = { ...stripUndefinedDeep(patch), updatedAt: now };
+  
   // views는 수정 시 변경하지 않음 (웹앱에서만 증가)
   delete updateData.views;
   // createdBy는 수정 시 변경하지 않음 (생성 시에만 설정)
@@ -290,6 +298,8 @@ export async function updateBlogPost(id: string, patch: Partial<BlogPost>): Prom
     authorImage: updateData.authorImage,
     hasAuthorName: 'authorName' in updateData,
     hasAuthorImage: 'authorImage' in updateData,
+    isFeatured: updateData.isFeatured,
+    hasIsFeatured: 'isFeatured' in updateData,
   });
   
   await withTimeout(firestore.collection(COLLECTIONS.BLOGS).doc(id).update(updateData), 5000);

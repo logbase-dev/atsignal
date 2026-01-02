@@ -246,6 +246,7 @@ export interface Notice {
   // 작성자 정보
   createdBy?: string; // 생성한 관리자 ID
   updatedBy?: string; // 수정한 관리자 ID
+  authorName?: string; // 작성자 이름 (조회 시 추가되는 필드)
 }
 
 export interface Event {
