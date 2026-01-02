@@ -9,17 +9,26 @@ import type { CreateAdminData } from "../../lib/admin/adminService";
  * 새 관리자 생성
  */
 export async function handle(request: Request, response: Response) {
+  console.log('[Admins API] 요청 시작:', {
+    method: request.method,
+    query: request.query,
+  });
+
   try {
     if (request.method === "GET") {
+      console.log('[Admins API] GET 요청 처리');
       return await handleGet(request, response);
     } else if (request.method === "POST") {
+      console.log('[Admins API] POST 요청 처리');
       return await handlePost(request, response);
     } else {
+      console.log('[Admins API] 지원하지 않는 메소드:', request.method);
       response.status(405).json({ error: "METHOD_NOT_ALLOWED" });
       return;
     }
   } catch (error: any) {
     console.error("[Admin API /admins] 에러:", error.message);
+    console.error("[Admin API /admins] 스택:", error.stack);
     response.status(500).json({
       error: "요청 처리 중 오류가 발생했습니다.",
     });
@@ -30,25 +39,34 @@ export async function handle(request: Request, response: Response) {
  * GET 요청 처리
  */
 async function handleGet(request: Request, response: Response) {
+  console.log('[Admins API] handleGet 시작');
+  
   try {
     const checkUsername = request.query.checkUsername as string | undefined;
+    console.log('[Admins API] checkUsername:', checkUsername);
 
     // 아이디 중복 체크 요청인 경우
     if (checkUsername) {
+      console.log('[Admins API] 아이디 중복 체크 요청');
       const exists = await checkUsernameExists(checkUsername);
+      console.log('[Admins API] 중복 체크 결과:', exists);
       response.json({ exists });
       return;
     }
 
     // 관리자 목록 조회
+    console.log('[Admins API] 관리자 목록 조회 시작');
     const admins = await getAdmins();
+    console.log('[Admins API] 관리자 목록 조회 완료, 개수:', admins.length);
     
     // 비밀번호 필드 제거 (보안)
     const safeAdmins = admins.map(({ password, ...admin }) => admin);
     
+    console.log('[Admins API] 응답 전송');
     response.json({ admins: safeAdmins });
   } catch (error: any) {
     console.error("[GET /admin/admins] 에러:", error.message);
+    console.error("[GET /admin/admins] 스택:", error.stack);
     response.status(500).json({
       error: "관리자 목록을 불러오는 중 오류가 발생했습니다.",
     });

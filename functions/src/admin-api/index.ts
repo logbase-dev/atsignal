@@ -44,15 +44,23 @@ export async function router(request: Request, response: Response, path: string)
   const normalizedPath = path.replace(/^\/+|\/+$/g, "");
   const pathParts = normalizedPath.split("/").filter(Boolean);
 
-  console.log('[Admin API Router] 경로 정보:', {
+  console.log('[Admin API Router] 요청 상세 정보:', {
     originalPath: path,
     normalizedPath,
     pathParts,
     method: request.method,
+    headers: {
+      'content-type': request.headers['content-type'],
+      'authorization': request.headers.authorization ? 'Bearer ***' : 'none',
+      'cookie': request.headers.cookie ? 'present' : 'none',
+      'origin': request.headers.origin,
+    },
+    query: request.query,
   });
 
   // 경로가 비어있으면 404
   if (pathParts.length === 0) {
+    console.log('[Admin API Router] 빈 경로로 404 반환');
     response.status(404).json({ error: "Not Found", path: normalizedPath });
     return;
   }

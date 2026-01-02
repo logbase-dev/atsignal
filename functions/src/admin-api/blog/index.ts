@@ -8,8 +8,16 @@ import { getRequestAdminId } from "../_shared/requestAuth";
  * POST /api/admin/blog
  */
 export async function handle(request: Request, response: Response) {
+  console.log('[Blog API] 요청 시작:', {
+    method: request.method,
+    query: request.query,
+    hasBody: !!request.body,
+  });
+
   try {
     if (request.method === "GET") {
+      console.log('[Blog API] GET 요청 처리 시작');
+      
       const page = request.query.page ? parseInt(String(request.query.page), 10) : 1;
       const limit = request.query.limit ? parseInt(String(request.query.limit), 10) : 20;
       const categoryId = request.query.categoryId && String(request.query.categoryId).trim() 
@@ -24,8 +32,15 @@ export async function handle(request: Request, response: Response) {
       
       console.log("[Blog API] 검색 파라미터:", { page, limit, categoryId, search, published });
       
+      console.log('[Blog API] getBlogPosts 호출 전');
       const result = await getBlogPosts({ page, limit, categoryId, search, published });
+      console.log('[Blog API] getBlogPosts 호출 후, 결과:', {
+        total: result.total,
+        postsLength: result.posts?.length,
+      });
+      
       response.json(result);
+      console.log('[Blog API] 응답 전송 완료');
       return;
     }
     if (request.method === "POST") {

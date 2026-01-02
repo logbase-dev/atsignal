@@ -128,6 +128,14 @@ async function handleRequest(
   const path = params.path.join('/');
   const isDev = process.env.NODE_ENV === 'development';
 
+  console.log('[Admin API Proxy] 요청 정보:', {
+    method,
+    path,
+    url: request.url,
+    headers: Object.fromEntries(request.headers.entries()),
+    cookies: request.cookies.getAll(),
+  });
+
   // Functions 프록시 사용 중임을 명확히 표시
   if (path === 'login') {
     console.log('[Admin API Proxy] ⚠️ Functions 프록시를 통해 로그인 요청 처리 중');
