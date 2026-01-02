@@ -22,7 +22,7 @@ const SLIDER_MAX = 1100;
 const PLAN_START_EVENTS: Record<Plan, number> = {
   free: EVENT_VALUES[0],
   basic: EVENT_VALUES[1],
-  power: EVENT_VALUES[6],
+  power: EVENT_VALUES[7],
   enterprise: EVENT_VALUES[11],
 };
 const BASE_WIDTH = 320;
@@ -168,9 +168,11 @@ export default function PricingInformation({ locale: _locale }: PricingInformati
   return (
     <div className="pricing-root">
       <div className="hero">
-        <h1>atsignal pricing</h1>
-        <p>월간 추적 이벤트(event)수 기준으로 계산되는 명확하고 투명한 가격 구조.</p>
-        <p>수집 로그 규모에 따라 가장 적합한 요금제를 선택하세요.</p>
+        <div className="hero-container">
+          <h1>atsignal pricing</h1>
+          <p>월간 추적 이벤트(event)수 기준으로 계산되는 명확하고 투명한 가격 구조.</p>
+          <p>수집 로그 규모에 따라 가장 적합한 요금제를 선택하세요.</p>
+        </div>
       </div>
 
       <h2 className="section-title">요금제</h2>
@@ -674,6 +676,7 @@ export default function PricingInformation({ locale: _locale }: PricingInformati
       </div>
 
       <h2 className="section-title">FAQ</h2>
+      <div className="faq-container">
       <div className="faq">
         <div className="faq-item">
           <details>
@@ -761,6 +764,7 @@ export default function PricingInformation({ locale: _locale }: PricingInformati
           </details>
         </div>
       </div>
+      </div>
 
       <div className="bottom-cta">
         <h2>atsignal 도입을 고려하고 계신가요?</h2>
@@ -784,8 +788,13 @@ export default function PricingInformation({ locale: _locale }: PricingInformati
         }
         .hero {
           text-align: center;
-          padding: 80px 20px;
           background: #e1f6ff;
+        }
+        .hero-container {
+          max-width: 1280px;
+          margin: 0 auto;
+          padding: 4rem 1rem;
+          padding-top: 5.2rem;
         }
         .hero h1 {
           font-size: 40px;
@@ -794,7 +803,12 @@ export default function PricingInformation({ locale: _locale }: PricingInformati
         }
         .hero p {
           font-size: 18px;
-          color: #e1f6ff;
+          color: #007dc7;
+        }
+        @media (min-width: 640px) {
+          .hero-container {
+            padding: calc((6rem + 17.9rem) / 2) 1.5rem; /* keep total height but center content vertically */
+          }
         }
         .section-title {
           text-align: center;
@@ -948,10 +962,13 @@ export default function PricingInformation({ locale: _locale }: PricingInformati
           text-align: center;
           vertical-align: middle;
         }
-        .faq {
-          max-width: 800px;
+        .faq-container {
+          max-width: 1100px; /* match table wrapper width */
           margin: 0 auto 80px;
           padding: 0 20px;
+        }
+        .faq {
+          max-width: 100%;
         }
         .faq-item {
           margin-bottom: 20px;
@@ -982,7 +999,7 @@ export default function PricingInformation({ locale: _locale }: PricingInformati
         .bottom-cta {
           text-align: center;
           padding: 60px 20px;
-          background: #20bdff;
+          background: #e1f6ff;
           color: #222222;
         }
         .bottom-cta h2 {
@@ -995,6 +1012,9 @@ export default function PricingInformation({ locale: _locale }: PricingInformati
         .pricing-root :global(.bottom-cta-btn) {
           display: inline-block;
           margin-top: 16px;
+          background: #b4e7ff;
+          color: #005ca5;
+          box-shadow: 0 8px 16px rgba(180, 231, 255, 0.35);
         }
         .main-container {
           display: flex;

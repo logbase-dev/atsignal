@@ -19,7 +19,7 @@
   --gray-500: #646F7C;
   --gray-600: #374553;
   --gray-700: #28323C;
-  --gray-black: #222222;
+  --gray-black: #000000;
   --gray-white: #FFFFFF;
   /* Legacy mappings for compatibility */
   --gray-50: #F7F8F9;
@@ -383,6 +383,19 @@ body:not(.admin-mode) .dropdown-item:hover {
   box-shadow: 0 12px 22px rgba(0, 125, 199, 0.45);
 }
 
+/* Make Get Demo button solid #00a1ef while keeping Contact Sales gradient */
+.nav-actions .cta-button:first-of-type {
+  background: #00a1ef;
+  box-shadow: 0 8px 16px rgba(0, 161, 239, 0.35);
+}
+
+/* Make Contact Sales button light blue */
+.nav-actions .cta-button:nth-of-type(2) {
+  background: #b4e7ff;
+  color: #005ca5;
+  box-shadow: 0 8px 16px rgba(180, 231, 255, 0.35);
+}
+
 .nav-actions {
   display: flex;
   align-items: center;
@@ -473,7 +486,7 @@ body:not(.admin-mode) .dropdown-item:hover {
   --notch-gap: 25px;
   --notch-side-span: calc(1440px * 0.05);
   --notch-side-depth: 9px;
-  --notch-bg: #0e0e0e;
+  --notch-bg: #000000;
   --notch-text: #ffffff;
   --notch-border: rgba(255, 255, 255, 0.1);
   --notch-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
@@ -654,7 +667,7 @@ body:not(.admin-mode) .dropdown-item:hover {
 .benefits-layout {
   display: grid;
   grid-template-columns: 3fr 7fr;
-  align-items: start; /* prevent left visual from shifting when accordion height changes */
+  align-items: stretch; /* stretch left visual to match right content height */
   gap: 2rem;
 }
 
@@ -665,6 +678,7 @@ body:not(.admin-mode) .dropdown-item:hover {
 
 .benefits-visual {
   min-height: 320px;
+  height: 100%; /* fill grid row height */
   background: linear-gradient(135deg, rgba(0, 161, 239, 0.1), rgba(0, 125, 199, 0.18));
   border-radius: 16px;
   border: 1px dashed rgba(0, 161, 239, 0.35);
@@ -799,8 +813,8 @@ body:not(.admin-mode) .dropdown-item:hover {
 /* Hero Section */
 .hero {
   position: relative;
-  background: url('/Textures.jpg') center center / cover no-repeat;
-  color: white;
+  background: #e1f6ff;
+  color: #0f172a;
 }
 
 .hero::before {
@@ -810,7 +824,7 @@ body:not(.admin-mode) .dropdown-item:hover {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(to bottom, rgba(0, 92, 165, 0.6) 0%, rgba(0, 78, 135, 0.7) 50%, rgba(15, 15, 15, 1) 95%);
+  background: linear-gradient(180deg, rgba(225, 246, 255, 0.92) 0%, rgba(180, 231, 255, 0.9) 100%);
   z-index: 0;
 }
 
@@ -921,7 +935,7 @@ body:not(.admin-mode) .dropdown-item:hover {
 .hero-description {
   font-size: 1.25rem;
   margin-bottom: 2rem;
-  color: rgba(255, 255, 255, 0.9);
+  color: #007dc7;
   max-width: 72rem;
   margin-left: auto;
   margin-right: auto;
@@ -929,8 +943,11 @@ body:not(.admin-mode) .dropdown-item:hover {
 }
 
 .rolling-banner-wrap {
-  --notice-space: 86px;
-  --rolling-width: 93vw;
+  --notice-space: 48px; /* bring toggle closer to banner edge */
+  --rolling-width: calc(
+    var(--notch-body-width, min(1280px, calc(100% - 120px))) +
+    2 * var(--notch-side-span, 72px)
+  ); /* match notch overall span */
   position: relative;
   width: var(--rolling-width);
   margin: -1.1rem auto 0.75rem auto;
@@ -946,23 +963,31 @@ body:not(.admin-mode) .dropdown-item:hover {
   top: 50%;
   transform: translateY(-50%);
   padding: 4px 10px;
-  background: rgba(10, 20, 32, 0.6); /* 어두운 톤의 칩 배경 */
-  color: #eaf3ff;
+  background: #b4e7ff; /* match Contact Sales */
+  color: #00a1ef; /* match Get Demo button */
   font-size: 0.75rem;
   font-weight: 600;
   border-radius: 999px;
   letter-spacing: 0.02em;
   z-index: 3;
-  border: 1px solid rgba(255, 255, 255, 0.12); /* 얇은 보더 */
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25); /* 떠 있는 느낌 */
+  border: 1px solid #005ca5;
+  box-shadow: 0 8px 16px rgba(180, 231, 255, 0.35); /* match Contact Sales shadow */
   display: inline-flex;
   align-items: center;
   gap: 6px;
 }
 
 .rolling-label-button {
-  border: none;
-  background: rgba(10, 20, 32, 0.6);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none; /* avoid double border over parent */
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  line-height: 1;
   cursor: pointer;
   outline: none;
 }
@@ -1014,20 +1039,7 @@ body:not(.admin-mode) .dropdown-item:hover {
 }
 
 .rolling-banner::after {
-  content: 'Notice';
-  position: absolute;
-  left: calc(-1 * var(--notice-space) + 12px);
-  top: 50%;
-  transform: translateY(-50%);
-  padding: 2px 8px;
-  background: rgba(255, 255, 255, 0.14);
-  color: #eaf3ff;
-  font-size: 0.75rem;
-  font-weight: 600;
-  border-radius: 999px;
-  letter-spacing: 0.02em;
-  z-index: 3;
-  pointer-events: none; /* 버튼 클릭을 가리지 않도록 */
+  content: '';
 }
 
 .rolling-track {
@@ -1039,9 +1051,9 @@ body:not(.admin-mode) .dropdown-item:hover {
   --roll-start-offset: calc(96px + var(--notice-space)); /* start further right to clear label mask */
   left: calc(var(--rolling-width, 95vw) - var(--roll-start-offset)); /* align start with banner width */
   top: 50%;
-  animation: rollingTicker 38s linear infinite;
+  animation: rollingTicker 50s linear infinite;
   font-size: 1.125rem;
-  color: #f5f8ff;
+  color: #007dc7;
   min-width: max-content;
   animation-play-state: var(--rolling-state, running);
 }
