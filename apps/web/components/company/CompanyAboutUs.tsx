@@ -118,7 +118,7 @@ export default function CompanyAboutUs({ locale }: CompanyAboutUsProps) {
   // }, []);
 
   return (
-    <div style={{ position: 'relative', overflowX: 'hidden' }}>
+    <div style={{ position: 'relative', overflowX: 'hidden', background: '#e1f6ff', minHeight: '100vh' }}>
       {/* Vanta 배경 (요청에 따라 임시 비활성화)
       <div
         id="vanta-bg"
@@ -687,7 +687,7 @@ export default function CompanyAboutUs({ locale }: CompanyAboutUsProps) {
           </p>
         </div>
 
-        {/* 시스템 아키텍처 영상 */}
+        {/* 시스템 아키텍처 영상 (요청에 따라 주석 처리)
         <div style={{ marginTop: '28px' }}>
           <h2 style={{ margin: '0 0 12px 0', fontSize: '20px', color: '#0f172a' }}>
             시스템 아키텍처 영상
@@ -717,6 +717,7 @@ export default function CompanyAboutUs({ locale }: CompanyAboutUsProps) {
             <i>아래 영상은 자동 재생하지 않습니다. 재생 버튼을 눌러 시청하세요.</i>
           </p>
         </div>
+        */}
       </div>
 
     </div>

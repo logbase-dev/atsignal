@@ -197,7 +197,7 @@ export default function Home({ locale }: HomeProps) {
         setStatsValues({
           events: Math.floor(easeOut * 10000000),
           availability: easeOut * 99.99,
-          responseTime: Math.floor(easeOut * 100),
+          responseTime: Math.floor(easeOut * 5),
           platforms: Math.floor(easeOut * 50),
         });
 
@@ -208,7 +208,7 @@ export default function Home({ locale }: HomeProps) {
           setStatsValues({
             events: 10000000,
             availability: 99.99,
-            responseTime: 100,
+            responseTime: 5,
             platforms: 50,
           });
         }
@@ -388,7 +388,7 @@ export default function Home({ locale }: HomeProps) {
                 });
               }}
             >
-              Notice{isBannerCollapsed ? '▼' : '▲'}
+              {isBannerCollapsed ? '▼' : '▲'}
               {isBannerCollapsed && dotCount > 0 && (
                 <span className="rolling-dots" aria-hidden="true">
                   {Array.from({ length: dotCount }).map((_, i) => (
