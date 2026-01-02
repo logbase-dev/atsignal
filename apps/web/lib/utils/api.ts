@@ -20,9 +20,7 @@ export function getPublicApiUrl(path: string): string {
   // 프로덕션 환경에서 서버 사이드 렌더링 시 절대 URL 필요
   if (typeof window === 'undefined') {
     // 서버 사이드에서는 배포된 도메인의 절대 URL 사용
-    const baseUrl = process.env.VERCEL_URL 
-      ? `https://${process.env.VERCEL_URL}`
-      : process.env.NEXT_PUBLIC_SITE_URL 
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL 
       ? process.env.NEXT_PUBLIC_SITE_URL
       : 'https://web-ssr--atsignal.asia-east1.hosted.app'; // Firebase App Hosting 기본 도메인
     
