@@ -2958,27 +2958,27 @@ body:not(.admin-mode) .dropdown-item:hover {
   margin-left: 0.25rem;
 }
 
-.hero {
+.hero-sub {
   text-align: center;
   background: #e1f6ff;
 }
-.hero-container {
+.hero-container-sub {
   max-width: 1280px;
   margin: 0 auto;
   padding: 4rem 1rem;
   padding-top: 5.2rem;
 }
-.hero h1 {
+.hero-sub h1 {
   font-size: 40px;
   margin-bottom: 16px;
   font-weight: 800;
 }
-.hero p {
+.hero-sub p {
   font-size: 18px;
   color: #007dc7;
 }
 @media (min-width: 640px) {
-  .hero-container {
+  .hero-container-sub {
     padding: calc((6rem + 17.9rem) / 2) 1.5rem; /* keep total height but center content vertically */
   }
 }
