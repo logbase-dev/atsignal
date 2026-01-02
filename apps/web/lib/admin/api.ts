@@ -10,18 +10,33 @@
 export function getAdminApiUrl(path: string): string {
   const cleanPath = path.startsWith('/') ? path.slice(1) : path;
   
-  // IMPORTANT:
-  // In production builds (App Hosting), some `*.hosted.app` domains can block `/api/*` at the edge.
-  // Also, `NEXT_PUBLIC_*` envs are baked at build-time and can be tricky to reason about across rollouts.
-  // So in non-dev, we always use the `/admin-api/*` proxy route.
+  // 개발 환경에서는 로컬 Next.js API Route 사용
   const isDev = process.env.NODE_ENV === "development";
-  if (!isDev) {
-    return `/admin-api/admin/${cleanPath}`;
+  if (isDev) {
+    // Dev: allow switching via env (false -> direct Next API routes for cookie stability)
+    const useFunctions = process.env.NEXT_PUBLIC_ADMIN_USE_FUNCTIONS !== "false";
+    
+    // 서버 사이드에서는 절대 URL 필요
+    if (typeof window === 'undefined') {
+      const baseUrl = useFunctions ? 'http://localhost:3000' : 'http://localhost:3000';
+      return useFunctions ? `${baseUrl}/admin-api/admin/${cleanPath}` : `${baseUrl}/api/admin/${cleanPath}`;
+    }
+    
+    return useFunctions ? `/admin-api/admin/${cleanPath}` : `/api/admin/${cleanPath}`;
   }
 
-  // Dev: allow switching via env (false -> direct Next API routes for cookie stability)
-  const useFunctions = process.env.NEXT_PUBLIC_ADMIN_USE_FUNCTIONS !== "false";
-  return useFunctions ? `/admin-api/admin/${cleanPath}` : `/api/admin/${cleanPath}`;
+  // 프로덕션 환경에서 서버 사이드 렌더링 시 절대 URL 필요
+  if (typeof window === 'undefined') {
+    // 서버 사이드에서는 배포된 도메인의 절대 URL 사용
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL 
+      ? process.env.NEXT_PUBLIC_SITE_URL
+      : 'https://web-ssr--atsignal.asia-east1.hosted.app'; // Firebase App Hosting 기본 도메인
+    
+    return `${baseUrl}/admin-api/admin/${cleanPath}`;
+  }
+
+  // 클라이언트 사이드에서는 상대 경로 사용
+  return `/admin-api/admin/${cleanPath}`;
 }
 
 export type AdminAuthMode = "cookie" | "token";
