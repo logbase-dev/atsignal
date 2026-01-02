@@ -5,6 +5,8 @@ export async function getPublicNotices(options?: {
   page?: number; 
   limit?: number;
   search?: string;
+  published?: boolean;
+  showInBanner?: boolean;
 }): Promise<{ notices: Notice[]; total: number; page: number; limit: number; totalPages: number }> {
   const page = options?.page || 1;
   const limit = options?.limit || 20;
