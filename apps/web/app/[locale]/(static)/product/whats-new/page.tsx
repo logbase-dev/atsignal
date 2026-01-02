@@ -144,8 +144,8 @@ export default function WhatsNewPage({ params }: PageProps) {
       paddingBottom: '2rem'
     }}>
 
-      <div className="hero">
-        <div className="hero-container">
+      <div className="hero-sub">
+        <div className="hero-container-sub">
           <h1>atsignal What's new</h1>
           <p>설명 문구가 들어가는 곳입니다.</p>
           {/* <p>수집 로그 규모에 따라 가장 적합한 요금제를 선택하세요.</p> */}
