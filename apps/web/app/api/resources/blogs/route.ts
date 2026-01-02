@@ -89,6 +89,20 @@ export async function GET(request: NextRequest) {
       page,
       limit,
       totalPages,
+      // 디버그 정보 추가
+      debug: {
+        timestamp: new Date().toISOString(),
+        queryExecuted: true,
+        snapshotSize: snapshot.size,
+        blogsAfterMapping: blogs.length,
+        paginatedCount: paginatedBlogs.length,
+        sampleBlog: blogs[0] ? {
+          id: blogs[0].id,
+          hasTitle: !!blogs[0].title,
+          hasContent: !!blogs[0].content,
+          published: blogs[0].published
+        } : null
+      }
     });
   } catch (error) {
     console.error('[Blogs API] 에러 발생:', error);
