@@ -195,7 +195,8 @@ export default function Footer({ menus = [] }: FooterProps) {
         {/* Bottom Bar */}
         <div className="footer-bottom">
           <div className="footer-copyright">
-            <p>© {currentYear} Nethru. All rights reserved.</p>
+            {/* <p>© {currentYear} Nethru. All rights reserved.</p> */}
+            <p>© 2026 Nethru. All rights reserved.</p>
           </div>
           <div className="footer-legal">
             <Link href={`/${locale}/privacy`} className="footer-legal-link">

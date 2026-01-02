@@ -1,6 +1,5 @@
-'use client';
-
 import type { Event } from '@/lib/admin/types';
+import { getPublicApiUrl } from '@/lib/utils/api';
 
 export async function getPublicEvents(options?: {
   page?: number;
@@ -12,33 +11,38 @@ export async function getPublicEvents(options?: {
 }): Promise<{ events: Event[]; total: number; page: number; limit: number; totalPages: number }> {
   const page = options?.page || 1;
   const limit = options?.limit || 20;
-  const params = new URLSearchParams({
-    page: String(page),
-    limit: String(limit),
-  });
-  if (options?.published !== undefined) {
-    params.append('published', String(options.published));
-  }
-  if (options?.showInBanner !== undefined) {
-    params.append('showInBanner', String(options.showInBanner));
-  }
-  if (options?.hasCtaButton !== undefined) {
-    params.append('hasCtaButton', String(options.hasCtaButton));
-  }
-  if (options?.search) {
-    params.append('search', options.search);
-  }
+  const baseUrl = getPublicApiUrl('resources/events');
+  const params = new URLSearchParams();
+  params.append('page', String(page));
+  params.append('limit', String(limit));
+  if (options?.search) params.append('search', options.search);
+  const url = `${baseUrl}?${params.toString()}`;
 
-  // 공개 API 경로 사용 (인증 불필요)
-  const response = await fetch(`/admin-api/admin/event?${params.toString()}`);
+  console.log('[getPublicEvents] API 호출 시작:', { url, options });
+
+  const response = await fetch(url);
+
+  console.log('[getPublicEvents] API 응답:', { 
+    ok: response.ok, 
+    status: response.status, 
+    statusText: response.statusText 
+  });
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch events: ${response.statusText}`);
+    console.error('[getPublicEvents] API 에러:', response.status, response.statusText);
+    throw new Error('이벤트를 불러오는데 실패했습니다.');
   }
 
-  const data = await response.json();
+  const data = await response.json().catch(() => ({}));
+
+  console.log('[getPublicEvents] 파싱된 데이터:', {
+    eventsCount: data.events?.length || 0,
+    total: data.total,
+    hasEvents: !!data.events
+  });
+
   return {
-    events: (data?.events || []) as Event[],
+    events: (data.events || []) as Event[],
     total: data.total || 0,
     page: data.page || page,
     limit: data.limit || limit,
