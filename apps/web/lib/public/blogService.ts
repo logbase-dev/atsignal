@@ -17,9 +17,29 @@ export async function getPublicBlogs(options?: {
   if (options?.search) params.append('search', options.search);
   const url = `${baseUrl}?${params.toString()}`;
   
+  console.log('[getPublicBlogs] API 호출 시작:', { url, options });
+  
   const response = await fetch(url);
-  if (!response.ok) throw new Error('블로그를 불러오는데 실패했습니다.');
+  
+  console.log('[getPublicBlogs] API 응답:', { 
+    ok: response.ok, 
+    status: response.status, 
+    statusText: response.statusText 
+  });
+  
+  if (!response.ok) {
+    console.error('[getPublicBlogs] API 에러:', response.status, response.statusText);
+    throw new Error('블로그를 불러오는데 실패했습니다.');
+  }
+  
   const data = await response.json().catch(() => ({}));
+  
+  console.log('[getPublicBlogs] 파싱된 데이터:', {
+    blogsCount: data.blogs?.length || 0,
+    total: data.total,
+    hasBlogs: !!data.blogs
+  });
+  
   return {
     blogs: (data.blogs || []) as BlogPost[],
     total: data.total || 0,
