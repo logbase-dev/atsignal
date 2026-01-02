@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { getPublicApiUrl } from '@/lib/utils/api';
 import EventsPage from './EventsPage';
 
 interface Props {
@@ -22,7 +23,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 // 서버사이드에서 API 호출하는 헬퍼 함수들
 async function fetchEvents() {
   try {
-    const response = await fetch(`http://localhost:3000/api/resources/events?page=1&limit=50&published=true`, {
+    const url = `${getPublicApiUrl('resources/events')}?page=1&limit=50&published=true`;
+    console.log('[Server] Fetching events from:', url);
+    
+    const response = await fetch(url, {
       cache: 'no-store'
     });
     
