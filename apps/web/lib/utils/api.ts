@@ -17,18 +17,20 @@ export function getPublicApiUrl(path: string): string {
     return `/api/${cleanPath}`;
   }
 
-  // 프로덕션에서 Functions 직접 호출이 안되면 프록시 경로 사용
-  // 환경변수로 제어 가능하게 함
-  const useProxy = process.env.NEXT_PUBLIC_USE_API_PROXY === "true";
-  if (useProxy) {
-    return `/api/${cleanPath}`;
+  // 프로덕션 환경에서 서버 사이드 렌더링 시 절대 URL 필요
+  if (typeof window === 'undefined') {
+    // 서버 사이드에서는 배포된 도메인의 절대 URL 사용
+    const baseUrl = process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}`
+      : process.env.NEXT_PUBLIC_SITE_URL 
+      ? process.env.NEXT_PUBLIC_SITE_URL
+      : 'https://web-ssr--atsignal.asia-east1.hosted.app'; // Firebase App Hosting 기본 도메인
+    
+    return `${baseUrl}/api/${cleanPath}`;
   }
 
-  // CORS 문제로 인해 임시로 프록시 사용 (긴급 수정)
+  // 클라이언트 사이드에서는 상대 경로 사용
   return `/api/${cleanPath}`;
-
-  // 프로덕션에서는 Functions API 사용 (CORS 해결 후 활성화)
-  // return `https://asia-northeast3-atsignal.cloudfunctions.net/api/${cleanPath}`;
 }
 
 /**
