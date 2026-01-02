@@ -14,12 +14,16 @@ export function buildMenuTreeFromFirestore(menus: any[], locale: 'ko' | 'en'): M
       const label = menu.label || menu.labels?.[locale] || menu.labels?.ko || '';
       const path = menu.path || '';
       
+      // URL인지 확인 (http:// 또는 https://로 시작하는 경우)
+      const isUrl = path.startsWith('http://') || path.startsWith('https://');
+      
       menuMap.set(menu.id, {
         id: menu.id,
         name: label,
-        path: menu.isExternal ? path : normalizePath(path),
-        url: menu.isExternal ? path : undefined,
-        isExternal: menu.isExternal || false,
+        path: isUrl ? path : normalizePath(path), // URL인 경우 normalizePath 적용하지 않음
+        url: isUrl ? path : undefined, // URL인 경우 url 필드에도 설정
+        isExternal: menu.isExternal || isUrl, // URL인 경우 자동으로 외부 링크로 설정
+        pageType: (menu.isExternal || isUrl) ? 'links' : menu.pageType, // 외부 링크면 pageType을 'links'로 설정
         description: menu.description?.[locale] || menu.description?.ko, // description이 LocalizedField일 수 있음
         children: [],
         order: menu.order || 0,

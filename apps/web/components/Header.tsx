@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { MenuNode } from '@/types/menu';
 import { pathToUrl } from '@/utils/menu';
-import { getLocaleFromPath, defaultLocale } from '@/lib/i18n/getLocale';
+import { getLocaleFromPath } from '@/lib/i18n/getLocale';
 import koMessages from '@/locales/ko.json';
 import enMessages from '@/locales/en.json';
 import NewsletterModal from '@/components/Newsletter/NewsletterModal';
@@ -40,7 +40,6 @@ interface HeaderProps {
 export default function Header({ menuTree }: HeaderProps) {
   const pathname = usePathname();
   const locale = getLocaleFromPath(pathname);
-  const contactCta = translations[locale]?.header?.contactCta ?? translations.ko.header.contactCta;
   const notchPathD = `
     M 0 0
     C 11 0 22 15.5 34.13 40.5
@@ -137,17 +136,69 @@ export default function Header({ menuTree }: HeaderProps) {
   }, []);
 
   const getNodeHref = (node: MenuNode): string => {
-    if (node.pageType === 'links') {
-      const externalUrl = node.url || node.path;
+    // 디버깅을 위한 로그 추가
+    if (node.name === 'Docs@signal' || node.name?.includes('Docs')) {
+      console.log('[Header] Docs 메뉴 디버깅:', {
+        name: node.name,
+        path: node.path,
+        url: node.url,
+        pageType: node.pageType,
+        isExternal: node.isExternal
+      });
+    }
+    
+    // pageType이 'links'이거나 isExternal이 true인 경우 외부 링크로 처리
+    if (node.pageType === 'links' || node.isExternal) {
+      // url 필드가 있으면 우선 사용, 없으면 path 사용
+      let externalUrl = node.url || node.path;
       if (!externalUrl) return '';
       
+      console.log('[Header] 외부 링크 처리 (원본):', { 
+        name: node.name, 
+        externalUrl, 
+        pageType: node.pageType, 
+        isExternal: node.isExternal 
+      });
+      
+      // path에서 앞의 슬래시 제거 (예: '/https:/docs...' -> 'https:/docs...')
+      if (externalUrl.startsWith('/')) {
+        externalUrl = externalUrl.substring(1);
+      }
+      
+      // 이미 완전한 URL인 경우 그대로 반환
       if (externalUrl.startsWith('http://') || externalUrl.startsWith('https://')) {
+        console.log('[Header] 완전한 URL 반환:', externalUrl);
         return externalUrl;
       }
       
-      return `https://${externalUrl}`;
+      // https: 형태인 경우 https://로 수정
+      if (externalUrl.startsWith('https:') && !externalUrl.startsWith('https://')) {
+        externalUrl = externalUrl.replace('https:', 'https://');
+        console.log('[Header] https: -> https:// 수정:', externalUrl);
+        return externalUrl;
+      }
+      
+      // http: 형태인 경우 http://로 수정
+      if (externalUrl.startsWith('http:') && !externalUrl.startsWith('http://')) {
+        externalUrl = externalUrl.replace('http:', 'http://');
+        console.log('[Header] http: -> http:// 수정:', externalUrl);
+        return externalUrl;
+      }
+      
+      // 프로토콜이 없는 경우에만 https:// 추가
+      const finalUrl = `https://${externalUrl}`;
+      console.log('[Header] 프로토콜 추가된 URL:', finalUrl);
+      return finalUrl;
     }
-    return pathToUrl(node.path, locale);
+    
+    // 일반 페이지의 경우 pathToUrl로 로케일 경로 생성
+    const result = pathToUrl(node.path, locale);
+    
+    if (node.name === 'Docs@signal' || node.name?.includes('Docs')) {
+      console.log('[Header] 일반 페이지 처리:', { name: node.name, path: node.path, result });
+    }
+    
+    return result;
   };
 
   const renderLink = (
@@ -164,7 +215,7 @@ export default function Header({ menuTree }: HeaderProps) {
       </>
     );
 
-    if (node.pageType === 'links') {
+    if (node.pageType === 'links' || node.isExternal) {
       return (
         <a
           href={href}

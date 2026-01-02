@@ -59,7 +59,8 @@ export function buildMenuTree(): MenuNode[] {
           url: isLast ? item.url : undefined,
           description: isLast ? item.description : undefined,
           children: [],
-          pageType: isLast ? item.pageType : undefined,
+          pageType: isLast ? (item.url ? 'links' : item.pageType) : undefined, // url이 있으면 'links'로 설정
+          isExternal: isLast ? !!item.url : false, // url이 있으면 외부 링크로 설정
           markdown: isLast ? item.markdown : undefined,
           category: isLast ? item.category : undefined,
           checkPoint: isLast ? item.checkPoint : undefined,
@@ -164,6 +165,8 @@ export function getBreadcrumbs(path: string): MenuNode[] {
         path: normalizePath(item.fullPath),
         url: item.url,
         description: item.description,
+        isExternal: !!item.url,
+        pageType: item.url ? 'links' : item.pageType,
       });
     }
   });
