@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getBlogPosts, deleteBlogPost } from '@/lib/admin/blogService';
+import { getBlogPosts, deleteBlogPost, getFeaturedBlogPosts } from '@/lib/admin/blogService';
 import { getBlogCategories } from '@/lib/admin/blogCategoryService';
 import type { BlogPost, BlogCategory } from '@/lib/admin/types';
 import { BlogCategoryModal } from '@/components/admin/blog/BlogCategoryModal';
@@ -10,6 +10,7 @@ import { getAdminApiUrl } from '@/lib/admin/api';
 
 export default function BlogPage() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [featuredPosts, setFeaturedPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
@@ -27,6 +28,7 @@ export default function BlogPage() {
   useEffect(() => {
     void loadCategories();
     void loadAdmins();
+    void loadFeaturedPosts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -62,6 +64,15 @@ export default function BlogPage() {
       }
     } catch (err) {
       console.error('Failed to load admins:', err);
+    }
+  };
+
+  const loadFeaturedPosts = async () => {
+    try {
+      const featured = await getFeaturedBlogPosts(3);
+      setFeaturedPosts(featured);
+    } catch (err) {
+      console.error('Failed to load featured posts:', err);
     }
   };
 
@@ -107,6 +118,7 @@ export default function BlogPage() {
       try {
         await deleteBlogPost(id);
         await loadPosts();
+        await loadFeaturedPosts(); // 추천 블로그도 다시 로드
       } catch (e) {
         console.error('Failed to delete blog post:', e);
         alert('삭제에 실패했습니다.');
@@ -297,6 +309,158 @@ export default function BlogPage() {
           <strong>경고:</strong> {error}
         </div>
       ) : null}
+
+      {/* 추천 블로그 카드 */}
+      <div style={{ marginBottom: '2rem' }}>
+        <h2 style={{
+          fontSize: '1.25rem',
+          fontWeight: '600',
+          color: '#1a1a1a',
+          marginBottom: '1rem',
+        }}>
+          추천 블로그
+        </h2>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: '1rem',
+        }}>
+          {/* 항상 3개의 카드 슬롯을 표시 */}
+          {Array.from({ length: 3 }, (_, index) => {
+            const post = featuredPosts[index];
+            
+            if (post) {
+              // 실제 블로그 카드
+              return (
+                <div
+                  key={post.id}
+                  style={{
+                    backgroundColor: '#fff',
+                    borderRadius: '8px',
+                    overflow: 'hidden',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                    border: '1px solid #e5e7eb',
+                  }}
+                >
+                  {/* 썸네일 이미지 */}
+                  {post.featuredImage && (
+                    <div style={{
+                      width: '100%',
+                      height: '120px',
+                      backgroundImage: `url(${post.featuredImage})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                    }} />
+                  )}
+                  
+                  <div style={{ padding: '1rem' }}>
+                    {/* 제목 */}
+                    <h3 style={{
+                      fontSize: '1rem',
+                      fontWeight: '600',
+                      color: '#1a1a1a',
+                      marginBottom: '0.5rem',
+                      lineHeight: '1.4',
+                    }}>
+                      <Link
+                        href={`/admin/blog/${post.id}`}
+                        style={{
+                          color: 'inherit',
+                          textDecoration: 'none',
+                        }}
+                      >
+                        {post.title?.ko || post.title?.en || '제목 없음'}
+                      </Link>
+                    </h3>
+
+                    {/* 요약 */}
+                    <p style={{
+                      color: '#666',
+                      fontSize: '0.875rem',
+                      lineHeight: '1.4',
+                      marginBottom: '0.75rem',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                    }}>
+                      {post.excerpt?.ko || post.excerpt?.en || 
+                       (post.content?.ko || post.content?.en ? 
+                        (post.content.ko || post.content.en || '').replace(/<[^>]*>/g, '').substring(0, 80) + '...' : 
+                        '내용이 없습니다.')}
+                    </p>
+
+                    {/* 메타 정보 */}
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      fontSize: '0.75rem',
+                      color: '#9ca3af',
+                    }}>
+                      <span>{post.createdAt ? new Date(post.createdAt).toLocaleDateString() : '-'}</span>
+                      <span>{post.published ? '발행' : '초안'}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            } else {
+              // 빈 카드 플레이스홀더
+              return (
+                <div
+                  key={`empty-${index}`}
+                  style={{
+                    backgroundColor: '#f8f9fa',
+                    borderRadius: '8px',
+                    border: '2px dashed #e9ecef',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minHeight: '180px',
+                    padding: '1rem',
+                  }}
+                >
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    backgroundColor: '#e9ecef',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: '0.5rem',
+                  }}>
+                    <svg 
+                      width="16" 
+                      height="16" 
+                      fill="none" 
+                      stroke="#adb5bd" 
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                    >
+                      <path 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        d="M12 4.5v15m7.5-7.5h-15" 
+                      />
+                    </svg>
+                  </div>
+                  <p style={{
+                    color: '#adb5bd',
+                    fontSize: '0.75rem',
+                    textAlign: 'center',
+                    margin: 0,
+                    fontWeight: '500',
+                  }}>
+                    추천 블로그가 없습니다
+                  </p>
+                </div>
+              );
+            }
+          })}
+        </div>
+      </div>
 
       {/* 총 항목 수 표시 및 페이지당 표시 - 상단 */}
       <div

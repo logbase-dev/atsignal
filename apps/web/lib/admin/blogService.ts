@@ -9,6 +9,7 @@ export async function getBlogPosts(options?: {
   categoryId?: string;
   search?: string;
   published?: boolean;
+  isFeatured?: boolean;
 }): Promise<{ posts: BlogPost[]; total: number; page: number; limit: number; totalPages: number }> {
   const page = options?.page || 1;
   const limit = options?.limit || 20;
@@ -19,6 +20,7 @@ export async function getBlogPosts(options?: {
   if (options?.categoryId) params.append('categoryId', options.categoryId);
   if (options?.search) params.append('search', options.search);
   if (options?.published !== undefined) params.append('published', String(options.published));
+  if (options?.isFeatured !== undefined) params.append('isFeatured', String(options.isFeatured));
   const url = `${baseUrl}?${params.toString()}`;
   
   const response = await fetch(url, { credentials: 'include' });
@@ -78,6 +80,18 @@ export async function deleteBlogPost(id: string): Promise<void> {
     const err = await response.json().catch(() => ({}));
     throw new Error(err.error || '블로그 포스트 삭제에 실패했습니다.');
   }
+}
+
+export async function getFeaturedBlogPosts(limit: number = 3): Promise<BlogPost[]> {
+  // 임시로 더 많은 데이터를 가져와서 클라이언트에서 필터링
+  const response = await getBlogPosts({ 
+    limit: 100,
+    published: true // 발행된 것만 가져오기
+  });
+  
+  // 클라이언트에서 isFeatured 필터링
+  const featuredPosts = response.posts.filter(post => post.isFeatured === true);
+  return featuredPosts.slice(0, limit);
 }
 
 

@@ -29,11 +29,14 @@ export async function handle(request: Request, response: Response) {
       const published = request.query.published !== undefined && request.query.published !== ""
         ? (request.query.published === "true" || request.query.published === "1")
         : undefined;
+      const isFeatured = request.query.isFeatured !== undefined && request.query.isFeatured !== ""
+        ? (request.query.isFeatured === "true" || request.query.isFeatured === "1")
+        : undefined;
       
-      console.log("[Blog API] 검색 파라미터:", { page, limit, categoryId, search, published });
+      console.log("[Blog API] 검색 파라미터:", { page, limit, categoryId, search, published, isFeatured });
       
       console.log('[Blog API] getBlogPosts 호출 전');
-      const result = await getBlogPosts({ page, limit, categoryId, search, published });
+      const result = await getBlogPosts({ page, limit, categoryId, search, published, isFeatured });
       console.log('[Blog API] getBlogPosts 호출 후, 결과:', {
         total: result.total,
         postsLength: result.posts?.length,

@@ -104,34 +104,22 @@ export default function EventsPage({
     <div style={{ 
       minHeight: '100vh', 
       backgroundColor: '#f9f9f9',
-      padding: '2rem 1rem',
-      paddingTop: '6rem',
+      paddingBottom: '2rem'
     }}>
+
+      <div className="hero">
+        <div className="hero-container">
+          <h1>atsignal Events</h1>
+          <p>설명 문구가 들어가는 곳입니다.</p>
+          {/* <p>수집 로그 규모에 따라 가장 적합한 요금제를 선택하세요.</p> */}
+        </div>
+      </div>
+
       <div style={{ 
         maxWidth: '1200px', 
         margin: '0 auto',
+        paddingTop: '2rem',
       }}>
-        {/* 헤더 */}
-        <div style={{ 
-          marginBottom: '3rem',
-          textAlign: 'center',
-        }}>
-          {/* <h1 style={{ 
-            fontSize: '3rem', 
-            fontWeight: '700', 
-            color: '#1a1a1a',
-            margin: '0 0 1rem 0',
-          }}>
-            {t.title}
-          </h1> */}
-          {/* <p style={{
-            fontSize: '1.125rem',
-            color: '#666',
-            margin: '0 0 2rem 0',
-          }}>
-            {t.subtitle}
-          </p> */}
-        </div>
 
         {/* 메인 이벤트 */}
         {initialMainEvent && (

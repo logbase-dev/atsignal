@@ -130,6 +130,7 @@ export function WhatsNewForm({ mode, id }: WhatsNewFormProps) {
         setPublished(whatsnew.published ?? false);
         setEnabledKo(whatsnew.enabled?.ko ?? true);
         setEnabledEn(whatsnew.enabled?.en ?? false);
+        setIsTop(whatsnew.isTop ?? false); // ✅ isTop 필드 추가
         setEditorType(whatsnew.editorType || 'toast');
         setSaveFormat(whatsnew.saveFormat || 'markdown');
       } catch (e: any) {

@@ -27,6 +27,12 @@ export default function GlossaryPage({ params }: PageProps) {
   const [selectedLetter, setSelectedLetter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchInput, setSearchInput] = useState('');
+  
+  // 페이지네이션 상태
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const itemsPerPage = 20;
 
   // 알파벳 목록
   const alphabets = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
@@ -70,19 +76,21 @@ export default function GlossaryPage({ params }: PageProps) {
         initialLetter: selectedLetter !== 'all' ? selectedLetter : undefined,
         orderBy: 'term',
         orderDirection: 'asc',
-        page: 1,
-        limit: 1000, // 모든 용어를 가져와서 클라이언트에서 처리
+        page: currentPage,
+        limit: itemsPerPage,
         enabled,
       });
 
       setGlossaries(result.glossaries);
+      setTotalPages(result.totalPages || 1);
+      setTotalCount(result.total || 0);
     } catch (err: any) {
       console.error('Failed to load glossaries:', err);
       setError(err.message || '용어사전을 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
     }
-  }, [locale, selectedCategoryId, searchQuery, selectedLetter]);
+  }, [locale, selectedCategoryId, searchQuery, selectedLetter, currentPage]);
 
   useEffect(() => {
     void loadCategories();
@@ -93,38 +101,41 @@ export default function GlossaryPage({ params }: PageProps) {
   }, [loadGlossaries]);
 
   const handleSearch = () => {
+    setCurrentPage(1); // 검색 시 첫 페이지로 이동
     setSearchQuery(searchInput);
   };
 
   const handleClearSearch = () => {
     setSearchInput('');
     setSearchQuery('');
+    setCurrentPage(1); // 초기화 시 첫 페이지로 이동
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') handleSearch();
   };
 
-  // 카테고리별로 용어 그룹화
-  const groupedGlossaries = glossaries.reduce((acc, glossary) => {
-    const categoryId = glossary.categoryId || 'uncategorized';
-    if (!acc[categoryId]) {
-      acc[categoryId] = [];
-    }
-    acc[categoryId].push(glossary);
-    return acc;
-  }, {} as Record<string, Glossary[]>);
+
 
   return (
     <div style={{ 
       minHeight: '100vh', 
       backgroundColor: '#f9f9f9',
-      padding: '2rem 1rem',
-      paddingTop: '6rem',
+      paddingBottom: '2rem'
     }}>
+
+      <div className="hero">
+        <div className="hero-container">
+          <h1>atsignal Glossary</h1>
+          <p>설명 문구가 들어가는 곳입니다.</p>
+          {/* <p>수집 로그 규모에 따라 가장 적합한 요금제를 선택하세요.</p> */}
+        </div>
+      </div>
+
       <div style={{ 
         maxWidth: '1200px', 
         margin: '0 auto',
+        paddingTop: '2rem',
       }}>
 
         {/* 검색 및 필터 */}
@@ -219,7 +230,10 @@ export default function GlossaryPage({ params }: PageProps) {
               justifyContent: 'center',
             }}>
               <button
-                onClick={() => setSelectedCategoryId('all')}
+                onClick={() => {
+                  setSelectedCategoryId('all');
+                  setCurrentPage(1); // 카테고리 변경 시 첫 페이지로 이동
+                }}
                 style={{
                   padding: '0.5rem 1rem',
                   backgroundColor: selectedCategoryId === 'all' ? '#20BDFF' : '#f5f5f5',
@@ -238,7 +252,10 @@ export default function GlossaryPage({ params }: PageProps) {
               {categories.map((category) => (
                 <button
                   key={category.id}
-                  onClick={() => setSelectedCategoryId(category.id!)}
+                  onClick={() => {
+                    setSelectedCategoryId(category.id!);
+                    setCurrentPage(1); // 카테고리 변경 시 첫 페이지로 이동
+                  }}
                   style={{
                     padding: '0.5rem 1rem',
                     backgroundColor: selectedCategoryId === category.id ? '#20BDFF' : '#f5f5f5',
@@ -276,7 +293,10 @@ export default function GlossaryPage({ params }: PageProps) {
               justifyContent: 'center',
             }}>
               <button
-                onClick={() => setSelectedLetter('all')}
+                onClick={() => {
+                  setSelectedLetter('all');
+                  setCurrentPage(1); // 알파벳 변경 시 첫 페이지로 이동
+                }}
                 style={{
                   padding: '0.5rem 0.75rem',
                   backgroundColor: selectedLetter === 'all' ? '#20BDFF' : '#f5f5f5',
@@ -296,7 +316,10 @@ export default function GlossaryPage({ params }: PageProps) {
               {alphabets.map((letter) => (
                 <button
                   key={letter}
-                  onClick={() => setSelectedLetter(letter)}
+                  onClick={() => {
+                    setSelectedLetter(letter);
+                    setCurrentPage(1); // 알파벳 변경 시 첫 페이지로 이동
+                  }}
                   style={{
                     padding: '0.5rem 0.75rem',
                     backgroundColor: selectedLetter === letter ? '#20BDFF' : '#f5f5f5',
@@ -346,7 +369,32 @@ export default function GlossaryPage({ params }: PageProps) {
         {/* 용어사전 목록 */}
         {!loading && !error && (
           <div>
-            {Object.keys(groupedGlossaries).length === 0 ? (
+            {/* 결과 요약 */}
+            <div style={{
+              backgroundColor: '#fff',
+              borderRadius: '8px',
+              padding: '1rem 1.5rem',
+              marginBottom: '1.5rem',
+              border: '1px solid #e5e5e5',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}>
+              <div style={{ color: '#666', fontSize: '0.875rem' }}>
+                {locale === 'en' 
+                  ? `Showing ${((currentPage - 1) * itemsPerPage) + 1}-${Math.min(currentPage * itemsPerPage, totalCount)} of ${totalCount} terms`
+                  : `총 ${totalCount}개 중 ${((currentPage - 1) * itemsPerPage) + 1}-${Math.min(currentPage * itemsPerPage, totalCount)}개 표시`
+                }
+              </div>
+              <div style={{ color: '#666', fontSize: '0.875rem' }}>
+                {locale === 'en' 
+                  ? `Page ${currentPage} of ${totalPages}`
+                  : `${totalPages}페이지 중 ${currentPage}페이지`
+                }
+              </div>
+            </div>
+
+            {glossaries.length === 0 ? (
               <div style={{ 
                 padding: '3rem 1rem', 
                 textAlign: 'center', 
@@ -358,150 +406,205 @@ export default function GlossaryPage({ params }: PageProps) {
                 <p>{searchQuery ? (locale === 'en' ? 'No terms found.' : '검색된 용어가 없습니다.') : (locale === 'en' ? 'No terms available.' : '용어가 없습니다.')}</p>
               </div>
             ) : (
-              Object.entries(groupedGlossaries).map(([categoryId, categoryGlossaries]) => {
-                const category = categories.find(c => c.id === categoryId);
-                const categoryName = categoryId === 'uncategorized' 
-                  ? (locale === 'en' ? 'Uncategorized' : '미분류')
-                  : (locale === 'en' && category?.name.en ? category.name.en : category?.name.ko || '');
+              <div style={{ 
+                display: 'grid',
+                gap: '1rem',
+                marginBottom: '2rem',
+              }}>
+                {glossaries.map((glossary) => {
+                  const term = locale === 'en' && glossary.term.en 
+                    ? glossary.term.en 
+                    : glossary.term.ko;
+                  const description = locale === 'en' && glossary.description.en 
+                    ? glossary.description.en 
+                    : glossary.description.ko;
 
-                return (
-                  <div key={categoryId} style={{ marginBottom: '3rem' }}>
-                    <h2 style={{
-                      fontSize: '1.5rem',
-                      fontWeight: '600',
-                      color: '#1a1a1a',
-                      marginBottom: '1.5rem',
-                      paddingBottom: '0.5rem',
-                      borderBottom: '2px solid #20BDFF',
-                    }}>
-                      {categoryName}
-                    </h2>
-                    
-                    <div style={{ 
-                      display: 'grid',
-                      gap: '1rem',
-                    }}>
-                      {categoryGlossaries.map((glossary) => {
-                        const term = locale === 'en' && glossary.term.en 
-                          ? glossary.term.en 
-                          : glossary.term.ko;
-                        const description = locale === 'en' && glossary.description.en 
-                          ? glossary.description.en 
-                          : glossary.description.ko;
-
-                        return (
-                          <div
-                            key={glossary.id}
-                            style={{
-                              backgroundColor: '#fff',
-                              borderRadius: '8px',
-                              padding: '1.5rem',
-                              border: '1px solid #e5e5e5',
-                              transition: 'box-shadow 0.2s ease',
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.boxShadow = 'none';
+                  return (
+                    <div
+                      key={glossary.id}
+                      style={{
+                        backgroundColor: '#fff',
+                        borderRadius: '8px',
+                        padding: '1.5rem',
+                        border: '1px solid #e5e5e5',
+                        transition: 'box-shadow 0.2s ease',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.boxShadow = 'none';
+                      }}
+                    >
+                      <h3 style={{
+                        fontSize: '1.25rem',
+                        fontWeight: '600',
+                        color: '#20BDFF',
+                        marginBottom: '0.75rem',
+                        margin: 0,
+                      }}>
+                        {term}
+                      </h3>
+                      
+                      <div style={{
+                        color: '#666',
+                        lineHeight: '1.6',
+                        fontSize: '1rem',
+                      }}>
+                        {glossary.saveFormat === 'html' ? (
+                          <div dangerouslySetInnerHTML={{ __html: description }} />
+                        ) : (
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            rehypePlugins={[rehypeSlug]}
+                            components={{
+                              p: ({ children }) => (
+                                <p style={{ margin: '0 0 1rem 0' }}>{children}</p>
+                              ),
+                              ul: ({ children }) => (
+                                <ul style={{ margin: '0 0 1rem 0', paddingLeft: '1.5rem' }}>{children}</ul>
+                              ),
+                              ol: ({ children }) => (
+                                <ol style={{ margin: '0 0 1rem 0', paddingLeft: '1.5rem' }}>{children}</ol>
+                              ),
+                              li: ({ children }) => (
+                                <li style={{ margin: '0 0 0.5rem 0' }}>{children}</li>
+                              ),
+                              strong: ({ children }) => (
+                                <strong style={{ fontWeight: '600', color: '#1a1a1a' }}>{children}</strong>
+                              ),
+                              code: ({ children }) => (
+                                <code style={{ 
+                                  backgroundColor: '#f5f5f5', 
+                                  padding: '0.125rem 0.375rem', 
+                                  borderRadius: '0.25rem',
+                                  fontSize: '0.875rem',
+                                  fontFamily: 'monospace'
+                                }}>{children}</code>
+                              ),
+                              blockquote: ({ children }) => (
+                                <blockquote style={{
+                                  borderLeft: '4px solid #20BDFF',
+                                  paddingLeft: '1rem',
+                                  margin: '1rem 0',
+                                  fontStyle: 'italic',
+                                  color: '#555'
+                                }}>{children}</blockquote>
+                              ),
+                              table: ({ children }) => (
+                                <table style={{ 
+                                  width: '100%', 
+                                  borderCollapse: 'collapse', 
+                                  margin: '1rem 0',
+                                  border: '1px solid #e5e5e5'
+                                }}>{children}</table>
+                              ),
+                              thead: ({ children }) => (
+                                <thead style={{ backgroundColor: '#f8f9fa' }}>{children}</thead>
+                              ),
+                              th: ({ children }) => (
+                                <th style={{ 
+                                  padding: '0.75rem', 
+                                  border: '1px solid #e5e5e5',
+                                  fontWeight: '600',
+                                  textAlign: 'left',
+                                  fontSize: '0.875rem'
+                                }}>{children}</th>
+                              ),
+                              td: ({ children }) => (
+                                <td style={{ 
+                                  padding: '0.75rem', 
+                                  border: '1px solid #e5e5e5',
+                                  fontSize: '0.875rem'
+                                }}>{children}</td>
+                              ),
                             }}
                           >
-                            <h3 style={{
-                              fontSize: '1.25rem',
-                              fontWeight: '600',
-                              color: '#20BDFF',
-                              marginBottom: '0.75rem',
-                              margin: 0,
-                            }}>
-                              {term}
-                            </h3>
-                            
-                            <div style={{
-                              color: '#666',
-                              lineHeight: '1.6',
-                              fontSize: '1rem',
-                            }}>
-                              {glossary.saveFormat === 'html' ? (
-                                <div dangerouslySetInnerHTML={{ __html: description }} />
-                              ) : (
-                                <ReactMarkdown
-                                  remarkPlugins={[remarkGfm]}
-                                  rehypePlugins={[rehypeSlug]}
-                                  components={{
-                                    p: ({ children }) => (
-                                      <p style={{ margin: '0 0 1rem 0' }}>{children}</p>
-                                    ),
-                                    ul: ({ children }) => (
-                                      <ul style={{ margin: '0 0 1rem 0', paddingLeft: '1.5rem' }}>{children}</ul>
-                                    ),
-                                    ol: ({ children }) => (
-                                      <ol style={{ margin: '0 0 1rem 0', paddingLeft: '1.5rem' }}>{children}</ol>
-                                    ),
-                                    li: ({ children }) => (
-                                      <li style={{ margin: '0 0 0.5rem 0' }}>{children}</li>
-                                    ),
-                                    strong: ({ children }) => (
-                                      <strong style={{ fontWeight: '600', color: '#1a1a1a' }}>{children}</strong>
-                                    ),
-                                    code: ({ children }) => (
-                                      <code style={{ 
-                                        backgroundColor: '#f5f5f5', 
-                                        padding: '0.125rem 0.375rem', 
-                                        borderRadius: '0.25rem',
-                                        fontSize: '0.875rem',
-                                        fontFamily: 'monospace'
-                                      }}>{children}</code>
-                                    ),
-                                    blockquote: ({ children }) => (
-                                      <blockquote style={{
-                                        borderLeft: '4px solid #20BDFF',
-                                        paddingLeft: '1rem',
-                                        margin: '1rem 0',
-                                        fontStyle: 'italic',
-                                        color: '#555'
-                                      }}>{children}</blockquote>
-                                    ),
-                                    table: ({ children }) => (
-                                      <table style={{ 
-                                        width: '100%', 
-                                        borderCollapse: 'collapse', 
-                                        margin: '1rem 0',
-                                        border: '1px solid #e5e5e5'
-                                      }}>{children}</table>
-                                    ),
-                                    thead: ({ children }) => (
-                                      <thead style={{ backgroundColor: '#f8f9fa' }}>{children}</thead>
-                                    ),
-                                    th: ({ children }) => (
-                                      <th style={{ 
-                                        padding: '0.75rem', 
-                                        border: '1px solid #e5e5e5',
-                                        fontWeight: '600',
-                                        textAlign: 'left',
-                                        fontSize: '0.875rem'
-                                      }}>{children}</th>
-                                    ),
-                                    td: ({ children }) => (
-                                      <td style={{ 
-                                        padding: '0.75rem', 
-                                        border: '1px solid #e5e5e5',
-                                        fontSize: '0.875rem'
-                                      }}>{children}</td>
-                                    ),
-                                  }}
-                                >
-                                  {description}
-                                </ReactMarkdown>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
+                            {description}
+                          </ReactMarkdown>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                );
-              })
+                  );
+                })}
+              </div>
             )}
+
+            {/* 페이지네이션 */}
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+              alignItems: 'center', 
+              gap: '0.5rem', 
+              marginTop: '2rem'
+            }}>
+              <button
+                type="button"
+                onClick={() => setCurrentPage(currentPage - 1)}
+                disabled={loading || currentPage === 1}
+                style={{
+                  padding: '0.5rem 1rem',
+                  backgroundColor: (loading || currentPage === 1) ? '#e5e7eb' : '#20BDFF',
+                  color: (loading || currentPage === 1) ? '#999' : 'white',
+                  border: 'none',
+                  borderRadius: '0.25rem',
+                  cursor: (loading || currentPage === 1) ? 'not-allowed' : 'pointer',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                }}
+              >
+                {locale === 'en' ? 'Previous' : '이전'}
+              </button>
+
+              <div style={{ display: 'flex', gap: '0.25rem' }}>
+                {Array.from({ length: Math.min(totalPages, 10) }, (_, i) => {
+                  // 현재 페이지 주변의 페이지만 표시
+                  const startPage = Math.max(1, currentPage - 5);
+                  const pageNum = startPage + i;
+                  if (pageNum > totalPages) return null;
+                  
+                  return (
+                    <button
+                      key={pageNum}
+                      type="button"
+                      onClick={() => setCurrentPage(pageNum)}
+                      disabled={loading}
+                      style={{
+                        padding: '0.5rem 0.75rem',
+                        backgroundColor: pageNum === currentPage ? '#20BDFF' : '#fff',
+                        color: pageNum === currentPage ? 'white' : '#333',
+                        border: '1px solid #ddd',
+                        borderRadius: '0.25rem',
+                        cursor: loading ? 'not-allowed' : 'pointer',
+                        minWidth: '2.5rem',
+                        fontSize: '0.875rem',
+                        fontWeight: pageNum === currentPage ? '600' : '500',
+                      }}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setCurrentPage(currentPage + 1)}
+                disabled={loading || currentPage >= totalPages}
+                style={{
+                  padding: '0.5rem 1rem',
+                  backgroundColor: (loading || currentPage >= totalPages) ? '#e5e7eb' : '#20BDFF',
+                  color: (loading || currentPage >= totalPages) ? '#999' : 'white',
+                  border: 'none',
+                  borderRadius: '0.25rem',
+                  cursor: (loading || currentPage >= totalPages) ? 'not-allowed' : 'pointer',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                }}
+              >
+                {locale === 'en' ? 'Next' : '다음'}
+              </button>
+            </div>
           </div>
         )}
       </div>

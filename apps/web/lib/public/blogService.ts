@@ -6,6 +6,7 @@ export async function getPublicBlogs(options?: {
   limit?: number;
   categoryId?: string;
   search?: string;
+  isFeatured?: boolean;
 }): Promise<{ blogs: BlogPost[]; total: number; page: number; limit: number; totalPages: number }> {
   const page = options?.page || 1;
   const limit = options?.limit || 20;
@@ -15,6 +16,7 @@ export async function getPublicBlogs(options?: {
   params.append('limit', String(limit));
   if (options?.categoryId) params.append('categoryId', options.categoryId);
   if (options?.search) params.append('search', options.search);
+  if (options?.isFeatured !== undefined) params.append('isFeatured', String(options.isFeatured));
   const url = `${baseUrl}?${params.toString()}`;
   
   console.log('[getPublicBlogs] API 호출 시작:', { url, options });
@@ -47,6 +49,14 @@ export async function getPublicBlogs(options?: {
     limit: data.limit || limit,
     totalPages: data.totalPages || 0,
   };
+}
+
+export async function getPublicFeaturedBlogs(limit: number = 3): Promise<BlogPost[]> {
+  const response = await getPublicBlogs({ 
+    isFeatured: true, 
+    limit: 50 // 충분한 수를 가져와서 필터링
+  });
+  return response.blogs.slice(0, limit);
 }
 
 export async function getPublicFeaturedBlogsByCategory(categoryId: string, limit: number = 5): Promise<BlogPost[]> {

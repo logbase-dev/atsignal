@@ -10,6 +10,7 @@ exports.getBannerNotices = getBannerNotices;
 const firestore_1 = require("firebase-admin/firestore");
 const firebase_1 = require("../../firebase");
 const types_1 = require("./types");
+const adminService_1 = require("./adminService");
 function stripUndefinedDeep(value) {
     if (value === undefined)
         return value;
@@ -77,8 +78,8 @@ function normalizeEnabled(value) {
     }
     return { ko: true, en: true };
 }
-function mapNotice(id, data) {
-    return {
+async function mapNotice(id, data) {
+    const notice = {
         id,
         title: normalizeLocalizedField(data.title),
         oneLiner: normalizeLocalizedField(data.oneLiner),
@@ -99,6 +100,18 @@ function mapNotice(id, data) {
         createdBy: data.createdBy ? String(data.createdBy) : undefined,
         updatedBy: data.updatedBy ? String(data.updatedBy) : undefined,
     };
+    // 작성자 이름 조회
+    if (notice.createdBy) {
+        try {
+            const admin = await (0, adminService_1.getAdminById)(notice.createdBy);
+            notice.authorName = admin?.name || undefined;
+        }
+        catch (error) {
+            console.error(`[mapNotice] 관리자 정보 조회 실패 (ID: ${notice.createdBy}):`, error);
+            notice.authorName = undefined;
+        }
+    }
+    return notice;
 }
 async function getNotices(options) {
     try {
@@ -124,7 +137,7 @@ async function getNotices(options) {
             // 검색어가 있으면 더 많은 데이터를 가져와서 필터링
             console.log("[getNotices] 검색어 필터 적용:", options.search);
             const searchSnap = await withTimeout(query.orderBy("createdAt", "desc").limit(1000).get(), 10000);
-            let allNotices = searchSnap.docs.map((d) => mapNotice(d.id, d.data()));
+            let allNotices = await Promise.all(searchSnap.docs.map((d) => mapNotice(d.id, d.data())));
             const searchLower = options.search.toLowerCase().trim();
             allNotices = allNotices.filter((notice) => {
                 const titleKo = (notice.title?.ko || "").toLowerCase();
@@ -172,7 +185,7 @@ async function getNotices(options) {
             // Firestore는 복합 인덱스가 필요하므로 일단 createdAt으로 정렬 후 클라이언트에서 재정렬
             const q = query.orderBy("createdAt", "desc").limit(limit * 2).offset(offset);
             const snap = await withTimeout(q.get(), 5000);
-            notices = snap.docs.map((d) => mapNotice(d.id, d.data()));
+            notices = await Promise.all(snap.docs.map((d) => mapNotice(d.id, d.data())));
             // isTop 우선 정렬 (고정된 항목이 먼저, 그 다음 createdAt DESC)
             notices.sort((a, b) => {
                 if (a.isTop !== b.isTop)
@@ -208,7 +221,7 @@ async function getNoticeById(id) {
         const docSnap = await withTimeout(firebase_1.firestore.collection(types_1.COLLECTIONS.NOTICES).doc(id).get(), 5000);
         if (!docSnap.exists)
             return null;
-        return mapNotice(docSnap.id, (docSnap.data() || {}));
+        return await mapNotice(docSnap.id, (docSnap.data() || {}));
     }
     catch (error) {
         console.error("[getNoticeById] 에러:", error?.message || error);
@@ -302,8 +315,9 @@ async function getBannerNotices(locale = "ko") {
             .where("published", "==", true)
             .where(`enabled.${locale}`, "==", true);
         const snap = await withTimeout(query.get(), 5000);
-        const notices = snap.docs
-            .map((d) => mapNotice(d.id, d.data()))
+        const allNotices = await Promise.all(snap.docs
+            .map((d) => mapNotice(d.id, d.data())));
+        const notices = allNotices
             .filter((notice) => {
             // 노출 기간 체크
             if (notice.displayStartAt && notice.displayStartAt > now)

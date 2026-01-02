@@ -176,108 +176,22 @@ export default function FAQPage({ params }: PageProps) {
     <div style={{ 
       minHeight: '100vh', 
       backgroundColor: '#f9f9f9',
-      padding: '2rem 1rem',
-      paddingTop: '6rem',
+      paddingBottom: '2rem'
     }}>
+
+      <div className="hero">
+        <div className="hero-container">
+          <h1>atsignal FAQ</h1>
+          <p>설명 문구가 들어가는 곳입니다.</p>
+          {/* <p>수집 로그 규모에 따라 가장 적합한 요금제를 선택하세요.</p> */}
+        </div>
+      </div>
+
       <div style={{ 
         maxWidth: '1200px', 
         margin: '0 auto',
+        paddingTop: '2rem',
       }}>
-        {/* 헤더 */}
-        <div style={{ 
-          marginBottom: '3rem',
-          textAlign: 'center',
-        }}>
-          {/* <h1 style={{ 
-            fontSize: '3rem', 
-            fontWeight: '700', 
-            color: '#1a1a1a',
-            margin: '0 0 1rem 0',
-          }}>
-            FAQ
-          </h1> */}
-          {/* <p style={{
-            fontSize: '1.125rem',
-            color: '#666',
-            margin: '0 0 2rem 0',
-          }}>
-            {locale === 'en' 
-              ? 'Find answers to frequently asked questions' 
-              : '자주 묻는 질문에 대한 답변을 찾아보세요'
-            }
-          </p> */}
-        {/* 검색바 */}
-        <div style={{
-          backgroundColor: '#fff',
-          borderRadius: '12px',
-          padding: '2rem',
-          marginBottom: '2rem',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-        }}>
-          <div style={{ display: 'flex', gap: '0.5rem', maxWidth: '500px', margin: '0 auto' }}>
-            <input 
-              type="text" 
-              value={searchInput} 
-              onChange={(e) => setSearchInput(e.target.value)} 
-              onKeyDown={handleKeyDown}
-              placeholder={locale === 'en' ? 'Search FAQs...' : 'FAQ 검색...'}
-              style={{ 
-                flex: 1, 
-                padding: '0.75rem 1rem', 
-                border: '2px solid #e5e5e5', 
-                borderRadius: '8px',
-                fontSize: '1rem',
-                outline: 'none',
-                transition: 'border-color 0.2s ease',
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = '#20BDFF';
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = '#e5e5e5';
-              }}
-            />
-            <button 
-              onClick={handleSearch}
-              style={{ 
-                padding: '0.75rem 1.5rem', 
-                backgroundColor: '#20BDFF', 
-                color: 'white', 
-                border: 'none', 
-                borderRadius: '8px', 
-                cursor: 'pointer',
-                fontSize: '1rem',
-                fontWeight: '500',
-                transition: 'background-color 0.2s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#1a9de6';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#20BDFF';
-              }}
-            >
-              {locale === 'en' ? 'Search' : '검색'}
-            </button>
-            {searchQuery && (
-              <button 
-                onClick={handleClearSearch}
-                style={{ 
-                  padding: '0.75rem 1rem', 
-                  backgroundColor: '#6c757d', 
-                  color: 'white', 
-                  border: 'none', 
-                  borderRadius: '8px', 
-                  cursor: 'pointer',
-                  fontSize: '1rem',
-                }}
-              >
-                {locale === 'en' ? 'Clear' : '초기화'}
-              </button>
-            )}
-          </div>
-        </div>
-        </div>
 
         {/* 상단 고정 FAQ 캐러셀 */}
         {!topFaqsLoading && topFaqs.length > 0 && (
@@ -415,145 +329,80 @@ export default function FAQPage({ params }: PageProps) {
         )}
 
         {/* 페이지네이션 */}
-        {!loading && !error && (
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            gap: '0.5rem', 
-            marginTop: '3rem' 
-          }}>
-            <button
-              type="button"
-              onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-              disabled={currentPage === 1 || totalPages <= 1}
-              style={{
-                padding: '0.75rem 1rem',
-                backgroundColor: currentPage === 1 || totalPages <= 1 ? '#e5e7eb' : '#0070f3',
-                color: currentPage === 1 || totalPages <= 1 ? '#999' : 'white',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: currentPage === 1 || totalPages <= 1 ? 'not-allowed' : 'pointer',
-                fontSize: '0.875rem',
-                fontWeight: '500',
-                minWidth: '80px',
-              }}
-            >
-              {locale === 'en' ? 'Previous' : '이전'}
-            </button>
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          gap: '0.5rem', 
+          marginTop: '2rem'
+        }}>
+          <button
+            type="button"
+            onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+            disabled={loading || currentPage === 1}
+            style={{
+              padding: '0.5rem 1rem',
+              backgroundColor: (loading || currentPage === 1) ? '#e5e7eb' : '#20BDFF',
+              color: (loading || currentPage === 1) ? '#999' : 'white',
+              border: 'none',
+              borderRadius: '0.25rem',
+              cursor: (loading || currentPage === 1) ? 'not-allowed' : 'pointer',
+              fontSize: '0.875rem',
+              fontWeight: '500',
+            }}
+          >
+            {locale === 'en' ? 'Previous' : '이전'}
+          </button>
 
-            <div style={{ display: 'flex', gap: '0.25rem' }}>
-              {/* 첫 페이지 */}
-              {currentPage > 3 && (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => handlePageChange(1)}
-                    style={{
-                      padding: '0.75rem 1rem',
-                      backgroundColor: '#fff',
-                      color: '#333',
-                      border: '1px solid #ddd',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      minWidth: '45px',
-                      fontSize: '0.875rem',
-                    }}
-                  >
-                    1
-                  </button>
-                  {currentPage > 4 && (
-                    <span style={{ 
-                      padding: '0.75rem 0.5rem', 
-                      color: '#666',
-                      fontSize: '0.875rem',
-                    }}>
-                      ...
-                    </span>
-                  )}
-                </>
-              )}
-
-              {/* 현재 페이지 주변 */}
-              {Array.from({ length: totalPages }, (_, i) => i + 1)
-                .filter(page => 
-                  page >= Math.max(1, currentPage - 2) && 
-                  page <= Math.min(totalPages, currentPage + 2)
-                )
-                .map((page) => (
-                  <button
-                    key={page}
-                    type="button"
-                    onClick={() => handlePageChange(page)}
-                    style={{
-                      padding: '0.75rem 1rem',
-                      backgroundColor: page === currentPage ? '#0070f3' : '#fff',
-                      color: page === currentPage ? 'white' : '#333',
-                      border: '1px solid',
-                      borderColor: page === currentPage ? '#0070f3' : '#ddd',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      minWidth: '45px',
-                      fontSize: '0.875rem',
-                      fontWeight: page === currentPage ? '600' : '400',
-                    }}
-                  >
-                    {page}
-                  </button>
-                ))}
-
-              {/* 마지막 페이지 */}
-              {currentPage < totalPages - 2 && (
-                <>
-                  {currentPage < totalPages - 3 && (
-                    <span style={{ 
-                      padding: '0.75rem 0.5rem', 
-                      color: '#666',
-                      fontSize: '0.875rem',
-                    }}>
-                      ...
-                    </span>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => handlePageChange(totalPages)}
-                    style={{
-                      padding: '0.75rem 1rem',
-                      backgroundColor: '#fff',
-                      color: '#333',
-                      border: '1px solid #ddd',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      minWidth: '45px',
-                      fontSize: '0.875rem',
-                    }}
-                  >
-                    {totalPages}
-                  </button>
-                </>
-              )}
-            </div>
-
-            <button
-              type="button"
-              onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-              disabled={currentPage >= totalPages || totalPages <= 1}
-              style={{
-                padding: '0.75rem 1rem',
-                backgroundColor: currentPage >= totalPages || totalPages <= 1 ? '#e5e7eb' : '#0070f3',
-                color: currentPage >= totalPages || totalPages <= 1 ? '#999' : 'white',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: currentPage >= totalPages || totalPages <= 1 ? 'not-allowed' : 'pointer',
-                fontSize: '0.875rem',
-                fontWeight: '500',
-                minWidth: '80px',
-              }}
-            >
-              {locale === 'en' ? 'Next' : '다음'}
-            </button>
+          <div style={{ display: 'flex', gap: '0.25rem' }}>
+            {Array.from({ length: Math.min(totalPages, 10) }, (_, i) => {
+              // 현재 페이지 주변의 페이지만 표시
+              const startPage = Math.max(1, currentPage - 5);
+              const pageNum = startPage + i;
+              if (pageNum > totalPages) return null;
+              
+              return (
+                <button
+                  key={pageNum}
+                  type="button"
+                  onClick={() => handlePageChange(pageNum)}
+                  disabled={loading}
+                  style={{
+                    padding: '0.5rem 0.75rem',
+                    backgroundColor: pageNum === currentPage ? '#20BDFF' : '#fff',
+                    color: pageNum === currentPage ? 'white' : '#333',
+                    border: '1px solid #ddd',
+                    borderRadius: '0.25rem',
+                    cursor: loading ? 'not-allowed' : 'pointer',
+                    minWidth: '2.5rem',
+                    fontSize: '0.875rem',
+                    fontWeight: pageNum === currentPage ? '600' : '500',
+                  }}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
           </div>
-        )}
+
+          <button
+            type="button"
+            onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+            disabled={loading || currentPage >= totalPages}
+            style={{
+              padding: '0.5rem 1rem',
+              backgroundColor: (loading || currentPage >= totalPages) ? '#e5e7eb' : '#20BDFF',
+              color: (loading || currentPage >= totalPages) ? '#999' : 'white',
+              border: 'none',
+              borderRadius: '0.25rem',
+              cursor: (loading || currentPage >= totalPages) ? 'not-allowed' : 'pointer',
+              fontSize: '0.875rem',
+              fontWeight: '500',
+            }}
+          >
+            {locale === 'en' ? 'Next' : '다음'}
+          </button>
+        </div>
       </div>
     </div>
   );

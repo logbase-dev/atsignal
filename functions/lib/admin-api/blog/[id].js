@@ -51,7 +51,7 @@ async function handle(request, response, id) {
             const authorImage = body.authorImage !== undefined ? String(body.authorImage).trim() : undefined;
             console.log('[Blog Update] body.authorName:', body.authorName, 'body.authorImage:', body.authorImage);
             console.log('[Blog Update] processed authorName:', authorName, 'authorImage:', authorImage);
-            await (0, blogService_1.updateBlogPost)(id, {
+            const updatePayload = {
                 title: body.title !== undefined ? normalizeLocalized(body.title) : undefined,
                 slug: body.slug !== undefined ? String(body.slug) : undefined,
                 content: body.content !== undefined ? normalizeLocalized(body.content) : undefined,
@@ -76,7 +76,8 @@ async function handle(request, response, id) {
                 order: body.order !== undefined && typeof body.order === "number" ? body.order : undefined,
                 published: body.published !== undefined ? Boolean(body.published) : undefined,
                 updatedBy: adminId,
-            });
+            };
+            await (0, blogService_1.updateBlogPost)(id, updatePayload);
             response.json({ success: true });
             return;
         }

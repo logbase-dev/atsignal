@@ -149,6 +149,11 @@ async function getBlogPosts(options) {
             postsRef = postsRef.where("published", "==", options.published);
             console.log("[getBlogPosts] 발행 상태 필터 적용:", options.published);
         }
+        // 추천 블로그 필터
+        if (options?.isFeatured !== undefined) {
+            postsRef = postsRef.where("isFeatured", "==", options.isFeatured);
+            console.log("[getBlogPosts] 추천 블로그 필터 적용:", options.isFeatured);
+        }
         // 검색어 필터링을 위해 더 많은 데이터를 가져와서 필터링
         // (Firestore에서 텍스트 검색은 복잡하므로 클라이언트 측 필터링 사용)
         let posts = [];
@@ -272,6 +277,8 @@ async function updateBlogPost(id, patch) {
         authorImage: updateData.authorImage,
         hasAuthorName: 'authorName' in updateData,
         hasAuthorImage: 'authorImage' in updateData,
+        isFeatured: updateData.isFeatured,
+        hasIsFeatured: 'isFeatured' in updateData,
     });
     await withTimeout(firebase_1.firestore.collection(types_1.COLLECTIONS.BLOGS).doc(id).update(updateData), 5000);
 }
