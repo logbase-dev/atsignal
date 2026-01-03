@@ -2,8 +2,7 @@
 
 import type { CSSProperties } from 'react';
 import { useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
-import NewsletterModal from '@/components/Newsletter/NewsletterModal';
+import ContactModal from '@/components/common/ContactModal';
 
 interface PricingInformationProps {
   locale: string;
@@ -30,17 +29,14 @@ const BASE_HEIGHT = 240;
 
 export default function PricingInformation({ locale: _locale }: PricingInformationProps) {
   const [sliderValue, setSliderValue] = useState(0);
-  const [chartSize, setChartSize] = useState<ChartSize>('mdsmall');
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [focusedPlan, setFocusedPlan] = useState<Plan | null>(null);
   const [showSalesModal, setShowSalesModal] = useState(false);
 
   const chartScale = useMemo(() => {
-    if (chartSize === 'medium') return 0.7;
-    if (chartSize === 'mdsmall') return 0.55;
-    if (chartSize === 'small') return 0.4;
-    return 0.7;
-  }, [chartSize]);
+    // Using fixed mdsmall size since chartSize state was removed
+    return 0.55;
+  }, []);
 
   const getInterpolatedEvent = (value: number) => {
     const segmentIndex = Math.floor(value / 100);
@@ -1242,7 +1238,7 @@ export default function PricingInformation({ locale: _locale }: PricingInformati
         }
       `}</style>
 
-      <NewsletterModal
+      <ContactModal
         isOpen={selectedPlan !== null || showSalesModal}
         onClose={() => {
           setSelectedPlan(null);
