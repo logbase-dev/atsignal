@@ -72,7 +72,7 @@ export function useBannerData(locale: string = 'ko') {
           .map((notice: Notice) => ({
             id: notice.id || '',
             text: `[공지] ${notice.oneLiner.ko}`,
-            link: `/${locale}/notice/${notice.id}`,
+            link: `/${locale}/resources/notices/${notice.id}`,
             type: 'notice' as const,
             publishedAt: notice.publishedAt ? new Date(notice.publishedAt) : notice.createdAt ? new Date(notice.createdAt) : new Date(0),
           }));

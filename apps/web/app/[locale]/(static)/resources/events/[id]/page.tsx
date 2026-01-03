@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { getPublicApiUrl } from '@/lib/utils/api';
 import EventDetailPage from './EventDetailPage';
 
 interface Props {
@@ -12,7 +13,8 @@ interface Props {
 // 서버사이드에서 API 호출하는 헬퍼 함수
 async function fetchEventById(id: string) {
   try {
-    const response = await fetch(`http://localhost:3000/api/resources/events/${id}`, {
+    const apiUrl = getPublicApiUrl(`resources/events/${id}`);
+    const response = await fetch(apiUrl, {
       cache: 'no-store'
     });
     

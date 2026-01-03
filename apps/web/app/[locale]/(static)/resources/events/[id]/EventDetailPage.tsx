@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Event } from '@/lib/admin/types';
-import NewsletterModal from '@/components/Newsletter/NewsletterModal';
+import ContactModal from '@/components/common/ContactModal';
 
 interface Props {
   locale: 'ko' | 'en';
@@ -47,18 +47,19 @@ export default function EventDetailPage({ locale, event }: Props) {
 
   const formatDate = (date: Date | undefined) => {
     if (!date) return '';
-    return new Intl.DateTimeFormat(locale, {
+    return new Intl.DateTimeFormat(locale === 'ko' ? 'ko-KR' : 'en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
+      hour12: false, // 24시간 형식 사용하여 AM/PM 문제 해결
     }).format(new Date(date));
   };
 
   const formatDateOnly = (date: Date | undefined) => {
     if (!date) return '';
-    return new Intl.DateTimeFormat(locale, {
+    return new Intl.DateTimeFormat(locale === 'ko' ? 'ko-KR' : 'en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -365,7 +366,7 @@ export default function EventDetailPage({ locale, event }: Props) {
         )}
 
         {/* 이벤트 참가 신청 모달 */}
-        <NewsletterModal
+        <ContactModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           locale={locale}

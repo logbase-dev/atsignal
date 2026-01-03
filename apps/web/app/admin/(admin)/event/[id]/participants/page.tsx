@@ -496,67 +496,65 @@ export default function EventParticipantsPage() {
       </div>
 
       {/* 페이지네이션 */}
-      {totalPages > 1 && (
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: '0.5rem',
-        }}>
-          <button
-            type="button"
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
-            style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: currentPage === 1 ? '#e5e7eb' : '#0070f3',
-              color: currentPage === 1 ? '#999' : 'white',
-              border: 'none',
-              borderRadius: '0.25rem',
-              cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-            }}
-          >
-            이전
-          </button>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: '0.5rem',
+      }}>
+        <button
+          type="button"
+          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+          disabled={currentPage === 1}
+          style={{
+            padding: '0.5rem 1rem',
+            backgroundColor: currentPage === 1 ? '#e5e7eb' : '#0070f3',
+            color: currentPage === 1 ? '#999' : 'white',
+            border: 'none',
+            borderRadius: '0.25rem',
+            cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+          }}
+        >
+          이전
+        </button>
 
-          <div style={{ display: 'flex', gap: '0.25rem' }}>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                type="button"
-                onClick={() => setCurrentPage(page)}
-                style={{
-                  padding: '0.5rem 0.75rem',
-                  backgroundColor: page === currentPage ? '#0070f3' : '#fff',
-                  color: page === currentPage ? 'white' : '#333',
-                  border: '1px solid #ddd',
-                  borderRadius: '0.25rem',
-                  cursor: 'pointer',
-                  minWidth: '2.5rem',
-                }}
-              >
-                {page}
-              </button>
-            ))}
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            disabled={currentPage >= totalPages}
-            style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: currentPage >= totalPages ? '#e5e7eb' : '#0070f3',
-              color: currentPage >= totalPages ? '#999' : 'white',
-              border: 'none',
-              borderRadius: '0.25rem',
-              cursor: currentPage >= totalPages ? 'not-allowed' : 'pointer',
-            }}
-          >
-            다음
-          </button>
+        <div style={{ display: 'flex', gap: '0.25rem' }}>
+          {Array.from({ length: Math.max(1, totalPages) }, (_, i) => i + 1).map((page) => (
+            <button
+              key={page}
+              type="button"
+              onClick={() => setCurrentPage(page)}
+              style={{
+                padding: '0.5rem 0.75rem',
+                backgroundColor: page === currentPage ? '#0070f3' : '#fff',
+                color: page === currentPage ? 'white' : '#333',
+                border: '1px solid #ddd',
+                borderRadius: '0.25rem',
+                cursor: 'pointer',
+                minWidth: '2.5rem',
+              }}
+            >
+              {page}
+            </button>
+          ))}
         </div>
-      )}
+
+        <button
+          type="button"
+          onClick={() => setCurrentPage((p) => Math.min(Math.max(1, totalPages), p + 1))}
+          disabled={currentPage >= Math.max(1, totalPages)}
+          style={{
+            padding: '0.5rem 1rem',
+            backgroundColor: currentPage >= Math.max(1, totalPages) ? '#e5e7eb' : '#0070f3',
+            color: currentPage >= Math.max(1, totalPages) ? '#999' : 'white',
+            border: 'none',
+            borderRadius: '0.25rem',
+            cursor: currentPage >= Math.max(1, totalPages) ? 'not-allowed' : 'pointer',
+          }}
+        >
+          다음
+        </button>
+      </div>
     </div>
   );
 }

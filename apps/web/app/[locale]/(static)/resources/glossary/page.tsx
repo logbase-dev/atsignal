@@ -37,6 +37,51 @@ export default function GlossaryPage({ params }: PageProps) {
   // 알파벳 목록
   const alphabets = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
 
+  // 한글 자음별 해당 글자 범위 정의
+  const getKoreanCharRange = (consonant: string): [string, string] => {
+    const ranges: { [key: string]: [string, string] } = {
+      'ㄱ': ['가', '깋'],
+      'ㄴ': ['나', '닣'],
+      'ㄷ': ['다', '딯'],
+      'ㄹ': ['라', '맇'],
+      'ㅁ': ['마', '밓'],
+      'ㅂ': ['바', '빟'],
+      'ㅅ': ['사', '싷'],
+      'ㅇ': ['아', '잏'],
+      'ㅈ': ['자', '짛'],
+      'ㅊ': ['차', '칳'],
+      'ㅋ': ['카', '킿'],
+      'ㅌ': ['타', '팋'],
+      'ㅍ': ['파', '핗'],
+      'ㅎ': ['하', '힣'],
+    };
+    return ranges[consonant] || ['', ''];
+  };
+
+  // 한글 자음으로 시작하는지 확인하는 함수
+  const startsWithKoreanConsonant = (text: string, consonant: string): boolean => {
+    if (!text || text.length === 0) return false;
+    const firstChar = text.charAt(0);
+    const [start, end] = getKoreanCharRange(consonant);
+    return firstChar >= start && firstChar <= end;
+  };
+
+  // 영문자로 시작하는지 확인하는 함수 (실제 용어의 첫 글자 확인)
+  const startsWithEnglishLetter = (glossary: any, letter: string): boolean => {
+    // 한국어 우선, 없으면 영어 확인
+    const term = locale === 'ko' ? (glossary.term.ko || glossary.term.en || '') : (glossary.term.en || glossary.term.ko || '');
+    if (!term || term.length === 0) return false;
+    
+    const firstChar = term.charAt(0);
+    // 영문자인지 확인하고 대소문자 비교
+    return /[a-zA-Z]/.test(firstChar) && firstChar.toUpperCase() === letter.toUpperCase();
+  };
+
+  // 한글 자음인지 확인하는 함수
+  const isKoreanConsonant = (char: string): boolean => {
+    return /[ㄱㄴㄷㄹㅁㅂㅅㅇㅈㅊㅋㅌㅍㅎ]/.test(char);
+  };
+
   useEffect(() => {
     // params가 Promise인지 확인
     if (params && typeof (params as any).then === 'function') {
@@ -70,20 +115,51 @@ export default function GlossaryPage({ params }: PageProps) {
         en: locale === 'en',
       };
 
+      // 모든 데이터를 가져온 후 클라이언트에서 필터링
       const result = await getPublicGlossaries({
         categoryId: selectedCategoryId !== 'all' ? selectedCategoryId : undefined,
         search: searchQuery || undefined,
-        initialLetter: selectedLetter !== 'all' ? selectedLetter : undefined,
         orderBy: 'term',
         orderDirection: 'asc',
-        page: currentPage,
-        limit: itemsPerPage,
+        page: 1, // 모든 데이터를 가져오기 위해 페이지 1부터
+        limit: 10000, // 충분히 큰 값으로 설정
         enabled,
       });
 
-      setGlossaries(result.glossaries);
-      setTotalPages(result.totalPages || 1);
-      setTotalCount(result.total || 0);
+      let filteredGlossaries = result.glossaries;
+
+      // 클라이언트 측 initialLetter 필터링
+      if (selectedLetter !== 'all') {
+        if (isKoreanConsonant(selectedLetter)) {
+          // 한글 자음 필터링
+          filteredGlossaries = filteredGlossaries.filter(glossary => 
+            startsWithKoreanConsonant(glossary.term.ko || '', selectedLetter)
+          );
+        } else {
+          // 영문자 필터링
+          // 기존 방식: initialLetter 필드 사용 (주석처리 - 한글 용어가 영문자로 잘못 매핑되는 문제로 인해 사용 중단)
+          // 예: "오류 응답"이라는 한글 용어가 initialLetter: "A"로 저장되어 영문 A 검색에 포함되는 문제
+          // filteredGlossaries = filteredGlossaries.filter(glossary => 
+          //   glossary.initialLetter === selectedLetter.toUpperCase()
+          // );
+          
+          // 새로운 방식: 실제 용어의 첫 글자를 직접 확인하여 영문자만 필터링
+          filteredGlossaries = filteredGlossaries.filter(glossary => 
+            startsWithEnglishLetter(glossary, selectedLetter)
+          );
+        }
+      }
+
+      // 클라이언트 측 페이지네이션
+      const total = filteredGlossaries.length;
+      const totalPages = Math.ceil(total / itemsPerPage);
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const paginatedGlossaries = filteredGlossaries.slice(startIndex, endIndex);
+
+      setGlossaries(paginatedGlossaries);
+      setTotalPages(totalPages || 1);
+      setTotalCount(total || 0);
     } catch (err: any) {
       console.error('Failed to load glossaries:', err);
       setError(err.message || '용어사전을 불러오는데 실패했습니다.');
@@ -114,8 +190,6 @@ export default function GlossaryPage({ params }: PageProps) {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') handleSearch();
   };
-
-
 
   return (
     <div style={{ 
@@ -276,67 +350,122 @@ export default function GlossaryPage({ params }: PageProps) {
           </div>
 
           {/* 알파벳 필터 */}
-          <div>
-            <h3 style={{ 
-              fontSize: '1.125rem', 
-              fontWeight: '600', 
-              marginBottom: '1rem',
-              textAlign: 'center',
-              color: '#1a1a1a',
-            }}>
-              {locale === 'en' ? 'A–Z Index' : 'A–Z 색인'}
-            </h3>
+          <div style={{ marginLeft: '4rem' }}>
             <div style={{ 
               display: 'flex', 
-              flexWrap: 'wrap', 
-              gap: '0.5rem', 
-              justifyContent: 'center',
+              gap: '0.5rem',
+              alignItems: 'flex-start',
             }}>
+              {/* 전체 버튼 - 두 줄 높이만큼 크게 */}
               <button
                 onClick={() => {
                   setSelectedLetter('all');
-                  setCurrentPage(1); // 알파벳 변경 시 첫 페이지로 이동
+                  setCurrentPage(1);
                 }}
                 style={{
-                  padding: '0.5rem 0.75rem',
+                  padding: '0.375rem 0.75rem',
                   backgroundColor: selectedLetter === 'all' ? '#20BDFF' : '#f5f5f5',
                   color: selectedLetter === 'all' ? 'white' : '#666',
                   border: '1px solid',
                   borderColor: selectedLetter === 'all' ? '#20BDFF' : '#ddd',
                   borderRadius: '6px',
                   cursor: 'pointer',
-                  fontSize: '0.875rem',
+                  fontSize: '0.75rem',
                   fontWeight: selectedLetter === 'all' ? '600' : '400',
                   minWidth: '40px',
+                  height: 'calc(2 * (1.1rem + 2 * 0.375rem + 2px) + 1rem)', // 버튼 두 개 높이 + 간격
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
                   transition: 'all 0.2s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
               >
                 {locale === 'en' ? 'All' : '전체'}
               </button>
-              {alphabets.map((letter) => (
-                <button
-                  key={letter}
-                  onClick={() => {
-                    setSelectedLetter(letter);
-                    setCurrentPage(1); // 알파벳 변경 시 첫 페이지로 이동
-                  }}
-                  style={{
-                    padding: '0.5rem 0.75rem',
-                    backgroundColor: selectedLetter === letter ? '#20BDFF' : '#f5f5f5',
-                    color: selectedLetter === letter ? 'white' : '#666',
-                    border: '1px solid',
-                    borderColor: selectedLetter === letter ? '#20BDFF' : '#ddd',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontSize: '0.875rem',
-                    fontWeight: selectedLetter === letter ? '600' : '400',
-                    minWidth: '40px',
-                    transition: 'all 0.2s ease',
-                  }}
-                >
-                  {letter}
-                </button>
-              ))}
+              
+              {/* 영어/한글 버튼들 컨테이너 */}
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '1rem',
+                flex: 1,
+              }}>
+                {/* 알파벳 버튼들 */}
+                <div style={{ 
+                  display: 'flex', 
+                  flexWrap: 'nowrap', 
+                  gap: '0.25rem', 
+                  justifyContent: 'flex-start',
+                  overflowX: 'auto',
+                  paddingBottom: '0.25rem',
+                }}>
+                  {alphabets.map((letter) => (
+                    <button
+                      key={letter}
+                      onClick={() => {
+                        setSelectedLetter(letter);
+                        setCurrentPage(1);
+                      }}
+                      style={{
+                        padding: '0.375rem 0.5rem',
+                        backgroundColor: selectedLetter === letter ? '#20BDFF' : '#f5f5f5',
+                        color: selectedLetter === letter ? 'white' : '#666',
+                        border: '1px solid',
+                        borderColor: selectedLetter === letter ? '#20BDFF' : '#ddd',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '0.75rem',
+                        fontWeight: selectedLetter === letter ? '600' : '400',
+                        minWidth: '32px',
+                        whiteSpace: 'nowrap',
+                        flexShrink: 0,
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      {letter}
+                    </button>
+                  ))}
+                </div>
+                
+                {/* 한글 자음 버튼들 */}
+                <div style={{ 
+                  display: 'flex', 
+                  flexWrap: 'nowrap', 
+                  gap: '0.25rem', 
+                  justifyContent: 'flex-start',
+                  overflowX: 'auto',
+                  paddingBottom: '0.25rem',
+                }}>
+                  {['ㄱ', 'ㄴ', 'ㄷ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅅ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'].map((consonant) => (
+                    <button
+                      key={consonant}
+                      onClick={() => {
+                        setSelectedLetter(consonant);
+                        setCurrentPage(1);
+                      }}
+                      style={{
+                        padding: '0.375rem 0.5rem',
+                        backgroundColor: selectedLetter === consonant ? '#20BDFF' : '#f5f5f5',
+                        color: selectedLetter === consonant ? 'white' : '#666',
+                        border: '1px solid',
+                        borderColor: selectedLetter === consonant ? '#20BDFF' : '#ddd',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '0.75rem',
+                        fontWeight: selectedLetter === consonant ? '600' : '400',
+                        minWidth: '32px',
+                        whiteSpace: 'nowrap',
+                        flexShrink: 0,
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      {consonant}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>

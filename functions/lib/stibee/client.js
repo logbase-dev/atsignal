@@ -71,10 +71,10 @@ const syncSubscriber = async (payload) => {
         updateEnabled: false, // ✅ 변경: 이미 구독 중인 경우 업데이트하지 않음
     };
     // 디버깅: 요청 본문 확인
-    // functions.logger.info("Stibee API request body:", JSON.stringify(requestBody, null, 2));
-    // functions.logger.info("Stibee API URL:", url);
-    // functions.logger.info("Stibee API Key (first 10 chars):", stibeeConfig.apiKey?.substring(0, 10));
-    // functions.logger.info("Stibee List ID:", stibeeConfig.listId);
+    functions.logger.info("Stibee API request body:", JSON.stringify(requestBody, null, 2));
+    functions.logger.info("Stibee API URL:", url);
+    functions.logger.info("Stibee API Key (first 10 chars):", stibee_1.stibeeConfig.apiKey?.substring(0, 10));
+    functions.logger.info("Stibee List ID:", stibee_1.stibeeConfig.listId);
     const response = await fetch(url, {
         method: "POST",
         headers: {
@@ -85,8 +85,8 @@ const syncSubscriber = async (payload) => {
     });
     const rawBody = await response.text();
     // 디버깅: 응답 확인
-    // functions.logger.info("Stibee API response status:", response.status);
-    // functions.logger.info("Stibee API response body:", rawBody);
+    functions.logger.info("Stibee API response status:", response.status);
+    functions.logger.info("Stibee API response body:", rawBody);
     let parsedBody;
     try {
         parsedBody = rawBody ? JSON.parse(rawBody) : undefined;

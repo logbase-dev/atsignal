@@ -7,6 +7,8 @@ exports.COLLECTIONS = {
     ADMIN_LOGIN_LOGS: 'adminLoginLogs',
     EVENTS: 'events',
     EVENT_PARTICIPANTS: 'eventParticipants',
+    DEMO_REQUESTS: 'demoRequests',
+    SALES_INQUIRIES: 'salesInquiries',
     NOTICES: 'notices',
     BLOGS: 'blog',
     BLOG_CATEGORIES: 'blogCategories',

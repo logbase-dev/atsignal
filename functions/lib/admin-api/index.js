@@ -69,6 +69,10 @@ const whatsnewHandler = __importStar(require("./whatsnew"));
 const whatsnewIdHandler = __importStar(require("./whatsnew/[id]"));
 const imagesUploadHandler = __importStar(require("./images/upload"));
 const imagesSignedUrlHandler = __importStar(require("./images/signed-url"));
+const demoRequestsHandler = __importStar(require("./demo-requests"));
+const demoRequestsIdHandler = __importStar(require("./demo-requests/[id]"));
+const salesInquiriesHandler = __importStar(require("./sales-inquiries"));
+const salesInquiriesIdHandler = __importStar(require("./sales-inquiries/[id]"));
 /**
  * Admin API 통합 라우터
  */
@@ -265,6 +269,24 @@ async function router(request, response, path) {
             }
             if (pathParts.length === 2) {
                 return await whatsnewIdHandler.handle(request, response, pathParts[1]);
+            }
+        }
+        // Demo Requests
+        if (pathParts[0] === "demo-requests") {
+            if (pathParts.length === 1) {
+                return await demoRequestsHandler.handle(request, response);
+            }
+            if (pathParts.length === 2) {
+                return await demoRequestsIdHandler.handle(request, response, pathParts[1]);
+            }
+        }
+        // Sales Inquiries (구입문의)
+        if (pathParts[0] === "sales-inquiries") {
+            if (pathParts.length === 1) {
+                return await salesInquiriesHandler.handle(request, response);
+            }
+            if (pathParts.length === 2) {
+                return await salesInquiriesIdHandler.handle(request, response, pathParts[1]);
             }
         }
         // Images

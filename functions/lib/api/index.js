@@ -221,40 +221,46 @@ app.use(async (req, res, next) => {
                     res.status(404).json({ error: 'Event not found' });
                     return;
                 }
-                // 중복 참가 신청 확인
-                const existingParticipant = await db
-                    .collection('eventParticipants')
-                    .where('eventId', '==', eventId)
-                    .where('email', '==', email.toLowerCase().trim())
-                    .get();
-                if (!existingParticipant.empty) {
+                // 중복 참가 신청 확인 및 저장을 트랜잭션으로 처리
+                const result = await db.runTransaction(async (transaction) => {
+                    // 더 안전한 중복 체크: 복합 키 사용
+                    const participantId = `${eventId}_${email.toLowerCase().trim().replace(/[^a-zA-Z0-9]/g, '_')}`;
+                    const participantRef = db.collection('eventParticipants').doc(participantId);
+                    const existingDoc = await transaction.get(participantRef);
+                    if (existingDoc.exists) {
+                        throw new Error('ALREADY_REGISTERED');
+                    }
+                    // EventParticipant 데이터 생성
+                    const participantData = {
+                        eventId,
+                        name: name.trim(),
+                        company: company.trim(),
+                        email: email.toLowerCase().trim(),
+                        phone: phone.trim(),
+                        privacyConsent,
+                        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                    };
+                    // 고정된 문서 ID로 저장 (자동으로 중복 방지)
+                    transaction.set(participantRef, participantData);
+                    return participantId;
+                });
+                console.log('[Functions API] Successfully created participant:', result);
+                res.json({
+                    success: true,
+                    participantId: result,
+                    message: '이벤트 참가 신청이 완료되었습니다.',
+                });
+            }
+            catch (error) {
+                console.error('[Functions API] Event participate error:', error);
+                // 트랜잭션에서 발생한 중복 등록 에러 처리
+                if (error instanceof Error && error.message === 'ALREADY_REGISTERED') {
                     res.status(409).json({
                         error: 'Already registered for this event',
                         message: '이미 해당 이벤트에 참가신청 했습니다.'
                     });
                     return;
                 }
-                // EventParticipant 데이터 생성
-                const participantData = {
-                    eventId,
-                    name: name.trim(),
-                    company: company.trim(),
-                    email: email.toLowerCase().trim(),
-                    phone: phone.trim(),
-                    privacyConsent,
-                    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-                };
-                // Firestore에 저장
-                const docRef = await db.collection('eventParticipants').add(participantData);
-                console.log('[Functions API] Successfully created participant:', docRef.id);
-                res.json({
-                    success: true,
-                    participantId: docRef.id,
-                    message: '이벤트 참가 신청이 완료되었습니다.',
-                });
-            }
-            catch (error) {
-                console.error('[Functions API] Event participate error:', error);
                 // Firestore 에러 구분
                 if (error instanceof Error) {
                     if (error.message.includes('permission-denied')) {
@@ -275,6 +281,164 @@ app.use(async (req, res, next) => {
                 res.status(500).json({
                     error: 'Internal server error',
                     message: '참가 신청 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.'
+                });
+            }
+            return;
+        }
+        res.status(405).json({ error: "Method not allowed" });
+        return;
+    }
+    // Demo Request API - 데모 요청
+    if (path === "/demo") {
+        if (req.method === "POST") {
+            try {
+                const { name, company, email, phone, inquiry, privacyConsent } = req.body;
+                // 필수 필드 검증
+                if (!name || !company || !email || !phone || !inquiry || !privacyConsent) {
+                    res.status(400).json({
+                        error: 'Missing required fields',
+                        message: '필수 항목을 모두 입력해주세요.'
+                    });
+                    return;
+                }
+                // 이메일 형식 검증
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    res.status(400).json({
+                        error: 'Invalid email format',
+                        message: '올바른 이메일 형식을 입력해주세요.'
+                    });
+                    return;
+                }
+                // 전화번호 형식 검증 (010-1234-5678)
+                const phoneRegex = /^010-\d{4}-\d{4}$/;
+                if (!phoneRegex.test(phone)) {
+                    res.status(400).json({
+                        error: 'Invalid phone format',
+                        message: '올바른 전화번호 형식을 입력해주세요. (010-0000-0000)'
+                    });
+                    return;
+                }
+                console.log('[Functions API] Demo request:', {
+                    name, company, email, phone
+                });
+                // Firebase Admin 초기화
+                const admin = require('firebase-admin');
+                const db = admin.firestore();
+                // DemoRequest 데이터 생성
+                const demoRequestData = {
+                    name: name.trim(),
+                    company: company.trim(),
+                    email: email.toLowerCase().trim(),
+                    phone: phone.trim(),
+                    inquiry: inquiry.trim(),
+                    status: 'pending',
+                    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                };
+                // Firestore에 저장
+                const docRef = await db.collection('demoRequests').add(demoRequestData);
+                console.log('[Functions API] Successfully created demo request:', docRef.id);
+                res.json({
+                    success: true,
+                    requestId: docRef.id,
+                    message: '데모 요청이 성공적으로 접수되었습니다.',
+                });
+            }
+            catch (error) {
+                console.error('[Functions API] Demo request error:', error);
+                // Firestore 에러 구분
+                if (error instanceof Error) {
+                    if (error.message.includes('permission-denied')) {
+                        res.status(403).json({
+                            error: 'Permission denied',
+                            message: '권한이 없습니다.'
+                        });
+                        return;
+                    }
+                }
+                res.status(500).json({
+                    error: 'Internal server error',
+                    message: '데모 요청 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
+                });
+            }
+            return;
+        }
+        res.status(405).json({ error: "Method not allowed" });
+        return;
+    }
+    // Sales Inquiry API - 구매 문의
+    if (path === "/sales") {
+        if (req.method === "POST") {
+            try {
+                const { name, company, email, phone, inquiry, privacyConsent } = req.body;
+                // 필수 필드 검증
+                if (!name || !company || !email || !phone || !inquiry || !privacyConsent) {
+                    res.status(400).json({
+                        error: 'Missing required fields',
+                        message: '필수 항목을 모두 입력해주세요.'
+                    });
+                    return;
+                }
+                // 이메일 형식 검증
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    res.status(400).json({
+                        error: 'Invalid email format',
+                        message: '올바른 이메일 형식을 입력해주세요.'
+                    });
+                    return;
+                }
+                // 전화번호 형식 검증 (010-1234-5678)
+                const phoneRegex = /^010-\d{4}-\d{4}$/;
+                if (!phoneRegex.test(phone)) {
+                    res.status(400).json({
+                        error: 'Invalid phone format',
+                        message: '올바른 전화번호 형식을 입력해주세요. (010-0000-0000)'
+                    });
+                    return;
+                }
+                console.log('[Functions API] Sales inquiry:', {
+                    name, company, email, phone
+                });
+                // Firebase Admin 초기화
+                const admin = require('firebase-admin');
+                const db = admin.firestore();
+                // SalesInquiry 데이터 생성
+                const salesInquiryData = {
+                    name: name.trim(),
+                    company: company.trim(),
+                    email: email.toLowerCase().trim(),
+                    phone: phone.trim(),
+                    inquiry: inquiry.trim(),
+                    status: 'pending',
+                    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                };
+                // Firestore에 저장
+                const docRef = await db.collection('salesInquiries').add(salesInquiryData);
+                console.log('[Functions API] Successfully created sales inquiry:', docRef.id);
+                res.json({
+                    success: true,
+                    inquiryId: docRef.id,
+                    message: '구매 문의가 성공적으로 접수되었습니다.',
+                });
+            }
+            catch (error) {
+                console.error('[Functions API] Sales inquiry error:', error);
+                // Firestore 에러 구분
+                if (error instanceof Error) {
+                    if (error.message.includes('permission-denied')) {
+                        res.status(403).json({
+                            error: 'Permission denied',
+                            message: '권한이 없습니다.'
+                        });
+                        return;
+                    }
+                }
+                res.status(500).json({
+                    error: 'Internal server error',
+                    message: '구매 문의 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
                 });
             }
             return;
@@ -472,7 +636,6 @@ app.use(async (req, res, next) => {
                     const options = {
                         search: query.get('search') || undefined,
                         categoryId: query.get('categoryId') || undefined,
-                        initialLetter: query.get('initialLetter') || undefined,
                         page: query.get('page') ? parseInt(query.get('page')) : 1,
                         limit: query.get('limit') ? parseInt(query.get('limit')) : 20,
                         enabledKo: query.get('enabledKo') ? query.get('enabledKo') === 'true' : undefined,
@@ -645,6 +808,8 @@ app.use(async (req, res, next) => {
             "/admin/*",
             "/stibee/subscribe",
             "/events/participate",
+            "/demo",
+            "/sales",
             "/resources/events",
             "/product/whatsnews",
             "/resources/faqs",

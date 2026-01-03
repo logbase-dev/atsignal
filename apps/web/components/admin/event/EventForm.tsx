@@ -591,7 +591,7 @@ export function EventForm({ mode, id }: EventFormProps) {
         <div style={rowStyle}>
           <div>
             <label style={labelStyle}>대표 이미지 (Featured Image) <span style={{ color: '#dc3545' }}>*</span></label>
-            <p style={helpTextStyle}>권장 크기: 800px * 300px</p>
+            <p style={helpTextStyle}>권장 크기: 1200px * 300px</p>
             {featuredImage && (
               <div style={{ marginBottom: '1rem' }}>
                 <img

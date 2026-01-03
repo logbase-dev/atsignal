@@ -17,7 +17,6 @@ export interface GetGlossariesResponse {
 export async function getPublicGlossaries(options?: {
   categoryId?: string;
   search?: string;
-  initialLetter?: string;
   orderBy?: 'term' | 'createdAt';
   orderDirection?: 'asc' | 'desc';
   page?: number;
@@ -30,7 +29,6 @@ export async function getPublicGlossaries(options?: {
   const params = new URLSearchParams();
   if (options?.categoryId) params.append('categoryId', options.categoryId);
   if (options?.search) params.append('search', options.search);
-  if (options?.initialLetter) params.append('initialLetter', options.initialLetter);
   if (options?.orderBy) params.append('orderBy', options.orderBy);
   if (options?.orderDirection) params.append('orderDirection', options.orderDirection);
   if (options?.page) params.append('page', String(options.page));

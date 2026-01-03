@@ -6,7 +6,7 @@ import { useEffect, useState, useRef } from "react";
 import { defaultLocale } from '@/lib/i18n/getLocale';
 import koMessages from '@/locales/ko.json';
 import enMessages from '@/locales/en.json';
-import NewsletterModal from '@/components/Newsletter/NewsletterModal';
+import ContactModal from '@/components/common/ContactModal';
 import { useBannerData } from './useBannerData';
 
 const translations = {
@@ -763,11 +763,12 @@ export default function Home({ locale }: HomeProps) {
         </div>
       </section>
 
-      <NewsletterModal
+      <ContactModal
         isOpen={isNewsletterModalOpen}
         onClose={() => setIsNewsletterModalOpen(false)}
         locale={currentLocale}
         initialEmail={emailInput}
+        variant="newsletter"
       />
     </div>
   );

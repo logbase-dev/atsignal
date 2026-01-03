@@ -47,10 +47,10 @@ export const syncSubscriber = async (
   };
 
   // 디버깅: 요청 본문 확인
-  // functions.logger.info("Stibee API request body:", JSON.stringify(requestBody, null, 2));
-  // functions.logger.info("Stibee API URL:", url);
-  // functions.logger.info("Stibee API Key (first 10 chars):", stibeeConfig.apiKey?.substring(0, 10));
-  // functions.logger.info("Stibee List ID:", stibeeConfig.listId);
+  functions.logger.info("Stibee API request body:", JSON.stringify(requestBody, null, 2));
+  functions.logger.info("Stibee API URL:", url);
+  functions.logger.info("Stibee API Key (first 10 chars):", stibeeConfig.apiKey?.substring(0, 10));
+  functions.logger.info("Stibee List ID:", stibeeConfig.listId);
 
   const response = await fetch(url, {
     method: "POST",
@@ -64,8 +64,8 @@ export const syncSubscriber = async (
   const rawBody = await response.text();
   
   // 디버깅: 응답 확인
-  // functions.logger.info("Stibee API response status:", response.status);
-  // functions.logger.info("Stibee API response body:", rawBody);
+  functions.logger.info("Stibee API response status:", response.status);
+  functions.logger.info("Stibee API response body:", rawBody);
   
   let parsedBody: unknown;
 
