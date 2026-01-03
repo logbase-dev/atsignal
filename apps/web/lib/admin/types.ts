@@ -9,6 +9,8 @@ export const COLLECTIONS = {
   ADMIN_LOGIN_LOGS: 'adminLoginLogs',
   EVENTS: 'events',
   EVENT_PARTICIPANTS: 'eventParticipants',
+  DEMO_REQUESTS: 'demoRequests',
+  SALES_INQUIRIES: 'salesInquiries',
   NOTICES: 'notices',
   BLOGS: 'blogs',
   BLOG_CATEGORIES: 'blogCategories',
@@ -281,6 +283,38 @@ export interface EventParticipant {
   phone: string;
   privacyConsent: boolean;
   createdAt?: Date;
+}
+
+export interface DemoRequest {
+  id?: string;
+  name: string;
+  company: string;
+  email: string;
+  phone: string;
+  inquiry: string;
+  status: 'pending' | 'contacted' | 'completed' | 'cancelled';
+  createdAt?: Date;
+  updatedAt?: Date;
+  contactedAt?: Date;
+  notes?: string;
+  createdBy?: string;
+  updatedBy?: string;
+}
+
+export interface SalesInquiry {
+  id?: string;
+  name: string;
+  company: string;
+  email: string;
+  phone: string;
+  inquiry: string;
+  status: 'pending' | 'contacted' | 'completed' | 'cancelled';
+  createdAt?: Date;
+  updatedAt?: Date;
+  contactedAt?: Date;
+  notes?: string;
+  createdBy?: string;
+  updatedBy?: string;
 }
 
 export interface WhatsNew {

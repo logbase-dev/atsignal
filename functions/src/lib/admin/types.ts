@@ -9,6 +9,8 @@ export const COLLECTIONS = {
   ADMIN_LOGIN_LOGS: 'adminLoginLogs',
   EVENTS: 'events',
   EVENT_PARTICIPANTS: 'eventParticipants',
+  DEMO_REQUESTS: 'demoRequests',
+  SALES_INQUIRIES: 'salesInquiries',
   NOTICES: 'notices',
   BLOGS: 'blog',
   BLOG_CATEGORIES: 'blogCategories',
@@ -364,5 +366,37 @@ export interface Glossary {
   updatedAt?: Date; // 수정일시
   createdBy?: string; // 생성한 관리자 ID
   updatedBy?: string; // 수정한 관리자 ID
+}
+
+export interface DemoRequest {
+  id?: string;
+  name: string;
+  company: string;
+  email: string;
+  phone: string;
+  inquiry: string;
+  status: 'pending' | 'contacted' | 'completed' | 'cancelled';
+  createdAt?: Date;
+  updatedAt?: Date;
+  contactedAt?: Date;
+  notes?: string;
+  createdBy?: string;
+  updatedBy?: string;
+}
+
+export interface SalesInquiry {
+  id?: string;
+  name: string;
+  company: string;
+  email: string;
+  phone: string;
+  inquiry: string;
+  status: 'pending' | 'contacted' | 'completed' | 'cancelled';
+  createdAt?: Date;
+  updatedAt?: Date;
+  contactedAt?: Date;
+  notes?: string;
+  createdBy?: string;
+  updatedBy?: string;
 }
 

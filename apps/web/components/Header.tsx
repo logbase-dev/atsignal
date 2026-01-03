@@ -8,7 +8,7 @@ import { pathToUrl } from '@/utils/menu';
 import { getLocaleFromPath } from '@/lib/i18n/getLocale';
 import koMessages from '@/locales/ko.json';
 import enMessages from '@/locales/en.json';
-import NewsletterModal from '@/components/Newsletter/NewsletterModal';
+import ContactModal from '@/components/common/ContactModal';
 
 const translations = {
   ko: koMessages,
@@ -354,7 +354,7 @@ export default function Header({ menuTree }: HeaderProps) {
         </div>
       </header>
 
-      <NewsletterModal
+      <ContactModal
         isOpen={contactModalType !== null}
         onClose={() => setContactModalType(null)}
         locale={locale}

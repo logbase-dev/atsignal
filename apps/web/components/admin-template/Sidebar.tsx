@@ -96,6 +96,20 @@ export default function Sidebar() {
         </li>
 
         <li className="nav-item">
+          <Link href="/admin/demo-requests" className={`nav-link ${pathname?.startsWith('/admin/demo-requests') ? '' : 'collapsed'}`}>
+            <i className="bi bi-laptop"></i>
+            <span>데모신청</span>
+          </Link>
+        </li>
+
+        <li className="nav-item">
+          <Link href="/admin/sales-inquiries" className={`nav-link ${pathname?.startsWith('/admin/sales-inquiries') ? '' : 'collapsed'}`}>
+            <i className="bi bi-cart-check"></i>
+            <span>구입문의</span>
+          </Link>
+        </li>
+
+        <li className="nav-item">
           <a
             className={`nav-link ${pathname?.startsWith('/admin/newsletter') ? '' : 'collapsed'}`}
             data-bs-target="#newsletter-nav"

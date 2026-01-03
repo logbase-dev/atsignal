@@ -34,6 +34,10 @@ import * as whatsnewHandler from "./whatsnew";
 import * as whatsnewIdHandler from "./whatsnew/[id]";
 import * as imagesUploadHandler from "./images/upload";
 import * as imagesSignedUrlHandler from "./images/signed-url";
+import * as demoRequestsHandler from "./demo-requests";
+import * as demoRequestsIdHandler from "./demo-requests/[id]";
+import * as salesInquiriesHandler from "./sales-inquiries";
+import * as salesInquiriesIdHandler from "./sales-inquiries/[id]";
 
 
 /**
@@ -244,6 +248,26 @@ export async function router(request: Request, response: Response, path: string)
       }
       if (pathParts.length === 2) {
         return await whatsnewIdHandler.handle(request, response, pathParts[1]);
+      }
+    }
+
+    // Demo Requests
+    if (pathParts[0] === "demo-requests") {
+      if (pathParts.length === 1) {
+        return await demoRequestsHandler.handle(request, response);
+      }
+      if (pathParts.length === 2) {
+        return await demoRequestsIdHandler.handle(request, response, pathParts[1]);
+      }
+    }
+
+    // Sales Inquiries (구입문의)
+    if (pathParts[0] === "sales-inquiries") {
+      if (pathParts.length === 1) {
+        return await salesInquiriesHandler.handle(request, response);
+      }
+      if (pathParts.length === 2) {
+        return await salesInquiriesIdHandler.handle(request, response, pathParts[1]);
       }
     }
 

@@ -116,9 +116,13 @@ async function getGlossaries(options) {
         const glossariesRef = firebase_1.firestore.collection(types_1.COLLECTIONS.GLOSSARIES);
         let q = glossariesRef;
         const locale = options?.locale || "ko";
-        const enabledField = `enabled.${locale}`;
-        // 활성화된 항목만 필터링
-        q = q.where(enabledField, "==", true);
+        // enabled 필터링
+        if (options?.enabledKo !== undefined) {
+            q = q.where("enabled.ko", "==", options.enabledKo);
+        }
+        if (options?.enabledEn !== undefined) {
+            q = q.where("enabled.en", "==", options.enabledEn);
+        }
         // 카테고리 필터
         if (options?.categoryId && options.categoryId !== "__no_category__") {
             q = q.where("categoryId", "==", options.categoryId);
@@ -131,7 +135,7 @@ async function getGlossaries(options) {
             console.warn("orderBy failed:", e);
             // no-op
         }
-        // 전체 데이터 가져오기 (검색 및 페이지네이션을 위해)
+        // 전체 데이터 가져오기 (클라이언트 측 필터링을 위해)
         const snap = await withTimeout(q.get(), 5000);
         let glossaries = snap.docs.map(mapGlossaryData);
         // 검색 필터링 (클라이언트 측)
@@ -168,7 +172,7 @@ async function getGlossaries(options) {
         const endIndex = startIndex + limit;
         const paginatedItems = glossaries.slice(startIndex, endIndex);
         return {
-            items: paginatedItems,
+            glossaries: paginatedItems,
             total,
             page,
             limit,
@@ -181,7 +185,7 @@ async function getGlossaries(options) {
             console.error("Firestore 쿼리 타임아웃 - 환경 변수/네트워크 확인");
         }
         return {
-            items: [],
+            glossaries: [],
             total: 0,
             page: options?.page || 1,
             limit: options?.limit || 20,

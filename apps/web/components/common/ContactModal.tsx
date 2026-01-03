@@ -10,7 +10,7 @@ const translations = {
   en: enMessages,
 } as const;
 
-interface NewsletterModalProps {
+interface ContactModalProps {
   isOpen: boolean;
   onClose: () => void;
   locale?: string;
@@ -30,7 +30,7 @@ interface FormData {
   privacyConsent: boolean;
 }
 
-export default function NewsletterModal({
+export default function ContactModal({
   isOpen,
   onClose,
   locale = defaultLocale,
@@ -39,7 +39,7 @@ export default function NewsletterModal({
   customTitle,
   customSubmitLabel,
   eventId,
-}: NewsletterModalProps) {
+}: ContactModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const currentLocale = locale || defaultLocale;
@@ -131,6 +131,13 @@ export default function NewsletterModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // 이미 처리 중이면 무시 (중복 클릭 방지)
+    if (isSubmitting) {
+      console.log('[ContactModal] Already submitting, ignoring duplicate click');
+      return;
+    }
+    
     setIsSubmitting(true);
     setSubmitStatus('idle');
     setErrorMessage('');
@@ -143,6 +150,16 @@ export default function NewsletterModal({
         apiUrl = process.env.NODE_ENV === 'development'
           ? '/api/events/participate'
           : 'https://asia-northeast3-atsignal.cloudfunctions.net/api/events/participate';
+      } else if (variant === 'demo') {
+        // 데모 요청 API
+        apiUrl = process.env.NODE_ENV === 'development'
+          ? '/api/demo'
+          : 'https://asia-northeast3-atsignal.cloudfunctions.net/api/demo';
+      } else if (variant === 'sales') {
+        // 구매 문의 API
+        apiUrl = process.env.NODE_ENV === 'development'
+          ? '/api/sales'
+          : 'https://asia-northeast3-atsignal.cloudfunctions.net/api/sales';
       } else {
         // 기존 뉴스레터/문의 API
         apiUrl = process.env.NODE_ENV === 'development'
@@ -193,12 +210,30 @@ export default function NewsletterModal({
           setErrorMessage(data.message || '이미 해당 이벤트에 참가신청 했습니다.');
         } else if (response.status === 403) {
           setErrorMessage(data.message || '권한이 없습니다.');
-        } else if (response.status === 404) {
-          setErrorMessage(data.message || '이벤트를 찾을 수 없습니다.');
         } else if (response.status === 400) {
           setErrorMessage(data.message || '입력 정보를 확인해 주세요.');
         } else {
           setErrorMessage(data.message || '참가 신청 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+        }
+      } else if (variant === 'demo') {
+        // 데모 요청 에러 처리
+        setSubmitStatus('error');
+        if (response.status === 409) {
+          setErrorMessage(data.message || '이미 데모 요청을 하셨습니다.');
+        } else if (response.status === 400) {
+          setErrorMessage(data.message || '입력 정보를 확인해 주세요.');
+        } else {
+          setErrorMessage(data.message || '데모 요청 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+        }
+      } else if (variant === 'sales') {
+        // 구매 문의 에러 처리
+        setSubmitStatus('error');
+        if (response.status === 409) {
+          setErrorMessage(data.message || '이미 구매 문의를 하셨습니다.');
+        } else if (response.status === 400) {
+          setErrorMessage(data.message || '입력 정보를 확인해 주세요.');
+        } else {
+          setErrorMessage(data.message || '구매 문의 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
         }
       } else if (response.status === 409 && data.error === 'ALREADY_SUBSCRIBED') {
         // ✅ 이미 구독 중인 경우 특별 처리
@@ -254,15 +289,15 @@ export default function NewsletterModal({
   return (
     <dialog
       ref={dialogRef}
-      className="newsletter-modal"
+      className="contact-modal"
       onClose={onClose}
       onCancel={(e) => e.preventDefault()} // ESC로 닫히지 않도록 방지
-      aria-labelledby="newsletter-modal-title"
-      aria-describedby="newsletter-modal-description"
+      aria-labelledby="contact-modal-title"
+      aria-describedby="contact-modal-description"
     >
-      <div className="newsletter-modal-content" onClick={(e) => e.stopPropagation()}>
+      <div className="contact-modal-content" onClick={(e) => e.stopPropagation()}>
         <button
-          className="newsletter-modal-close"
+          className="contact-modal-close"
           onClick={onClose}
           aria-label={t.closeButton || '닫기'}
           type="button"
@@ -270,17 +305,17 @@ export default function NewsletterModal({
           ×
         </button>
 
-        <h2 id="newsletter-modal-title" className="newsletter-modal-title">
+        <h2 id="contact-modal-title" className="contact-modal-title">
           {modalTitle}
         </h2>
-        <p id="newsletter-modal-description" className="newsletter-modal-description">
+        <p id="contact-modal-description" className="contact-modal-description">
           {modalDescription}
         </p>
 
         {submitStatus === 'success' ? (
-          <div className="newsletter-success-message">
+          <div className="contact-success-message">
             <svg
-              className="newsletter-success-icon"
+              className="contact-success-icon"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -295,19 +330,23 @@ export default function NewsletterModal({
             <p>
               {variant === 'event' 
                 ? '이벤트 참가 신청이 완료되었습니다!'
-                : t.successMessage || '구독 신청이 완료되었습니다!'
+                : variant === 'demo'
+                  ? '데모 요청이 완료되었습니다!'
+                  : variant === 'sales'
+                    ? '구매 문의가 완료되었습니다!'
+                    : t.successMessage || '구독 신청이 완료되었습니다!'
               }
             </p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="newsletter-form">
-            <div className="newsletter-form-group newsletter-form-inline">
-              <label htmlFor="newsletter-name">
+          <form onSubmit={handleSubmit} className="contact-form">
+            <div className="contact-form-group contact-form-inline">
+              <label htmlFor="contact-name">
                 {t.nameLabel || '성함'} <span className="required">*</span>
               </label>
               <input
                 ref={nameInputRef}
-                id="newsletter-name"
+                id="contact-name"
                 type="text"
                 required
                 minLength={2}
@@ -318,12 +357,12 @@ export default function NewsletterModal({
               />
             </div>
 
-            <div className="newsletter-form-group newsletter-form-inline">
-              <label htmlFor="newsletter-company">
+            <div className="contact-form-group contact-form-inline">
+              <label htmlFor="contact-company">
                 {t.companyLabel || '소속/회사명'} <span className="required">*</span>
               </label>
               <input
-                id="newsletter-company"
+                id="contact-company"
                 type="text"
                 required
                 minLength={2}
@@ -334,12 +373,12 @@ export default function NewsletterModal({
               />
             </div>
 
-            <div className="newsletter-form-group newsletter-form-inline">
-              <label htmlFor="newsletter-email">
+            <div className="contact-form-group contact-form-inline">
+              <label htmlFor="contact-email">
                 {t.emailLabel || '이메일'} <span className="required">*</span>
               </label>
               <input
-                id="newsletter-email"
+                id="contact-email"
                 type="email"
                 required
                 value={formData.email}
@@ -349,12 +388,12 @@ export default function NewsletterModal({
               />
             </div>
 
-            <div className="newsletter-form-group newsletter-form-inline">
-              <label htmlFor="newsletter-phone">
+            <div className="contact-form-group contact-form-inline">
+              <label htmlFor="contact-phone">
                 {t.phoneLabel || '휴대폰 번호'} <span className="required">*</span>
               </label>
               <input
-                id="newsletter-phone"
+                id="contact-phone"
                 type="tel"
                 required
                 pattern="010-\d{4}-\d{4}"
@@ -367,12 +406,12 @@ export default function NewsletterModal({
             </div>
 
             {isContactVariant && (
-              <div className="newsletter-form-group">
-                <label htmlFor="newsletter-inquiry">
+              <div className="contact-form-group">
+                <label htmlFor="contact-inquiry">
                   문의/요청 내용 <span className="required">*</span>
                 </label>
                 <textarea
-                  id="newsletter-inquiry"
+                  id="contact-inquiry"
                   required
                   minLength={5}
                   rows={4}
@@ -384,8 +423,8 @@ export default function NewsletterModal({
               </div>
             )}
 
-            <div className="newsletter-form-group newsletter-checkbox-group">
-              <label className="newsletter-checkbox-label">
+            <div className="contact-form-group contact-checkbox-group">
+              <label className="contact-checkbox-label">
                 <input
                   type="checkbox"
                   required
@@ -402,7 +441,7 @@ export default function NewsletterModal({
                     href={`/${locale}/privacy`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="newsletter-privacy-link"
+                    className="contact-privacy-link"
                   >
                     ({t.privacyLink || '자세히 보기'})
                   </a>
@@ -411,7 +450,7 @@ export default function NewsletterModal({
             </div>
 
             {submitStatus === 'error' && errorMessage && (
-              <div className="newsletter-error-message" role="alert">
+              <div className="contact-error-message" role="alert">
                 {errorMessage}
               </div>
             )}
@@ -419,7 +458,7 @@ export default function NewsletterModal({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="newsletter-submit-button"
+              className="contact-submit-button"
             >
               {isSubmitting
                 ? t.submitting || '처리 중...'

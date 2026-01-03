@@ -2,21 +2,25 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
-    // 환경에 따라 Firebase Functions URL 결정
-    const useEmulator =
-      process.env.NODE_ENV === 'development' &&
-      process.env.USE_SUBSCRIBE_EMULATOR === 'true';
-
-    const functionsUrl = useEmulator
-      ? 'http://127.0.0.1:5001/atsignal/us-central1/subscribeNewsletterApi' // 로컬 Emulator
-      : process.env.NEXT_PUBLIC_SUBSCRIBE_API_URL ||
-        'https://asia-northeast3-atsignal.cloudfunctions.net/subscribeNewsletterApi'; // 기본 프로덕션
-    
-    // 요청 본문 가져오기
     const body = await request.json();
     
-    // Firebase Functions로 프록시 요청
-    const response = await fetch(functionsUrl, {
+    // 환경에 따른 API URL 결정
+    let apiUrl: string;
+    
+    if (process.env.NODE_ENV === 'development') {
+      // 로컬 개발 환경: Firebase Emulator 사용
+      const emulatorUrl = process.env.NEXT_PUBLIC_FUNCTIONS_EMULATOR_URL || 'http://127.0.0.1:5001/atsignal/asia-northeast3/api';
+      apiUrl = `${emulatorUrl}/stibee/subscribe`;
+    } else {
+      // 프로덕션 환경: 실제 Firebase Functions 사용
+      apiUrl = 'https://asia-northeast3-atsignal.cloudfunctions.net/api/stibee/subscribe';
+    }
+    
+    console.log('[API Route] Environment:', process.env.NODE_ENV);
+    console.log('[API Route] Forwarding to:', apiUrl);
+    console.log('[API Route] Request body:', body);
+    
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -24,57 +28,35 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(body),
     });
     
-    // 응답 본문을 한 번만 읽기
-    const responseText = await response.text();
+    const data = await response.json();
     
-    // 응답이 성공하지 않으면 에러 처리
+    console.log('[API Route] Response status:', response.status);
+    console.log('[API Route] Response data:', data);
+    
     if (!response.ok) {
-      console.error('Firebase Functions error:', {
-        status: response.status,
-        statusText: response.statusText,
-        body: responseText,
-        url: functionsUrl,
-      });
-      
-      // JSON 파싱 시도 (에러 응답도 JSON일 수 있음)
-      let errorData;
-      try {
-        errorData = responseText ? JSON.parse(responseText) : { message: response.statusText };
-      } catch {
-        errorData = { message: responseText || response.statusText };
-      }
-      
-      return NextResponse.json(
-        { 
-          error: 'Firebase Functions error',
-          status: response.status,
-          ...errorData,
-        },
-        { status: response.status }
-      );
-    }
-    
-    // 성공 응답 파싱
-    let data;
-    try {
-      data = responseText ? JSON.parse(responseText) : {};
-    } catch (parseError) {
-      console.error('JSON parse error:', parseError, 'Response text:', responseText);
-      return NextResponse.json(
-        { error: 'Invalid response from server', raw: responseText },
-        { status: 500 }
-      );
+      return NextResponse.json(data, { status: response.status });
     }
     
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error('Subscribe API error:', error);
+    console.error('[API Route] Error:', error);
     return NextResponse.json(
       { 
-        error: 'Internal server error',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        error: 'INTERNAL_ERROR',
+        message: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }
     );
   }
+}
+
+export async function OPTIONS(request: NextRequest) {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  });
 }

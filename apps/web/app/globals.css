@@ -2094,8 +2094,8 @@ body:not(.admin-mode) .dropdown-item:hover {
  }
 }
 
-/* Newsletter Modal Styles */
-.newsletter-modal {
+/* Contact Modal Styles */
+.contact-modal {
   max-width: 500px;
   width: 90%;
   max-height: 90vh;
@@ -2112,20 +2112,20 @@ body:not(.admin-mode) .dropdown-item:hover {
   margin: 0;
 }
 
-.newsletter-modal::backdrop {
+.contact-modal::backdrop {
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(4px);
   animation: fadeIn 0.2s ease-out;
 }
 
-.newsletter-modal-content {
+.contact-modal-content {
   padding: 2rem;
   position: relative;
   overflow-y: auto;
   max-height: 90vh;
 }
 
-.newsletter-modal-close {
+.contact-modal-close {
   position: absolute;
   top: 1rem;
   right: 1rem;
@@ -2145,91 +2145,91 @@ body:not(.admin-mode) .dropdown-item:hover {
   z-index: 10;
 }
 
-.newsletter-modal-close:hover {
+.contact-modal-close:hover {
   background: var(--gray-200);
   color: var(--gray-900);
 }
 
-.newsletter-modal-close:focus {
+.contact-modal-close:focus {
   outline: 2px solid var(--main-500);
   outline-offset: 2px;
 }
 
-.newsletter-modal-title {
+.contact-modal-title {
   font-size: 1.75rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
   color: var(--gray-900);
 }
 
-.newsletter-modal-description {
+.contact-modal-description {
   font-size: 1rem;
   color: var(--gray-600);
   margin-bottom: 1.5rem;
 }
 
-.newsletter-form {
+.contact-form {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.newsletter-form-group {
+.contact-form-group {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.newsletter-form-inline {
+.contact-form-inline {
   flex-direction: row;
   align-items: center;
   gap: 0.75rem;
 }
 
-.newsletter-form-inline label {
+.contact-form-inline label {
   width: 120px;
   margin: 0;
   text-align: left;
   flex-shrink: 0;
 }
 
-.newsletter-form-inline input {
+.contact-form-inline input {
   flex: 1;
 }
 
-.newsletter-form-inline {
+.contact-form-inline {
   flex-wrap: wrap;
 }
 
-.newsletter-form-inline label {
+.contact-form-inline label {
   flex-basis: 120px;
 }
 
 @media (max-width: 640px) {
-  .newsletter-form-inline {
+  .contact-form-inline {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .newsletter-form-inline label {
+  .contact-form-inline label {
     flex-basis: auto;
     width: auto;
   }
 }
 
-.newsletter-form-group label {
+.contact-form-group label {
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--gray-700);
 }
 
-.newsletter-form-group .required {
+.contact-form-group .required {
   color: #ef4444;
 }
 
-.newsletter-form-group input[type="text"],
-.newsletter-form-group input[type="email"],
-.newsletter-form-group input[type="tel"] {
+.contact-form-group input[type="text"],
+.contact-form-group input[type="email"],
+.contact-form-group input[type="tel"] {
   width: 100%;
   padding: 0.75rem;
   border: 1px solid var(--gray-300);
@@ -2240,7 +2240,7 @@ body:not(.admin-mode) .dropdown-item:hover {
   color: var(--foreground);
 }
 
-.newsletter-form-group textarea {
+.contact-form-group textarea {
   width: 100%;
   padding: 0.75rem;
   border: 1px solid var(--gray-300);
@@ -2253,35 +2253,35 @@ body:not(.admin-mode) .dropdown-item:hover {
   resize: vertical;
 }
 
-.newsletter-form-group textarea:focus {
+.contact-form-group textarea:focus {
   outline: none;
   border-color: var(--main-500);
   box-shadow: 0 0 0 3px rgba(0, 161, 239, 0.1);
 }
 
-.newsletter-form-group textarea:disabled {
+.contact-form-group textarea:disabled {
   background: var(--gray-100);
   cursor: not-allowed;
   opacity: 0.6;
 }
 
-.newsletter-form-group input:focus {
+.contact-form-group input:focus {
   outline: none;
   border-color: var(--main-500);
   box-shadow: 0 0 0 3px rgba(0, 161, 239, 0.1);
 }
 
-.newsletter-form-group input:disabled {
+.contact-form-group input:disabled {
   background: var(--gray-100);
   cursor: not-allowed;
   opacity: 0.6;
 }
 
-.newsletter-checkbox-group {
+.contact-checkbox-group {
   margin-top: 0.5rem;
 }
 
-.newsletter-checkbox-label {
+.contact-checkbox-label {
   display: flex;
   align-items: flex-start;
   gap: 0.75rem;
@@ -2290,7 +2290,7 @@ body:not(.admin-mode) .dropdown-item:hover {
   line-height: 1.5;
 }
 
-.newsletter-checkbox-label input[type="checkbox"] {
+.contact-checkbox-label input[type="checkbox"] {
   margin-top: 0.25rem;
   width: 18px;
   height: 18px;
@@ -2299,22 +2299,22 @@ body:not(.admin-mode) .dropdown-item:hover {
   flex-shrink: 0;
 }
 
-.newsletter-checkbox-label input[type="checkbox"]:disabled {
+.contact-checkbox-label input[type="checkbox"]:disabled {
   cursor: not-allowed;
   opacity: 0.6;
 }
 
-.newsletter-privacy-link {
+.contact-privacy-link {
   color: var(--main-600);
   text-decoration: underline;
   transition: color 0.2s ease;
 }
 
-.newsletter-privacy-link:hover {
+.contact-privacy-link:hover {
   color: var(--main-700);
 }
 
-.newsletter-submit-button {
+.contact-submit-button {
   width: 100%;
   padding: 0.875rem 1.5rem;
   background: var(--main-600);
@@ -2328,28 +2328,28 @@ body:not(.admin-mode) .dropdown-item:hover {
   margin-top: 0.5rem;
 }
 
-.newsletter-submit-button:hover:not(:disabled) {
+.contact-submit-button:hover:not(:disabled) {
   background: var(--main-700);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 161, 239, 0.3);
 }
 
-.newsletter-submit-button:active:not(:disabled) {
+.contact-submit-button:active:not(:disabled) {
   transform: translateY(0);
 }
 
-.newsletter-submit-button:disabled {
+.contact-submit-button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
 }
 
-.newsletter-submit-button:focus {
+.contact-submit-button:focus {
   outline: 2px solid var(--main-500);
   outline-offset: 2px;
 }
 
-.newsletter-success-message {
+.contact-success-message {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2359,20 +2359,20 @@ body:not(.admin-mode) .dropdown-item:hover {
   gap: 1rem;
 }
 
-.newsletter-success-icon {
+.contact-success-icon {
   width: 64px;
   height: 64px;
   color: #10b981;
   stroke-width: 3;
 }
 
-.newsletter-success-message p {
+.contact-success-message p {
   font-size: 1.125rem;
   font-weight: 600;
   color: var(--gray-900);
 }
 
-.newsletter-error-message {
+.contact-error-message {
   padding: 0.75rem 1rem;
   background: #fef2f2;
   border: 1px solid #fecaca;
@@ -2384,7 +2384,7 @@ body:not(.admin-mode) .dropdown-item:hover {
 
 /* 모바일 반응형 */
 @media (max-width: 640px) {
-  .newsletter-modal {
+  .contact-modal {
     width: 95%;
     max-height: 95vh;
     top: 50%;
@@ -2392,15 +2392,15 @@ body:not(.admin-mode) .dropdown-item:hover {
     transform: translate(-50%, -50%);
   }
 
-  .newsletter-modal-content {
+  .contact-modal-content {
     padding: 1.5rem;
   }
 
-  .newsletter-modal-title {
+  .contact-modal-title {
     font-size: 1.5rem;
   }
 
-  .newsletter-modal-close {
+  .contact-modal-close {
     top: 0.75rem;
     right: 0.75rem;
     font-size: 1.75rem;
