@@ -57,14 +57,24 @@ export async function POST(request: NextRequest) {
     }
 
     // 중복 참가 신청 확인 및 저장을 트랜잭션으로 처리
+    console.log('[Event Participate API] 트랜잭션 시작:', { eventId, email });
+    
     const result = await db.runTransaction(async (transaction: any) => {
       // 더 안전한 중복 체크: 복합 키 사용
       const participantId = `${eventId}_${email.toLowerCase().trim().replace(/[^a-zA-Z0-9]/g, '_')}`;
       const participantRef = db.collection('eventParticipants').doc(participantId);
       
+      console.log('[Event Participate API] 중복 체크 중:', { participantId });
+      
       const existingDoc = await transaction.get(participantRef);
       
+      console.log('[Event Participate API] 기존 문서 확인:', { 
+        exists: existingDoc.exists,
+        participantId 
+      });
+      
       if (existingDoc.exists) {
+        console.log('[Event Participate API] 중복 참가 신청 발견!');
         throw new Error('ALREADY_REGISTERED');
       }
       
@@ -78,6 +88,8 @@ export async function POST(request: NextRequest) {
         privacyConsent,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       };
+      
+      console.log('[Event Participate API] 새 참가자 저장 중:', { participantId });
       
       // 고정된 문서 ID로 저장 (자동으로 중복 방지)
       transaction.set(participantRef, participantData);

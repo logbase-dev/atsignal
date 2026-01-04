@@ -33,3 +33,8 @@ env:
     value: "https://web-ssr--atsignal.asia-east1.hosted.app"
   - variable: NEXT_PUBLIC_DOCS_PREVIEW_ORIGIN
     value: "https://docs-ssr--atsignal.asia-east1.hosted.app"
+  # Stibee API 설정 (뉴스레터 구독용)
+  - variable: STIBEE_API_KEY
+    value: "e2f41bf8ae6b8b8eb3c6228f2cba8e068f3e7cbcdb4a937df0dcd2e0e2ee82dacbc55df3f3c1cd70b49ad4bb338cf8f1d38510ae61507fb5e6eaac9bc57267c5"
+  - variable: STIBEE_LIST_ID
+    value: "460183"

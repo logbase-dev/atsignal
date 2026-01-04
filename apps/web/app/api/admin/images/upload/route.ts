@@ -1,141 +1,114 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { admin } from '@/lib/firebase-admin';
-import sharp from 'sharp';
-
-type UploadResult = {
-  success: boolean;
-  originalUrl: string | null;
-  urls: Record<string, string>;
-  fileName: string;
-  originalSaved: boolean;
-};
-
-const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 
 export async function POST(request: NextRequest) {
-  const startTime = Date.now();
-  console.log("[Next.js Image Upload] 업로드 시작");
-
   try {
-    // FormData 파싱
+    console.log('[Images Upload API] 이미지 업로드 요청 받음');
+
+    // 개발 환경에서는 Functions 에뮬레이터 호출
+    if (process.env.NODE_ENV === 'development') {
+      const formData = await request.formData();
+      
+      // Functions 에뮬레이터로 프록시
+      const functionsUrl = 'http://127.0.0.1:5001/atsignal/asia-northeast3/api/admin/images/upload';
+      
+      const response = await fetch(functionsUrl, {
+        method: 'POST',
+        body: formData, // FormData를 그대로 전달
+      });
+
+      const result = await response.json();
+      return NextResponse.json(result, { status: response.status });
+    }
+
+    // 프로덕션 환경에서는 Firebase Storage 직접 업로드
+    const admin = require('firebase-admin');
+    
+    let app;
+    try {
+      app = admin.app();
+    } catch {
+      app = admin.initializeApp();
+    }
+
+    // 멀티파트 폼 데이터 파싱
     const formData = await request.formData();
     const file = formData.get('file') as File;
-    const maxWidthStr = formData.get('maxWidth') as string;
-    
+    const maxWidth = formData.get('maxWidth') as string;
+
     if (!file) {
-      return NextResponse.json({ error: '파일이 제공되지 않았습니다.' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'No file provided', message: '파일이 제공되지 않았습니다.' },
+        { status: 400 }
+      );
     }
 
-    if (file.size > MAX_SIZE) {
-      return NextResponse.json({ error: '파일 크기는 10MB를 초과할 수 없습니다.' }, { status: 400 });
-    }
-
-    if (!file.type.startsWith('image/')) {
-      return NextResponse.json({ error: '이미지 파일만 업로드할 수 있습니다.' }, { status: 400 });
-    }
-
-    const maxWidth = maxWidthStr ? parseInt(maxWidthStr, 10) : undefined;
-    const fileBuffer = Buffer.from(await file.arrayBuffer());
-    
-    console.log("[Next.js Image Upload] 파일 파싱 완료:", {
-      fileName: file.name,
-      mimeType: file.type,
-      fileSize: fileBuffer.length,
-      maxWidth,
-      elapsed: Date.now() - startTime + "ms"
+    console.log('[Images Upload API] 파일 정보:', {
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      maxWidth: maxWidth
     });
 
-    // Storage bucket 초기화
-    const bucket = admin.storage().bucket();
-    console.log("[Next.js Image Upload] Storage bucket 초기화 완료:", Date.now() - startTime, "ms");
-
+    // 파일 확장자 및 이름 생성
     const timestamp = Date.now();
-    const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
-    const baseName = `${timestamp}-${safeName}`;
+    const randomId = Math.random().toString(36).substring(2, 15);
+    const fileExtension = file.name.split('.').pop() || 'jpg';
+    const fileName = `${timestamp}_${randomId}.${fileExtension}`;
+    
+    // 업로드 경로 생성 (년/월 폴더 구조)
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const storagePath = `images/${year}/${month}/${fileName}`;
 
-    // 원본 크기 확인 (5MB 미만일 때만 저장)
-    const shouldSaveOriginal = fileBuffer.length < 5 * 1024 * 1024;
-    console.log("[Next.js Image Upload] 원본 저장 여부:", shouldSaveOriginal, "파일 크기:", fileBuffer.length);
+    // 파일을 Buffer로 변환
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
 
-    const sizes = [
-      { name: "thumbnail", width: 300 },
-      { name: "medium", width: 800 },
-      { name: "large", width: 1200 },
-    ];
-    const targetSizes = maxWidth ? sizes.filter((s) => s.width <= maxWidth) : sizes;
-    console.log("[Next.js Image Upload] 대상 크기들:", targetSizes);
-
-    const uploadOne = async (name: string, width: number) => {
-      const resizeStart = Date.now();
-      const optimized = await sharp(fileBuffer)
-        .resize(width, null, { withoutEnlargement: true, fit: "inside" })
-        .webp({ quality: 80 })
-        .toBuffer();
-      console.log(`[Next.js Image Upload] ${name} 리사이징 완료:`, Date.now() - resizeStart, "ms");
-
-      const uploadStart = Date.now();
-      const storagePath = `images/${name}/${baseName}`;
-      const fileRef = bucket.file(storagePath);
-      
-      // 파일 업로드만 수행 (권한 설정 없음)
-      await fileRef.save(optimized, { 
-        contentType: "image/webp", 
-        resumable: false
-      });
-      console.log(`[Next.js Image Upload] ${name} 업로드 완료:`, Date.now() - uploadStart, "ms");
-      
-      const urlStart = Date.now();
-      // Firebase Storage 기본 URL 형태 사용
-      const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(storagePath)}?alt=media`;
-      console.log(`[Next.js Image Upload] ${name} URL 생성 완료:`, Date.now() - urlStart, "ms");
-      
-      return { name, url: publicUrl };
-    };
-
-    console.log("[Next.js Image Upload] 병렬 업로드 시작");
-    const uploadPromises = targetSizes.map((s) => uploadOne(s.name, s.width));
-    const results = await Promise.all(uploadPromises);
-    console.log("[Next.js Image Upload] 모든 크기 업로드 완료:", Date.now() - startTime, "ms");
-
-    let originalUrl: string | null = null;
-    if (shouldSaveOriginal) {
-      try {
-        const originalStart = Date.now();
-        const storagePath = `images/original/${baseName}`;
-        const fileRef = bucket.file(storagePath);
-        
-        // 파일 업로드만 수행 (권한 설정 없음)
-        await fileRef.save(fileBuffer, { 
-          contentType: file.type, 
-          resumable: false
-        });
-        
-        // Firebase Storage 기본 URL 형태 사용
-        originalUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(storagePath)}?alt=media`;
-        console.log("[Next.js Image Upload] 원본 업로드 완료:", Date.now() - originalStart, "ms");
-      } catch (err) {
-        console.error("[Next.js Image Upload] 원본 업로드 실패:", err);
+    // Firebase Storage 인스턴스 가져오기
+    const bucket = admin.storage().bucket();
+    const fileRef = bucket.file(storagePath);
+    
+    // 파일 업로드
+    await fileRef.save(buffer, {
+      metadata: {
+        contentType: file.type,
+        metadata: {
+          originalName: file.name,
+          uploadedAt: new Date().toISOString(),
+        }
       }
-    }
+    });
 
-    const urls = results.reduce((acc, cur) => {
-      acc[cur.name] = cur.url;
-      return acc;
-    }, {} as Record<string, string>);
+    // 공개 URL 생성
+    await fileRef.makePublic();
+    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${storagePath}`;
 
-    const payload: UploadResult = {
+    console.log('[Images Upload API] 업로드 성공:', { storagePath, publicUrl });
+
+    // 기존 응답 형식에 맞춰 반환
+    return NextResponse.json({
       success: true,
-      originalUrl,
-      urls,
-      fileName: baseName,
-      originalSaved: shouldSaveOriginal,
-    };
+      originalUrl: publicUrl,
+      urls: {
+        medium: publicUrl,
+        thumbnail: publicUrl,
+        large: publicUrl
+      },
+      fileName: fileName,
+      message: '이미지가 성공적으로 업로드되었습니다.'
+    });
 
-    console.log("[Next.js Image Upload] 전체 완료:", Date.now() - startTime, "ms");
-    return NextResponse.json(payload);
   } catch (error: any) {
-    console.error("[Next.js Image Upload] 에러:", error);
-    console.error("[Next.js Image Upload] 에러 발생 시점:", Date.now() - startTime, "ms");
-    return NextResponse.json({ error: error.message || "이미지 업로드에 실패했습니다." }, { status: 500 });
+    console.error('[Images Upload API] 업로드 에러:', error);
+    
+    return NextResponse.json(
+      { 
+        error: 'Upload failed', 
+        message: '이미지 업로드 중 오류가 발생했습니다.',
+        details: error.message 
+      },
+      { status: 500 }
+    );
   }
 }
