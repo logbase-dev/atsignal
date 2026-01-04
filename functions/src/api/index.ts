@@ -39,48 +39,51 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 /**
- * CORS 미들웨어
+ * 인증 미들웨어 - 공개 API용 익명 인증 허용
  */
+app.use(async (req: Request, res: Response, next: NextFunction) => {
+  // 공개 API 경로들
+  const publicPaths = ['/demo', '/sales', '/events/participate', '/stibee/subscribe'];
+  const path = req.url.split('?')[0]; // 쿼리 파라미터 제거
+  
+  // Admin API가 아닌 공개 API인 경우 인증 체크 스킵
+  if (publicPaths.some(publicPath => path.endsWith(publicPath))) {
+    console.log('[API] 공개 API 접근 허용:', path);
+    next();
+    return;
+  }
+  
+  // Admin API는 기존 인증 로직 유지
+  next();
+});
 app.use((req: Request, res: Response, next: NextFunction) => {
   const originHeader = req.headers.origin;
   const origin = typeof originHeader === "string" ? originHeader : undefined;
 
-  const allowedOrigins = [
-    // local dev
-    "http://localhost:3000",
-    "http://localhost:3001",
-    "http://localhost:3002",
-    // prod domains
-    "https://atsignal.io",
-    "https://docs.atsignal.io",
-    "https://atsignal.com",
-    // app hosting preview domains
-    "https://web-ssr--atsignal.asia-east1.hosted.app",
-    "https://docs-ssr--atsignal.asia-east1.hosted.app",
-  ];
-
-  const allowedOrigin = origin ? allowedOrigins.find((o) => o === origin) : undefined;
-
-  if (origin && !allowedOrigin) {
-    // NOTE: 서버 사이드 Route Handler에서 호출하는 경우 Origin이 없을 수 있음
-    // 이 경우 CORS 체크를 통과시키고, 쿠키는 여전히 설정되어야 함
-    console.log('[API] CORS check failed, but allowing server-side request:', { origin, hasOrigin: !!origin });
-    // 서버 사이드 요청은 CORS 체크를 통과시킴 (쿠키 설정을 위해)
-  }
-
-  // 서버 사이드 요청(Origin 없음) 또는 허용된 Origin인 경우 CORS 헤더 설정
-  if (allowedOrigin || !origin) {
-    if (allowedOrigin) {
-      res.set("Access-Control-Allow-Origin", allowedOrigin);
-      res.set("Vary", "Origin");
+  console.log('[API] CORS 디버깅:', { 
+    origin, 
+    method: req.method, 
+    url: req.url,
+    headers: {
+      origin: req.headers.origin,
+      referer: req.headers.referer
     }
-    // 서버 사이드 요청도 credentials를 허용해야 쿠키가 설정됨
-    res.set("Access-Control-Allow-Credentials", "true");
-    res.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-    res.set("Access-Control-Allow-Headers", "Content-Type, Authorization, Cookie");
+  });
+
+  // 임시로 모든 Origin 허용 (테스트용)
+  if (origin) {
+    res.set("Access-Control-Allow-Origin", origin);
+    res.set("Vary", "Origin");
+    console.log('[API] 임시 CORS 헤더 설정됨:', origin);
   }
+
+  // 공통 CORS 헤더
+  res.set("Access-Control-Allow-Credentials", "true");
+  res.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.set("Access-Control-Allow-Headers", "Content-Type, Authorization, Cookie");
 
   if (req.method === "OPTIONS") {
+    console.log('[API] OPTIONS 요청 처리');
     res.status(204).send("");
     return;
   }
@@ -149,6 +152,9 @@ app.use(async (req: Request, res: Response, next: NextFunction) => {
       "https://atsignal.io",
       "https://docs.atsignal.io",
       "https://atsignal.com",
+      // app hosting preview domains
+      "https://web-ssr--atsignal.asia-east1.hosted.app",
+      "https://docs-ssr--atsignal.asia-east1.hosted.app",
     ];
     const stibeeAllowedOrigin = origin ? allowedOrigins.find((o) => o === origin) : undefined;
     
