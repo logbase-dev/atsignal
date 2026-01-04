@@ -149,7 +149,12 @@ export async function uploadImage(
   const target = options?.target || 'editor';
   const maxWidth = options?.maxWidth;
 
-  // 모든 환경에서 Next.js API Route 사용 (일관성)
-  console.log('[Image Upload] Next.js API Route 사용');
-  return await uploadViaNextjsApi(file, target, maxWidth);
+  // 환경에 따라 방식 선택
+  if (isLocalDevelopment()) {
+    console.log('[Image Upload] 로컬 환경: Next.js API Route 사용');
+    return await uploadViaNextjsApi(file, target, maxWidth);
+  } else {
+    console.log('[Image Upload] 프로덕션 환경: Functions 직접 업로드 방식 사용');
+    return await uploadViaFunctions(file, target, maxWidth);
+  }
 }

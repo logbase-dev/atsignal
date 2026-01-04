@@ -882,7 +882,7 @@ app.use(async (req: Request, res: Response, next: NextFunction) => {
 export const api = functions
   .region("asia-northeast3")
   .runWith({
-    timeoutSeconds: 300, // 5분으로 증가 (이미지 업로드용)
+    timeoutSeconds: 60, // 1분으로 증가 (이미지 업로드용)
     memory: "512MB", // 메모리 증가 (이미지 처리용)
   })
   .https.onRequest(app);
