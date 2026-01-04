@@ -146,26 +146,17 @@ export default function ContactModal({
       // API URL 결정
       let apiUrl: string;
       if (variant === 'event') {
-        // 이벤트 참가 신청 API
-        apiUrl = process.env.NODE_ENV === 'development'
-          ? '/api/events/participate'
-          : 'https://asia-northeast3-atsignal.cloudfunctions.net/api/events/participate';
+        // 이벤트 참가 신청 API - Next.js API Route 사용
+        apiUrl = '/api/events/participate';
       } else if (variant === 'demo') {
-        // 데모 요청 API
-        apiUrl = process.env.NODE_ENV === 'development'
-          ? '/api/demo'
-          : 'https://asia-northeast3-atsignal.cloudfunctions.net/api/demo';
+        // 데모 요청 API - Next.js API Route 사용
+        apiUrl = '/api/demo';
       } else if (variant === 'sales') {
-        // 구매 문의 API
-        apiUrl = process.env.NODE_ENV === 'development'
-          ? '/api/sales'
-          : 'https://asia-northeast3-atsignal.cloudfunctions.net/api/sales';
+        // 구매 문의 API - Next.js API Route 사용
+        apiUrl = '/api/sales';
       } else {
-        // 기존 뉴스레터/문의 API
-        apiUrl = process.env.NODE_ENV === 'development'
-          ? '/api/subscribe'
-          : process.env.NEXT_PUBLIC_SUBSCRIBE_API_URL || 
-            'https://asia-northeast3-atsignal.cloudfunctions.net/subscribeNewsletterApi';
+        // 뉴스레터 구독 API - Next.js API Route 사용
+        apiUrl = '/api/subscribe';
       }
 
       const requestBody = variant === 'event' 

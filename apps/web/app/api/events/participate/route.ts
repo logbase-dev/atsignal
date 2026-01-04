@@ -1,20 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/firebase-admin';
-import type { EventParticipant } from '@/lib/admin/types';
 
-/**
- * 이벤트 참가 신청 API
- * POST /api/events/participate
- */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    
+    console.log('[Event Participate API] 요청 받음:', { body });
+
+    // Firebase Admin SDK 직접 사용
+    const admin = require('firebase-admin');
+    
+    // Firebase Admin 초기화 (이미 초기화되어 있으면 기존 앱 사용)
+    let app;
+    try {
+      app = admin.app();
+    } catch {
+      app = admin.initializeApp();
+    }
+    
+    const db = admin.firestore();
+
     const { eventId, name, company, email, phone, privacyConsent } = body;
 
     // 필수 필드 검증
     if (!eventId || !name || !company || !email || !phone || !privacyConsent) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Missing required fields', message: '필수 항목을 모두 입력해주세요.' },
         { status: 400 }
       );
     }
@@ -23,7 +33,7 @@ export async function POST(request: NextRequest) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return NextResponse.json(
-        { error: 'Invalid email format' },
+        { error: 'Invalid email format', message: '올바른 이메일 형식을 입력해주세요.' },
         { status: 400 }
       );
     }
@@ -32,65 +42,67 @@ export async function POST(request: NextRequest) {
     const phoneRegex = /^010-\d{4}-\d{4}$/;
     if (!phoneRegex.test(phone)) {
       return NextResponse.json(
-        { error: 'Invalid phone format' },
+        { error: 'Invalid phone format', message: '올바른 전화번호 형식을 입력해주세요. (010-0000-0000)' },
         { status: 400 }
       );
     }
-
-    console.log('[Event Participate API] Processing request:', { 
-      eventId, name, company, email, phone 
-    });
 
     // 이벤트 존재 확인
     const eventDoc = await db.collection('events').doc(eventId).get();
     if (!eventDoc.exists) {
       return NextResponse.json(
-        { error: 'Event not found' },
+        { error: 'Event not found', message: '이벤트를 찾을 수 없습니다.' },
         { status: 404 }
       );
     }
 
-    // 중복 참가 신청 확인 (같은 이벤트에 같은 이메일로 신청)
-    const existingParticipant = await db
-      .collection('eventParticipants')
-      .where('eventId', '==', eventId)
-      .where('email', '==', email.toLowerCase().trim())
-      .get();
+    // 중복 참가 신청 확인 및 저장을 트랜잭션으로 처리
+    const result = await db.runTransaction(async (transaction: any) => {
+      // 더 안전한 중복 체크: 복합 키 사용
+      const participantId = `${eventId}_${email.toLowerCase().trim().replace(/[^a-zA-Z0-9]/g, '_')}`;
+      const participantRef = db.collection('eventParticipants').doc(participantId);
+      
+      const existingDoc = await transaction.get(participantRef);
+      
+      if (existingDoc.exists) {
+        throw new Error('ALREADY_REGISTERED');
+      }
+      
+      // EventParticipant 데이터 생성
+      const participantData = {
+        eventId,
+        name: name.trim(),
+        company: company.trim(),
+        email: email.toLowerCase().trim(),
+        phone: phone.trim(),
+        privacyConsent,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      };
+      
+      // 고정된 문서 ID로 저장 (자동으로 중복 방지)
+      transaction.set(participantRef, participantData);
+      
+      return participantId;
+    });
 
-    if (!existingParticipant.empty) {
-      return NextResponse.json(
-        { 
-          error: 'Already registered for this event', 
-          message: '이미 해당 이벤트에 참가신청 했습니다.' 
-        },
-        { status: 409 }
-      );
-    }
-
-    // EventParticipant 데이터 생성
-    const participantData: Omit<EventParticipant, 'id'> = {
-      eventId,
-      name: name.trim(),
-      company: company.trim(),
-      email: email.toLowerCase().trim(),
-      phone: phone.trim(),
-      privacyConsent,
-      createdAt: new Date(),
-    };
-
-    // Firestore에 저장
-    const docRef = await db.collection('eventParticipants').add(participantData);
-
-    console.log('[Event Participate API] Successfully created participant:', docRef.id);
+    console.log('[Event Participate API] Successfully created participant:', result);
 
     return NextResponse.json({
       success: true,
-      participantId: docRef.id,
+      participantId: result,
       message: '이벤트 참가 신청이 완료되었습니다.',
     });
 
-  } catch (error) {
-    console.error('[Event Participate API] Error:', error);
+  } catch (error: any) {
+    console.error('[Event Participate API] 에러:', error);
+    
+    // 트랜잭션에서 발생한 중복 등록 에러 처리
+    if (error instanceof Error && error.message === 'ALREADY_REGISTERED') {
+      return NextResponse.json(
+        { error: 'Already registered for this event', message: '이미 해당 이벤트에 참가신청 했습니다.' },
+        { status: 409 }
+      );
+    }
     
     // Firestore 에러 구분
     if (error instanceof Error) {
