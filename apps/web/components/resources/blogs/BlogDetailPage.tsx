@@ -33,6 +33,13 @@ export default function BlogDetailPage({ locale, blog, categories }: Props) {
   const router = useRouter();
   const [toc, setToc] = useState<TOCItem[]>([]);
   const [relatedPostsByCategory, setRelatedPostsByCategory] = useState<Record<string, BlogPost[]>>({});
+  
+  // 좋아요 관련 상태
+  const [likes, setLikes] = useState(blog?.likes || 0);
+  const [userLiked, setUserLiked] = useState(false);
+  const [sessionId, setSessionId] = useState<string>('');
+  const [isLiking, setIsLiking] = useState(false);
+  const [copyLinkText, setCopyLinkText] = useState('링크 복사');
 
   const texts = {
     ko: {
@@ -43,9 +50,14 @@ export default function BlogDetailPage({ locale, blog, categories }: Props) {
       category: '카테고리',
       date: '작성일',
       views: '조회수',
+      likes: '좋아요',
       tags: '태그',
       recommendedPosts: '추천 포스트',
       noRecommendedPosts: '추천 포스트가 없습니다.',
+      copyLink: '링크 복사',
+      linkCopied: '복사됨!',
+      likeButton: '좋아요',
+      likeCount: (count: number) => `${count.toLocaleString()}명이 좋아합니다`,
     },
     en: {
       backToList: '← Back to List',
@@ -55,13 +67,116 @@ export default function BlogDetailPage({ locale, blog, categories }: Props) {
       category: 'Category',
       date: 'Date',
       views: 'Views',
+      likes: 'Likes',
       tags: 'Tags',
       recommendedPosts: 'Recommended Posts',
       noRecommendedPosts: 'No recommended posts available.',
+      copyLink: 'Copy Link',
+      linkCopied: 'Copied!',
+      likeButton: 'Like',
+      likeCount: (count: number) => `${count.toLocaleString()} likes`,
     },
   };
 
   const t = texts[locale];
+
+  // 세션 ID 생성 함수
+  const generateSessionId = () => {
+    return 'session_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+  };
+
+  // 좋아요 토글 함수
+  const handleLikeToggle = async () => {
+    if (isLiking || !blog?.id) {
+      console.log('[BlogDetail] 좋아요 토글 스킵:', { isLiking, blogId: blog?.id });
+      return;
+    }
+
+    console.log('[BlogDetail] 좋아요 토글 시작:', { blogId: blog.id, userLiked, sessionId });
+
+    setIsLiking(true);
+    try {
+      const action = userLiked ? 'unlike' : 'like';
+      const response = await fetch(`/api/blogs/${blog.id}/like`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action,
+          sessionId,
+        }),
+      });
+
+      console.log('[BlogDetail] 좋아요 토글 응답:', response.status, response.statusText);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[BlogDetail] 좋아요 토글 실패:', errorText);
+        return;
+      }
+
+      const result = await response.json();
+      console.log('[BlogDetail] 좋아요 토글 결과:', result);
+
+      if (result.success) {
+        setLikes(result.likes);
+        setUserLiked(result.userLiked);
+      } else {
+        console.error('좋아요 처리 실패:', result.message);
+      }
+    } catch (error) {
+      console.error('좋아요 처리 중 오류:', error);
+    } finally {
+      setIsLiking(false);
+    }
+  };
+
+  // 링크 복사 함수
+  const handleCopyLink = async () => {
+    try {
+      const url = window.location.href;
+      await navigator.clipboard.writeText(url);
+      setCopyLinkText(t.linkCopied);
+      setTimeout(() => {
+        setCopyLinkText(t.copyLink);
+      }, 2000);
+    } catch (error) {
+      console.error('링크 복사 실패:', error);
+    }
+  };
+
+  // 좋아요 상태 로드 함수
+  const loadLikeStatus = async () => {
+    if (!blog?.id || !sessionId) {
+      console.log('[BlogDetail] 좋아요 상태 로드 스킵:', { blogId: blog?.id, sessionId });
+      return;
+    }
+
+    console.log('[BlogDetail] 좋아요 상태 로드 시작:', { blogId: blog.id, sessionId });
+
+    try {
+      const response = await fetch(`/api/blogs/${blog.id}/like?sessionId=${sessionId}`);
+      
+      console.log('[BlogDetail] 좋아요 상태 응답:', response.status, response.statusText);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[BlogDetail] 좋아요 상태 로드 실패:', errorText);
+        return;
+      }
+      
+      const result = await response.json();
+      console.log('[BlogDetail] 좋아요 상태 결과:', result);
+
+      if (result.success) {
+        setLikes(result.likes);
+        setUserLiked(result.userLiked);
+      }
+    } catch (error) {
+      console.error('[BlogDetail] 좋아요 상태 로드 에러:', error);
+    }
+  };
 
   // 마크다운에서 TOC 추출
   const extractTOC = (markdown: string): TOCItem[] => {
@@ -89,6 +204,17 @@ export default function BlogDetailPage({ locale, blog, categories }: Props) {
 
   // Toast UI Viewer CSS를 클라이언트에서만 동적으로 로드
   useEffect(() => {
+    // 세션 ID 생성 (localStorage에서 가져오거나 새로 생성)
+    let storedSessionId = '';
+    if (typeof window !== 'undefined') {
+      storedSessionId = localStorage.getItem('blog_session_id') || '';
+      if (!storedSessionId) {
+        storedSessionId = generateSessionId();
+        localStorage.setItem('blog_session_id', storedSessionId);
+      }
+      setSessionId(storedSessionId);
+    }
+
     if (blog?.saveFormat === 'html' && typeof window !== 'undefined') {
       // 이미 로드되었는지 확인
       const existingLink = document.querySelector('link[href*="toastui-editor-viewer.css"]');
@@ -128,6 +254,17 @@ export default function BlogDetailPage({ locale, blog, categories }: Props) {
       loadRelatedPosts();
     }
   }, [blog?.saveFormat, blog?.content, blog?.id, locale, categories]);
+
+  // 세션 ID가 설정되면 좋아요 상태 로드
+  useEffect(() => {
+    console.log('[BlogDetail] 디버깅 - blog 객체:', blog);
+    console.log('[BlogDetail] 디버깅 - blog.id:', blog?.id);
+    console.log('[BlogDetail] 디버깅 - sessionId:', sessionId);
+    
+    if (sessionId && blog?.id) {
+      loadLikeStatus();
+    }
+  }, [sessionId, blog?.id]);
 
   const formatDate = (date: any) => {
     if (!date) return '';
@@ -379,6 +516,79 @@ export default function BlogDetailPage({ locale, blog, categories }: Props) {
                   <div>
                     <div style={{ fontSize: '0.75rem', color: '#9ca3af' }}>{t.views}</div>
                     <div>{(blog?.views || 0).toLocaleString()}</div>
+                  </div>
+
+                  {/* 좋아요 */}
+                  <div>
+                    <div style={{ fontSize: '0.75rem', color: '#9ca3af' }}>{t.likes}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <button
+                        onClick={handleLikeToggle}
+                        disabled={isLiking}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.25rem',
+                          padding: '0.25rem 0.5rem',
+                          borderRadius: '4px',
+                          border: userLiked ? '1px solid #ef4444' : '1px solid #d1d5db',
+                          backgroundColor: userLiked ? '#fef2f2' : '#fff',
+                          color: userLiked ? '#ef4444' : '#6b7280',
+                          cursor: isLiking ? 'not-allowed' : 'pointer',
+                          fontSize: '0.75rem',
+                          fontWeight: '500',
+                          transition: 'all 0.2s ease',
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isLiking) {
+                            e.currentTarget.style.backgroundColor = userLiked ? '#fee2e2' : '#f9fafb';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isLiking) {
+                            e.currentTarget.style.backgroundColor = userLiked ? '#fef2f2' : '#fff';
+                          }
+                        }}
+                      >
+                        <span style={{ fontSize: '0.875rem' }}>
+                          {userLiked ? '❤️' : '🤍'}
+                        </span>
+                        <span>{likes.toLocaleString()}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Copy Link */}
+                  <div>
+                    <div style={{ fontSize: '0.75rem', color: '#9ca3af' }}>공유</div>
+                    <button
+                      onClick={handleCopyLink}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.25rem',
+                        padding: '0.25rem 0.5rem',
+                        borderRadius: '4px',
+                        border: '1px solid #d1d5db',
+                        backgroundColor: '#fff',
+                        color: '#6b7280',
+                        cursor: 'pointer',
+                        fontSize: '0.75rem',
+                        fontWeight: '500',
+                        transition: 'all 0.2s ease',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = '#f9fafb';
+                        e.currentTarget.style.borderColor = '#9ca3af';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = '#fff';
+                        e.currentTarget.style.borderColor = '#d1d5db';
+                      }}
+                    >
+                      <span style={{ fontSize: '0.875rem' }}>🔗</span>
+                      <span>{copyLinkText}</span>
+                    </button>
                   </div>
                 </div>
 

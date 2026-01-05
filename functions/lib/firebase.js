@@ -33,10 +33,11 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.firestore = exports.admin = void 0;
+exports.FieldValue = exports.firestore = exports.admin = void 0;
 const admin = __importStar(require("firebase-admin"));
 exports.admin = admin;
 const firestore_1 = require("firebase-admin/firestore");
+Object.defineProperty(exports, "FieldValue", { enumerable: true, get: function () { return firestore_1.FieldValue; } });
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
 /**

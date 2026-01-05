@@ -169,120 +169,6 @@ export default function BlogsPage({
         paddingTop: '2rem',
       }}>
 
-        {/* 검색 및 필터 */}
-        <div style={{
-          backgroundColor: '#fff',
-          borderRadius: '12px',
-          padding: '2rem',
-          marginBottom: '2rem',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-        }}>
-          <div style={{ 
-            display: 'flex', 
-            flexWrap: 'wrap', 
-            gap: '1rem', 
-            alignItems: 'flex-end' 
-          }}>
-            {/* 검색 */}
-            <div style={{ flex: '1 1 300px', minWidth: '300px' }}>
-              <label style={{ 
-                display: 'block', 
-                marginBottom: '0.5rem', 
-                fontSize: '0.875rem', 
-                fontWeight: '500', 
-                color: '#374151' 
-              }}>
-                {t.search}
-              </label>
-              <input
-                type="text"
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    handleSearch();
-                  }
-                }}
-                placeholder={t.searchPlaceholder}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '8px',
-                  fontSize: '0.875rem',
-                }}
-              />
-            </div>
-
-            {/* 카테고리 */}
-            <div style={{ flex: '1 1 200px', minWidth: '200px' }}>
-              <label style={{ 
-                display: 'block', 
-                marginBottom: '0.5rem', 
-                fontSize: '0.875rem', 
-                fontWeight: '500', 
-                color: '#374151' 
-              }}>
-                {t.category}
-              </label>
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '8px',
-                  fontSize: '0.875rem',
-                }}
-              >
-                <option value="">{t.allCategories}</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {getLocalizedText(category.name)}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* 버튼 */}
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button
-                type="button"
-                onClick={handleSearch}
-                style={{
-                  padding: '0.75rem 1.5rem',
-                  backgroundColor: '#20BDFF',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontSize: '0.875rem',
-                  fontWeight: '500',
-                }}
-              >
-                {t.search}
-              </button>
-              <button
-                type="button"
-                onClick={handleReset}
-                style={{
-                  padding: '0.75rem 1.5rem',
-                  backgroundColor: '#6b7280',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontSize: '0.875rem',
-                  fontWeight: '500',
-                }}
-              >
-                {t.reset}
-              </button>
-            </div>
-          </div>
-        </div>
-
         {/* Featured 블로그 카드 */}
         <div style={{ marginBottom: '2rem' }}>
           <h2 style={{
@@ -467,6 +353,120 @@ export default function BlogsPage({
                 );
               }
             })}
+          </div>
+        </div>
+
+        {/* 검색 및 필터 */}
+        <div style={{
+          backgroundColor: '#fff',
+          borderRadius: '12px',
+          padding: '2rem',
+          marginBottom: '2rem',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+        }}>
+          <div style={{ 
+            display: 'flex', 
+            flexWrap: 'wrap', 
+            gap: '1rem', 
+            alignItems: 'flex-end' 
+          }}>
+            {/* 검색 */}
+            <div style={{ flex: '1 1 400px', minWidth: '300px' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '0.5rem', 
+                fontSize: '0.875rem', 
+                fontWeight: '500', 
+                color: '#374151' 
+              }}>
+                {t.search}
+              </label>
+              <input
+                type="text"
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSearch();
+                  }
+                }}
+                placeholder={t.searchPlaceholder}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '8px',
+                  fontSize: '0.875rem',
+                }}
+              />
+            </div>
+
+            {/* 카테고리 */}
+            <div style={{ flex: '1 1 100px', minWidth: '200px' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '0.5rem', 
+                fontSize: '0.875rem', 
+                fontWeight: '500', 
+                color: '#374151' 
+              }}>
+                {t.category}
+              </label>
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '8px',
+                  fontSize: '0.875rem',
+                }}
+              >
+                <option value="">{t.allCategories}</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {getLocalizedText(category.name)}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* 버튼 */}
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                type="button"
+                onClick={handleSearch}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  backgroundColor: '#20BDFF',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                }}
+              >
+                {t.search}
+              </button>
+              <button
+                type="button"
+                onClick={handleReset}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  backgroundColor: '#6b7280',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                }}
+              >
+                {t.reset}
+              </button>
+            </div>
           </div>
         </div>
 
