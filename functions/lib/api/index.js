@@ -51,6 +51,8 @@ const blogService_1 = require("../lib/admin/blogService");
 const blogCategoryService_1 = require("../lib/admin/blogCategoryService");
 const noticeService_1 = require("../lib/admin/noticeService");
 const url_1 = require("url");
+const firebase_1 = require("../firebase");
+const firestore_1 = require("firebase-admin/firestore");
 const app = (0, express_1.default)();
 // ❌ Firebase Functions에서는 body parsing 미들웨어 사용하면 안됨!
 // Firebase 내부에서 이미 request body를 처리하므로 중복 파싱 시 충돌 발생
@@ -219,18 +221,16 @@ app.use(async (req, res, next) => {
                     eventId, name, company, email, phone
                 });
                 // 이벤트 존재 확인
-                const admin = require('firebase-admin');
-                const db = admin.firestore();
-                const eventDoc = await db.collection('events').doc(eventId).get();
+                const eventDoc = await firebase_1.firestore.collection('events').doc(eventId).get();
                 if (!eventDoc.exists) {
                     res.status(404).json({ error: 'Event not found' });
                     return;
                 }
                 // 중복 참가 신청 확인 및 저장을 트랜잭션으로 처리
-                const result = await db.runTransaction(async (transaction) => {
+                const result = await firebase_1.firestore.runTransaction(async (transaction) => {
                     // 더 안전한 중복 체크: 복합 키 사용
                     const participantId = `${eventId}_${email.toLowerCase().trim().replace(/[^a-zA-Z0-9]/g, '_')}`;
-                    const participantRef = db.collection('eventParticipants').doc(participantId);
+                    const participantRef = firebase_1.firestore.collection('eventParticipants').doc(participantId);
                     const existingDoc = await transaction.get(participantRef);
                     if (existingDoc.exists) {
                         throw new Error('ALREADY_REGISTERED');
@@ -243,7 +243,7 @@ app.use(async (req, res, next) => {
                         email: email.toLowerCase().trim(),
                         phone: phone.trim(),
                         privacyConsent,
-                        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                        createdAt: firestore_1.FieldValue.serverTimestamp(),
                     };
                     // 고정된 문서 ID로 저장 (자동으로 중복 방지)
                     transaction.set(participantRef, participantData);
@@ -327,9 +327,6 @@ app.use(async (req, res, next) => {
                 console.log('[Functions API] Demo request:', {
                     name, company, email, phone
                 });
-                // Firebase Admin 초기화
-                const admin = require('firebase-admin');
-                const db = admin.firestore();
                 // DemoRequest 데이터 생성
                 const demoRequestData = {
                     name: name.trim(),
@@ -338,11 +335,11 @@ app.use(async (req, res, next) => {
                     phone: phone.trim(),
                     inquiry: inquiry.trim(),
                     status: 'pending',
-                    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-                    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                    createdAt: firestore_1.FieldValue.serverTimestamp(),
+                    updatedAt: firestore_1.FieldValue.serverTimestamp(),
                 };
                 // Firestore에 저장
-                const docRef = await db.collection('demoRequests').add(demoRequestData);
+                const docRef = await firebase_1.firestore.collection('demoRequests').add(demoRequestData);
                 console.log('[Functions API] Successfully created demo request:', docRef.id);
                 res.json({
                     success: true,
@@ -406,9 +403,6 @@ app.use(async (req, res, next) => {
                 console.log('[Functions API] Sales inquiry:', {
                     name, company, email, phone
                 });
-                // Firebase Admin 초기화
-                const admin = require('firebase-admin');
-                const db = admin.firestore();
                 // SalesInquiry 데이터 생성
                 const salesInquiryData = {
                     name: name.trim(),
@@ -417,11 +411,11 @@ app.use(async (req, res, next) => {
                     phone: phone.trim(),
                     inquiry: inquiry.trim(),
                     status: 'pending',
-                    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-                    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+                    createdAt: firestore_1.FieldValue.serverTimestamp(),
+                    updatedAt: firestore_1.FieldValue.serverTimestamp(),
                 };
                 // Firestore에 저장
-                const docRef = await db.collection('salesInquiries').add(salesInquiryData);
+                const docRef = await firebase_1.firestore.collection('salesInquiries').add(salesInquiryData);
                 console.log('[Functions API] Successfully created sales inquiry:', docRef.id);
                 res.json({
                     success: true,
@@ -834,7 +828,7 @@ app.use(async (req, res, next) => {
 exports.api = functions
     .region("asia-northeast3")
     .runWith({
-    timeoutSeconds: 300, // 5분으로 증가 (이미지 업로드용)
+    timeoutSeconds: 60, // 1분으로 증가 (이미지 업로드용)
     memory: "512MB", // 메모리 증가 (이미지 처리용)
 })
     .https.onRequest(app);

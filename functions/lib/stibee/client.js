@@ -102,6 +102,11 @@ const syncSubscriber = async (payload) => {
             body: rawBody,
             parsedBody: parsedBody,
         });
+        // 이미 존재하는 이메일 에러를 특별 처리
+        if (response.status === 400 && rawBody.includes('AlreadyExistEmail')) {
+            functions.logger.info("이미 존재하는 이메일 에러 감지됨");
+            throw new Error("ALREADY_SUBSCRIBED:이미 구독 신청한 이메일입니다.");
+        }
         throw new types_1.StibeeApiError(response.status, rawBody);
     }
     return {

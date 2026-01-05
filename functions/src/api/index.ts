@@ -12,6 +12,8 @@ import { getBlogPosts, getBlogPostById, incrementBlogPostViews } from "../lib/ad
 import { getBlogCategories } from "../lib/admin/blogCategoryService";
 import { getNotices, getNoticeById, incrementNoticeViews } from "../lib/admin/noticeService";
 import { URL } from "url";
+import { firestore } from "../firebase";
+import { FieldValue } from "firebase-admin/firestore";
 
 const app = express();
 
@@ -208,20 +210,18 @@ app.use(async (req: Request, res: Response, next: NextFunction) => {
         });
 
         // 이벤트 존재 확인
-        const admin = require('firebase-admin');
-        const db = admin.firestore();
         
-        const eventDoc = await db.collection('events').doc(eventId).get();
+        const eventDoc = await firestore.collection('events').doc(eventId).get();
         if (!eventDoc.exists) {
           res.status(404).json({ error: 'Event not found' });
           return;
         }
 
         // 중복 참가 신청 확인 및 저장을 트랜잭션으로 처리
-        const result = await db.runTransaction(async (transaction) => {
+        const result = await firestore.runTransaction(async (transaction) => {
           // 더 안전한 중복 체크: 복합 키 사용
           const participantId = `${eventId}_${email.toLowerCase().trim().replace(/[^a-zA-Z0-9]/g, '_')}`;
-          const participantRef = db.collection('eventParticipants').doc(participantId);
+          const participantRef = firestore.collection('eventParticipants').doc(participantId);
           
           const existingDoc = await transaction.get(participantRef);
           
@@ -237,7 +237,7 @@ app.use(async (req: Request, res: Response, next: NextFunction) => {
             email: email.toLowerCase().trim(),
             phone: phone.trim(),
             privacyConsent,
-            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            createdAt: FieldValue.serverTimestamp(),
           };
           
           // 고정된 문서 ID로 저장 (자동으로 중복 방지)
@@ -334,10 +334,6 @@ app.use(async (req: Request, res: Response, next: NextFunction) => {
           name, company, email, phone 
         });
 
-        // Firebase Admin 초기화
-        const admin = require('firebase-admin');
-        const db = admin.firestore();
-
         // DemoRequest 데이터 생성
         const demoRequestData = {
           name: name.trim(),
@@ -346,12 +342,12 @@ app.use(async (req: Request, res: Response, next: NextFunction) => {
           phone: phone.trim(),
           inquiry: inquiry.trim(),
           status: 'pending',
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          createdAt: FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp(),
         };
 
         // Firestore에 저장
-        const docRef = await db.collection('demoRequests').add(demoRequestData);
+        const docRef = await firestore.collection('demoRequests').add(demoRequestData);
 
         console.log('[Functions API] Successfully created demo request:', docRef.id);
 
@@ -426,10 +422,6 @@ app.use(async (req: Request, res: Response, next: NextFunction) => {
           name, company, email, phone 
         });
 
-        // Firebase Admin 초기화
-        const admin = require('firebase-admin');
-        const db = admin.firestore();
-
         // SalesInquiry 데이터 생성
         const salesInquiryData = {
           name: name.trim(),
@@ -438,12 +430,12 @@ app.use(async (req: Request, res: Response, next: NextFunction) => {
           phone: phone.trim(),
           inquiry: inquiry.trim(),
           status: 'pending',
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          createdAt: FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp(),
         };
 
         // Firestore에 저장
-        const docRef = await db.collection('salesInquiries').add(salesInquiryData);
+        const docRef = await firestore.collection('salesInquiries').add(salesInquiryData);
 
         console.log('[Functions API] Successfully created sales inquiry:', docRef.id);
 

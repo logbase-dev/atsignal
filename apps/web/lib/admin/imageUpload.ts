@@ -154,7 +154,10 @@ export async function uploadImage(
     console.log('[Image Upload] 로컬 환경: Next.js API Route 사용');
     return await uploadViaNextjsApi(file, target, maxWidth);
   } else {
-    console.log('[Image Upload] 프로덕션 환경: Functions 직접 업로드 방식 사용');
-    return await uploadViaFunctions(file, target, maxWidth);
+    // 
+    // console.log('[Image Upload] 프로덕션 환경: Functions 직접 업로드 방식 사용');
+    // return await uploadViaFunctions(file, target, maxWidth);
+    console.log('[Image Upload] 프로덕션 환경: Next.js API Route 사용 (조직 정책으로 인한 우회)');
+    return await uploadViaNextjsApi(file, target, maxWidth);
   }
 }
