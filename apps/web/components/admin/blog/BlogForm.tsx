@@ -570,6 +570,8 @@ export function BlogForm({ mode, id }: BlogFormProps) {
           </div>
         </div>
 
+        {/* 썸네일 이미지 */}
+
         <div style={{ ...rowStyle, marginTop: '1.5rem' }}>
           <div>
             <label style={labelStyle}>추천 포스트</label>

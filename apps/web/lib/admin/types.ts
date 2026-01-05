@@ -172,9 +172,21 @@ export interface BlogPost {
   isFeatured?: boolean;
   order?: number;
   views?: number;
+  likes?: number; // 좋아요 총 개수
 
   createdBy?: string;
   updatedBy?: string;
+}
+
+// 블로그 좋아요 기록
+export interface BlogLike {
+  id?: string;
+  blogId: string;          // 블로그 포스트 ID
+  userId?: string;         // 사용자 ID (로그인한 경우)
+  sessionId?: string;      // 세션 ID (비로그인 사용자)
+  ipAddress?: string;      // IP 주소 (중복 방지용)
+  userAgent?: string;      // User Agent (추가 보안)
+  createdAt?: Date;
 }
 
 export interface BlogCategory {

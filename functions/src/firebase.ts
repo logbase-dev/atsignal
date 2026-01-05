@@ -178,3 +178,4 @@ if (isEmulator && process.env.FIRESTORE_EMULATOR_HOST) {
 }
 
 export { firestore };
+export { FieldValue };
