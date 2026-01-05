@@ -1,40 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const DEFAULT_PROJECT_ID = 'atsignal';
-const DEFAULT_FUNCTIONS_REGION = 'asia-northeast3';
-
-function getFunctionsBase(): string {
-  if (process.env.NODE_ENV === 'development') {
-    return `http://127.0.0.1:5001/${DEFAULT_PROJECT_ID}/${DEFAULT_FUNCTIONS_REGION}`;
-  }
-  return `https://${DEFAULT_FUNCTIONS_REGION}-${DEFAULT_PROJECT_ID}.cloudfunctions.net`;
-}
-
 export async function POST(request: NextRequest) {
   try {
+    // 환경에 따라 Firebase Functions URL 결정
+    const functionsUrl = process.env.NODE_ENV === 'development'
+      ? 'http://127.0.0.1:5001/atsignal/asia-northeast3/subscribeNewsletterApi' // 로컬 Emulator
+      : process.env.NEXT_PUBLIC_SUBSCRIBE_API_URL || 
+        'https://asia-northeast3-atsignal.cloudfunctions.net/subscribeNewsletterApi'; // 프로덕션
+    
+    // 요청 본문 가져오기
     const body = await request.json();
     
-    console.log('[Subscribe API] 요청 받음:', { body });
-
-    // 개발 환경에서는 Functions 에뮬레이터 직접 호출
-    if (process.env.NODE_ENV === 'development') {
-      const functionsUrl = `${getFunctionsBase()}/subscribeNewsletterApi`;
-      
-      const response = await fetch(functionsUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      });
-
-      const result = await response.json();
-      return NextResponse.json(result, { status: response.status });
-    }
-
-    // 프로덕션 환경에서도 Functions API 호출 (일관성 유지)
-    const functionsUrl = `${getFunctionsBase()}/subscribeNewsletterApi`;
-    
+    // Firebase Functions로 프록시 요청
     const response = await fetch(functionsUrl, {
       method: 'POST',
       headers: {
@@ -42,119 +19,57 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify(body),
     });
-
-    const result = await response.json();
-    return NextResponse.json(result, { status: response.status });
-    const { name, company, email, phone, inquiry, variant, privacyConsent } = body;
-
-    // 필수 필드 검증
-    if (!name || !company || !email || !phone || !privacyConsent) {
+    
+    // 응답 본문을 한 번만 읽기
+    const responseText = await response.text();
+    
+    // 응답이 성공하지 않으면 에러 처리
+    if (!response.ok) {
+      console.error('Firebase Functions error:', {
+        status: response.status,
+        statusText: response.statusText,
+        body: responseText,
+        url: functionsUrl,
+      });
+      
+      // JSON 파싱 시도 (에러 응답도 JSON일 수 있음)
+      let errorData;
+      try {
+        errorData = responseText ? JSON.parse(responseText) : { message: response.statusText };
+      } catch {
+        errorData = { message: responseText || response.statusText };
+      }
+      
       return NextResponse.json(
-        { error: 'Missing required fields', message: '필수 항목을 모두 입력해주세요.' },
-        { status: 400 }
+        { 
+          error: 'Firebase Functions error',
+          status: response.status,
+          ...errorData,
+        },
+        { status: response.status }
       );
     }
-
-    // 이메일 형식 검증
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    
+    // 성공 응답 파싱
+    let data;
+    try {
+      data = responseText ? JSON.parse(responseText) : {};
+    } catch (parseError) {
+      console.error('JSON parse error:', parseError, 'Response text:', responseText);
       return NextResponse.json(
-        { error: 'Invalid email format', message: '올바른 이메일 형식을 입력해주세요.' },
-        { status: 400 }
-      );
-    }
-
-    // 전화번호 형식 검증 (010-1234-5678)
-    const phoneRegex = /^010-\d{4}-\d{4}$/;
-    if (!phoneRegex.test(phone)) {
-      return NextResponse.json(
-        { error: 'Invalid phone format', message: '올바른 전화번호 형식을 입력해주세요. (010-0000-0000)' },
-        { status: 400 }
-      );
-    }
-
-    // Stibee API 호출
-    const stibeeApiKey = process.env.STIBEE_API_KEY;
-    const stibeeListId = process.env.STIBEE_LIST_ID;
-
-    if (!stibeeApiKey || !stibeeListId) {
-      console.error('[Subscribe API] Stibee 환경변수 누락');
-      return NextResponse.json(
-        { error: 'Configuration error', message: '서비스 설정에 문제가 있습니다.' },
+        { error: 'Invalid response from server', raw: responseText },
         { status: 500 }
       );
     }
-
-    const stibeeUrl = `https://stibee.com/api/v1.0/lists/${stibeeListId}/subscribers`;
     
-    const stibeeData = {
-      eventOccuredBy: 'MANUAL',
-      confirmEmailYN: 'N',
-      subscribers: [
-        {
-          email: email.toLowerCase().trim(),
-          name: name.trim(),
-          $company: company.trim(),
-          $phone: phone.trim(),
-          $inquiry: inquiry?.trim() || '',
-          $variant: variant || 'newsletter',
-        }
-      ]
-    };
-
-    console.log('[Subscribe API] Stibee API 호출:', { 
-      url: stibeeUrl, 
-      email: email.toLowerCase().trim() 
-    });
-
-    const stibeeResponse = await fetch(stibeeUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'AccessToken': stibeeApiKey,
-      },
-      body: JSON.stringify(stibeeData),
-    });
-
-    const stibeeResult = await stibeeResponse.json();
-
-    console.log('[Subscribe API] Stibee 응답:', { 
-      status: stibeeResponse.status, 
-      result: stibeeResult 
-    });
-
-    if (stibeeResponse.ok) {
-      return NextResponse.json({
-        success: true,
-        message: '구독 신청이 완료되었습니다.',
-      });
-    } else {
-      // Stibee 에러 처리
-      if (stibeeResult.Error?.Code === 'Errors.List.AlreadyExistEmail') {
-        return NextResponse.json(
-          { 
-            error: 'ALREADY_SUBSCRIBED', 
-            message: '이미 구독 신청한 이메일입니다.' 
-          },
-          { status: 409 }
-        );
-      } else {
-        return NextResponse.json(
-          { 
-            error: 'STIBEE_SYNC_FAILED', 
-            message: '구독 신청 중 오류가 발생했습니다.',
-            detail: stibeeResult 
-          },
-          { status: 502 }
-        );
-      }
-    }
-
-  } catch (error: any) {
-    console.error('[Subscribe API] 에러:', error);
-    
+    return NextResponse.json(data, { status: response.status });
+  } catch (error) {
+    console.error('Subscribe API error:', error);
     return NextResponse.json(
-      { error: 'Internal server error', message: '구독 신청 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' },
+      { 
+        error: 'Internal server error',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      },
       { status: 500 }
     );
   }
