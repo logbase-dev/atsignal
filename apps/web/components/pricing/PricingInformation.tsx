@@ -163,8 +163,8 @@ export default function PricingInformation({ locale: _locale }: PricingInformati
 
   return (
     <div className="pricing-root">
-      <div className="hero">
-        <div className="hero-container">
+      <div className="hero-page">
+        <div className="hero-page-container">
           <h1>atsignal pricing</h1>
           <p>월간 추적 이벤트(event)수 기준으로 계산되는 명확하고 투명한 가격 구조.</p>
           <p>수집 로그 규모에 따라 가장 적합한 요금제를 선택하세요.</p>
@@ -781,30 +781,6 @@ export default function PricingInformation({ locale: _locale }: PricingInformati
           padding: 0;
           background: #f7f9fc;
           color: #222222;
-        }
-        .hero {
-          text-align: center;
-          background: #e1f6ff;
-        }
-        .hero-container {
-          max-width: 1280px;
-          margin: 0 auto;
-          padding: 4rem 1rem;
-          padding-top: 5.2rem;
-        }
-        .hero h1 {
-          font-size: 40px;
-          margin-bottom: 16px;
-          font-weight: 800;
-        }
-        .hero p {
-          font-size: 18px;
-          color: #007dc7;
-        }
-        @media (min-width: 640px) {
-          .hero-container {
-            padding: calc((6rem + 17.9rem) / 2) 1.5rem; /* keep total height but center content vertically */
-          }
         }
         .section-title {
           text-align: center;

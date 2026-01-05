@@ -82,16 +82,15 @@ export function WhatsNewAccordion({
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
                     {item.isTop && (
-                      <span style={{
-                        backgroundColor: '#20BDFF',
-                        color: 'white',
-                        fontSize: '0.75rem',
-                        fontWeight: '600',
-                        padding: '0.25rem 0.5rem',
-                        borderRadius: '4px',
-                      }}>
-                        {locale === 'en' ? 'PINNED' : '고정'}
-                      </span>
+                      <img 
+                        src="/images/pin.png" 
+                        alt="pinned image" 
+                        style={{
+                          width: '24px',
+                          height: '24px',
+                          objectFit: 'contain'
+                        }}
+                      />
                     )}
                     <span style={{ fontSize: '0.875rem', color: '#666' }}>
                       {formatDate(item.createdAt)}

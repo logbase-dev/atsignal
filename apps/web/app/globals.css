@@ -2958,27 +2958,50 @@ body:not(.admin-mode) .dropdown-item:hover {
   margin-left: 0.25rem;
 }
 
-.hero-sub {
+/* Hero Section for Sub Pages (What's New, Pricing, etc.) */
+.hero-page {
+  position: relative;
   text-align: center;
   background: #e1f6ff;
 }
-.hero-container-sub {
+
+.hero-page::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, rgba(225, 246, 255, 0.92) 0%, rgba(180, 231, 255, 0.9) 100%);
+  z-index: 0;
+}
+
+.hero-page > * {
+  position: relative;
+  z-index: 1;
+}
+
+.hero-page-container {
   max-width: 1280px;
   margin: 0 auto;
   padding: 4rem 1rem;
   padding-top: 5.2rem;
 }
-.hero-sub h1 {
+
+.hero-page h1 {
   font-size: 40px;
   margin-bottom: 16px;
   font-weight: 800;
+  color: #1a1a1a;
 }
-.hero-sub p {
+
+.hero-page p {
   font-size: 18px;
   color: #007dc7;
 }
+
 @media (min-width: 640px) {
-  .hero-container-sub {
+  .hero-page-container {
     padding: calc((6rem + 17.9rem) / 2) 1.5rem; /* keep total height but center content vertically */
   }
 }

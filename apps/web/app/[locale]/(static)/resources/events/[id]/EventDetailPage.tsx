@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Event } from '@/lib/admin/types';
@@ -12,12 +13,13 @@ interface Props {
 }
 
 export default function EventDetailPage({ locale, event }: Props) {
+  const router = useRouter();
   const [imageError, setImageError] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const texts = {
     ko: {
-      backToEvents: '이벤트 목록으로',
+      backToEvents: '← 목록으로',
       period: '기간',
       location: '장소',
       details: '상세 내용',
@@ -27,7 +29,7 @@ export default function EventDetailPage({ locale, event }: Props) {
       eventNotStarted: '예정된 이벤트',
     },
     en: {
-      backToEvents: 'Back to Events',
+      backToEvents: '← Back to Events',
       period: 'Period',
       location: 'Location',
       details: 'Details',
@@ -93,30 +95,35 @@ export default function EventDetailPage({ locale, event }: Props) {
         margin: '0 auto',
       }}>
         {/* 뒤로 가기 버튼 */}
-        <div style={{ marginBottom: '2rem' }}>
-          <Link
-            href={`/${locale}/resources/events`}
+        <div style={{ 
+          marginBottom: '2rem',
+          display: 'flex',
+          justifyContent: 'flex-end', // 우측 정렬
+        }}>
+          <button
+            onClick={() => router.push(`/${locale}/resources/events`)}
             style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              color: '#20BDFF',
-              textDecoration: 'none',
+              padding: '0.75rem 1.5rem',
+              borderRadius: '8px',
+              border: '1px solid #d1d5db',
+              backgroundColor: '#fff',
+              cursor: 'pointer',
               fontSize: '0.875rem',
               fontWeight: '500',
-              transition: 'color 0.2s ease',
+              color: '#374151',
+              transition: 'all 0.2s ease',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.color = '#1a9de6';
+              e.currentTarget.style.backgroundColor = '#f9fafb';
+              e.currentTarget.style.borderColor = '#9ca3af';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.color = '#20BDFF';
+              e.currentTarget.style.backgroundColor = '#fff';
+              e.currentTarget.style.borderColor = '#d1d5db';
             }}
           >
-            <svg style={{ width: '1.25rem', height: '1.25rem', marginRight: '0.5rem' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
             {t.backToEvents}
-          </Link>
+          </button>
         </div>
 
         {/* 메인 이미지 */}
