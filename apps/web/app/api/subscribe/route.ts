@@ -32,7 +32,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(result, { status: response.status });
     }
 
-    // 프로덕션 환경에서는 Stibee API 직접 호출
+    // 프로덕션 환경에서도 Functions API 호출 (일관성 유지)
+    const functionsUrl = `${getFunctionsBase()}/subscribeNewsletterApi`;
+    
+    const response = await fetch(functionsUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    const result = await response.json();
+    return NextResponse.json(result, { status: response.status });
     const { name, company, email, phone, inquiry, variant, privacyConsent } = body;
 
     // 필수 필드 검증
@@ -122,7 +134,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           { 
             error: 'ALREADY_SUBSCRIBED', 
-            message: '이미 구독 중인 이메일입니다.' 
+            message: '이미 구독 신청한 이메일입니다.' 
           },
           { status: 409 }
         );

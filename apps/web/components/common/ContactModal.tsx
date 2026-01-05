@@ -230,7 +230,7 @@ export default function ContactModal({
         // ✅ 이미 구독 중인 경우 특별 처리
         setSubmitStatus('error');
         setErrorMessage(
-          data.message || '이미 구독 중인 이메일입니다.'
+          data.message || '이미 구독 신청한 이메일입니다.'
         );
       } else if (response.status === 502 && data.error === 'STIBEE_SYNC_FAILED') {
         // ✅ Stibee API 에러 처리 (이미 존재하는 이메일 포함)
@@ -249,7 +249,7 @@ export default function ContactModal({
         ) {
           setSubmitStatus('error');
           setErrorMessage(
-            detail?.message || '이미 구독 중인 이메일입니다.'
+            detail?.message || '이미 구독 신청한 이메일입니다.'
           );
         } else {
           // 기타 Stibee 에러
