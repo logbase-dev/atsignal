@@ -82,7 +82,7 @@ const subscribeNewsletter = async (req, res) => {
                 // 이미 구독 중인 이메일이 있는 경우
                 res.status(409).json({
                     error: "ALREADY_SUBSCRIBED",
-                    message: "이미 구독 중인 이메일입니다.",
+                    message: "이미 구독 신청한 이메일입니다.",
                 });
                 return;
             }
@@ -115,6 +115,15 @@ const subscribeNewsletter = async (req, res) => {
             });
         }
         catch (error) {
+            // 이미 구독한 이메일 에러 처리
+            if (error instanceof Error && error.message.startsWith("ALREADY_SUBSCRIBED:")) {
+                const message = error.message.split(":")[1] || "이미 구독 신청한 이메일입니다.";
+                res.status(409).json({
+                    error: "ALREADY_SUBSCRIBED",
+                    message: message,
+                });
+                return;
+            }
             if (error instanceof types_1.StibeeApiError) {
                 // ✅ Stibee API 에러 상세 정보 파싱
                 let errorDetail = null;
@@ -125,13 +134,20 @@ const subscribeNewsletter = async (req, res) => {
                     // JSON 파싱 실패 시 그대로 사용
                 }
                 // ✅ 이미 존재하는 이메일인 경우 409 Conflict로 변환
+                functions.logger.info("에러 상세 체크:", {
+                    status: error.status,
+                    code: errorDetail?.code,
+                    message: errorDetail?.message,
+                    bodyIncludes: error.body?.includes('AlreadyExistEmail')
+                });
                 if (error.status === 400 &&
                     (errorDetail?.code === 'Errors.List.AlreadyExistEmail' ||
                         errorDetail?.message?.includes('이미 존재하는 이메일') ||
                         error.body?.includes('AlreadyExistEmail'))) {
+                    functions.logger.info("이미 존재하는 이메일 조건 매치됨");
                     res.status(409).json({
                         error: "ALREADY_SUBSCRIBED",
-                        message: errorDetail?.message || "이미 구독 중인 이메일입니다.",
+                        message: "이미 구독 신청한 이메일입니다.",
                     });
                     return;
                 }
