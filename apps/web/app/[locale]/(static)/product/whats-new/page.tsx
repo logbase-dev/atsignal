@@ -3,9 +3,9 @@
 import { useEffect, useState, useCallback } from 'react';
 import { getPublicWhatsNews } from '@/lib/product/whatsnew/whatsnewService';
 import type { WhatsNew } from '@/lib/admin/types';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import rehypeSlug from 'rehype-slug';
+import { WhatsNewSearch } from '@/components/product/whatsnew/WhatsNewSearch';
+import { WhatsNewAccordion } from '@/components/product/whatsnew/WhatsNewAccordion';
+import { WhatsNewPagination } from '@/components/product/whatsnew/WhatsNewPagination';
 
 interface PageProps {
   params: Promise<{
@@ -108,10 +108,6 @@ export default function WhatsNewPage({ params }: PageProps) {
     setCurrentPage(1);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') handleSearch();
-  };
-
   const toggleExpanded = (id: string) => {
     const newExpanded = new Set(expandedItems);
     if (newExpanded.has(id)) {
@@ -127,16 +123,6 @@ export default function WhatsNewPage({ params }: PageProps) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const formatDate = (date: Date | undefined) => {
-    if (!date) return '';
-    const dateObj = date instanceof Date ? date : new Date(date);
-    return dateObj.toLocaleDateString(locale === 'en' ? 'en-US' : 'ko-KR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
-
   return (
     <div style={{ 
       minHeight: '100vh', 
@@ -144,8 +130,8 @@ export default function WhatsNewPage({ params }: PageProps) {
       paddingBottom: '2rem'
     }}>
 
-      <div className="hero-sub">
-        <div className="hero-container-sub">
+      <div className="hero-page">
+        <div className="hero-page-container">
           <h1>atsignal What's new</h1>
           <p>설명 문구가 들어가는 곳입니다.</p>
           {/* <p>수집 로그 규모에 따라 가장 적합한 요금제를 선택하세요.</p> */}
@@ -159,76 +145,14 @@ export default function WhatsNewPage({ params }: PageProps) {
       }}>
 
         {/* 검색바 */}
-        <div style={{
-          backgroundColor: '#fff',
-          borderRadius: '12px',
-          padding: '2rem',
-          marginBottom: '2rem',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-        }}>
-          <div style={{ display: 'flex', gap: '0.5rem', maxWidth: '500px', margin: '0 auto' }}>
-            <input 
-              type="text" 
-              value={searchInput} 
-              onChange={(e) => setSearchInput(e.target.value)} 
-              onKeyDown={handleKeyDown}
-              placeholder={locale === 'en' ? 'Search updates...' : '검색...'}
-              style={{ 
-                flex: 1, 
-                padding: '0.75rem 1rem', 
-                border: '2px solid #e5e5e5', 
-                borderRadius: '8px',
-                fontSize: '1rem',
-                outline: 'none',
-                transition: 'border-color 0.2s ease',
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = '#20BDFF';
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = '#e5e5e5';
-              }}
-            />
-            <button 
-              onClick={handleSearch}
-              style={{ 
-                padding: '0.75rem 1.5rem', 
-                backgroundColor: '#20BDFF', 
-                color: 'white', 
-                border: 'none', 
-                borderRadius: '8px', 
-                cursor: 'pointer',
-                fontSize: '1rem',
-                fontWeight: '500',
-                transition: 'background-color 0.2s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#1a9de6';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#20BDFF';
-              }}
-            >
-              {locale === 'en' ? 'Search' : '검색'}
-            </button>
-            {searchQuery && (
-              <button 
-                onClick={handleClearSearch}
-                style={{ 
-                  padding: '0.75rem 1rem', 
-                  backgroundColor: '#6c757d', 
-                  color: 'white', 
-                  border: 'none', 
-                  borderRadius: '8px', 
-                  cursor: 'pointer',
-                  fontSize: '1rem',
-                }}
-              >
-                {locale === 'en' ? 'Clear' : '초기화'}
-              </button>
-            )}
-          </div>
-        </div>
+        <WhatsNewSearch
+          locale={locale}
+          searchInput={searchInput}
+          setSearchInput={setSearchInput}
+          searchQuery={searchQuery}
+          onSearch={handleSearch}
+          onClearSearch={handleClearSearch}
+        />
 
         {/* 로딩 상태 */}
         {loading && (
@@ -283,253 +207,26 @@ export default function WhatsNewPage({ params }: PageProps) {
                 <p>{searchQuery ? (locale === 'en' ? 'No updates found.' : '검색된 업데이트가 없습니다.') : (locale === 'en' ? 'No updates available.' : '업데이트가 없습니다.')}</p>
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                {whatsNews.map((item) => {
-                  const isExpanded = expandedItems.has(item.id!);
-                  const title = locale === 'en' && item.title.en ? item.title.en : item.title.ko;
-                  const oneLiner = locale === 'en' && item.oneLiner.en ? item.oneLiner.en : item.oneLiner.ko;
-                  const content = locale === 'en' && item.content.en ? item.content.en : item.content.ko;
-
-                  return (
-                    <div
-                      key={item.id}
-                      style={{
-                        backgroundColor: '#fff',
-                        borderRadius: '8px',
-                        border: item.isTop ? '2px solid #20BDFF' : '1px solid #e5e5e5',
-                        overflow: 'hidden',
-                        transition: 'box-shadow 0.2s ease',
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.boxShadow = 'none';
-                      }}
-                    >
-                      {/* 아코디언 헤더 */}
-                      <div
-                        onClick={() => toggleExpanded(item.id!)}
-                        style={{
-                          padding: '1.5rem',
-                          cursor: 'pointer',
-                          borderBottom: isExpanded ? '1px solid #e5e5e5' : 'none',
-                          backgroundColor: item.isTop ? '#f0f9ff' : '#fff',
-                        }}
-                      >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
-                          <div style={{ flex: 1 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                              {item.isTop && (
-                                <span style={{
-                                  backgroundColor: '#20BDFF',
-                                  color: 'white',
-                                  fontSize: '0.75rem',
-                                  fontWeight: '600',
-                                  padding: '0.25rem 0.5rem',
-                                  borderRadius: '4px',
-                                }}>
-                                  {locale === 'en' ? 'PINNED' : '고정'}
-                                </span>
-                              )}
-                              <span style={{ fontSize: '0.875rem', color: '#666' }}>
-                                {formatDate(item.createdAt)}
-                              </span>
-                            </div>
-                            <h3 style={{
-                              fontSize: '1.25rem',
-                              fontWeight: '600',
-                              color: '#1a1a1a',
-                              marginBottom: '0.5rem',
-                              margin: 0,
-                            }}>
-                              {title}
-                            </h3>
-                            <p style={{
-                              color: '#666',
-                              fontSize: '1rem',
-                              margin: 0,
-                              lineHeight: '1.5',
-                            }}>
-                              {oneLiner}
-                            </p>
-                          </div>
-                          <div style={{
-                            fontSize: '1.5rem',
-                            color: '#666',
-                            transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                            transition: 'transform 0.2s ease',
-                          }}>
-                            ▼
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* 아코디언 내용 */}
-                      {isExpanded && (
-                        <div style={{
-                          padding: '1.5rem',
-                          backgroundColor: '#fafafa',
-                        }}>
-                          <div style={{
-                            color: '#444',
-                            lineHeight: '1.6',
-                            fontSize: '1rem',
-                          }}>
-                            <ReactMarkdown
-                              remarkPlugins={[remarkGfm]}
-                              rehypePlugins={[rehypeSlug]}
-                              components={{
-                                p: ({ children }) => (
-                                  <p style={{ margin: '0 0 1rem 0' }}>{children}</p>
-                                ),
-                                ul: ({ children }) => (
-                                  <ul style={{ margin: '0 0 1rem 0', paddingLeft: '1.5rem' }}>{children}</ul>
-                                ),
-                                ol: ({ children }) => (
-                                  <ol style={{ margin: '0 0 1rem 0', paddingLeft: '1.5rem' }}>{children}</ol>
-                                ),
-                                li: ({ children }) => (
-                                  <li style={{ margin: '0 0 0.5rem 0' }}>{children}</li>
-                                ),
-                                strong: ({ children }) => (
-                                  <strong style={{ fontWeight: '600', color: '#1a1a1a' }}>{children}</strong>
-                                ),
-                                code: ({ children }) => (
-                                  <code style={{ 
-                                    backgroundColor: '#f5f5f5', 
-                                    padding: '0.125rem 0.375rem', 
-                                    borderRadius: '0.25rem',
-                                    fontSize: '0.875rem',
-                                    fontFamily: 'monospace'
-                                  }}>{children}</code>
-                                ),
-                                blockquote: ({ children }) => (
-                                  <blockquote style={{
-                                    borderLeft: '4px solid #20BDFF',
-                                    paddingLeft: '1rem',
-                                    margin: '1rem 0',
-                                    fontStyle: 'italic',
-                                    color: '#555'
-                                  }}>{children}</blockquote>
-                                ),
-                                table: ({ children }) => (
-                                  <table style={{ 
-                                    width: '100%', 
-                                    borderCollapse: 'collapse', 
-                                    margin: '1rem 0',
-                                    border: '1px solid #e5e5e5'
-                                  }}>{children}</table>
-                                ),
-                                thead: ({ children }) => (
-                                  <thead style={{ backgroundColor: '#f8f9fa' }}>{children}</thead>
-                                ),
-                                th: ({ children }) => (
-                                  <th style={{ 
-                                    padding: '0.75rem', 
-                                    border: '1px solid #e5e5e5',
-                                    fontWeight: '600',
-                                    textAlign: 'left',
-                                    fontSize: '0.875rem'
-                                  }}>{children}</th>
-                                ),
-                                td: ({ children }) => (
-                                  <td style={{ 
-                                    padding: '0.75rem', 
-                                    border: '1px solid #e5e5e5',
-                                    fontSize: '0.875rem'
-                                  }}>{children}</td>
-                                ),
-                              }}
-                            >
-                              {content}
-                            </ReactMarkdown>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+              <WhatsNewAccordion
+                locale={locale}
+                whatsNews={whatsNews}
+                expandedItems={expandedItems}
+                onToggleExpanded={toggleExpanded}
+              />
             )}
           </div>
         )}
 
         {/* 페이지네이션 */}
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          gap: '0.5rem', 
-          marginTop: '2rem'
-        }}>
-          <button
-            type="button"
-            onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-            disabled={loading || currentPage === 1}
-            style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: (loading || currentPage === 1) ? '#e5e7eb' : '#20BDFF',
-              color: (loading || currentPage === 1) ? '#999' : 'white',
-              border: 'none',
-              borderRadius: '0.25rem',
-              cursor: (loading || currentPage === 1) ? 'not-allowed' : 'pointer',
-              fontSize: '0.875rem',
-              fontWeight: '500',
-            }}
-          >
-            {locale === 'en' ? 'Previous' : '이전'}
-          </button>
-
-          <div style={{ display: 'flex', gap: '0.25rem' }}>
-            {Array.from({ length: Math.min(totalPages, 10) }, (_, i) => {
-              // 현재 페이지 주변의 페이지만 표시
-              const startPage = Math.max(1, currentPage - 5);
-              const pageNum = startPage + i;
-              if (pageNum > totalPages) return null;
-              
-              return (
-                <button
-                  key={pageNum}
-                  type="button"
-                  onClick={() => handlePageChange(pageNum)}
-                  disabled={loading}
-                  style={{
-                    padding: '0.5rem 0.75rem',
-                    backgroundColor: pageNum === currentPage ? '#20BDFF' : '#fff',
-                    color: pageNum === currentPage ? 'white' : '#333',
-                    border: '1px solid #ddd',
-                    borderRadius: '0.25rem',
-                    cursor: loading ? 'not-allowed' : 'pointer',
-                    minWidth: '2.5rem',
-                    fontSize: '0.875rem',
-                    fontWeight: pageNum === currentPage ? '600' : '500',
-                  }}
-                >
-                  {pageNum}
-                </button>
-              );
-            })}
-          </div>
-
-          <button
-            type="button"
-            onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-            disabled={loading || currentPage >= totalPages}
-            style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: (loading || currentPage >= totalPages) ? '#e5e7eb' : '#20BDFF',
-              color: (loading || currentPage >= totalPages) ? '#999' : 'white',
-              border: 'none',
-              borderRadius: '0.25rem',
-              cursor: (loading || currentPage >= totalPages) ? 'not-allowed' : 'pointer',
-              fontSize: '0.875rem',
-              fontWeight: '500',
-            }}
-          >
-            {locale === 'en' ? 'Next' : '다음'}
-          </button>
-        </div>
+        <WhatsNewPagination
+          locale={locale}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          total={total}
+          loading={loading}
+          error={error}
+          onPageChange={handlePageChange}
+        />
       </div>
     </div>
   );
