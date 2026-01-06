@@ -210,15 +210,27 @@ export default function BlogsPage({
                     }}
                   >
                     {/* 썸네일 이미지 */}
-                    {blog.featuredImage && (
-                      <div style={{
-                        width: '100%',
-                        height: '100px', // 200px에서 150px로 줄임
-                        backgroundImage: `url(${blog.featuredImage})`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                      }} />
-                    )}
+                    <div style={{
+                      width: '100%',
+                      height: '200px',
+                      backgroundImage: blog.thumbnail ? `url(${blog.thumbnail})` : 'none',
+                      backgroundColor: blog.thumbnail ? 'transparent' : '#f3f4f6',
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}>
+                      {!blog.thumbnail && (
+                        <span style={{
+                          color: '#9ca3af',
+                          fontSize: '0.875rem',
+                          fontWeight: '500',
+                        }}>
+                          썸네일 없음
+                        </span>
+                      )}
+                    </div>
                     
                     <div style={{ padding: '1rem' }}> {/* 1.5rem에서 1rem으로 줄임 */}
                       {/* 카테고리 */}

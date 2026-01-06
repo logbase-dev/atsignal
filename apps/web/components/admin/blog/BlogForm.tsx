@@ -228,12 +228,13 @@ export function BlogForm({ mode, id }: BlogFormProps) {
     setTagInput(e.target.value);
   };
 
-  const validate = (): string | null => {
-    if (!title.ko.trim()) return '제목(ko)은 필수입니다.';
-    if (!slug.trim()) return 'slug는 필수입니다.';
-    if (!isValidSlug(slug.trim())) return 'slug는 영문 소문자/숫자/하이픈만 허용됩니다.';
-    if (!content.ko.trim()) return '본문(ko)은 필수입니다.';
-    return null;
+  const validate = (): { isValid: boolean; message: string; focusTarget?: string } => {
+    if (!title.ko.trim()) return { isValid: false, message: '제목(ko)은 필수입니다.', focusTarget: 'title-ko' };
+    if (!slug.trim()) return { isValid: false, message: 'slug는 필수입니다.', focusTarget: 'slug' };
+    if (!isValidSlug(slug.trim())) return { isValid: false, message: 'slug는 영문 소문자/숫자/하이픈만 허용됩니다.', focusTarget: 'slug' };
+    if (!content.ko.trim()) return { isValid: false, message: '본문(ko)은 필수입니다.', focusTarget: 'content-ko' };
+    if (isFeatured && !thumbnail.trim()) return { isValid: false, message: '추천 포스트는 썸네일 이미지가 필수입니다.', focusTarget: 'thumbnail' };
+    return { isValid: true, message: '' };
   };
 
   const buildPayload = (publishedOverride?: boolean): Omit<BlogPost, 'id'> => {
@@ -278,9 +279,21 @@ export function BlogForm({ mode, id }: BlogFormProps) {
 
   const handleSave = async (publishedOverride?: boolean) => {
     setError(null);
-    const msg = validate();
-    if (msg) {
-      setError(msg);
+    const validation = validate();
+    if (!validation.isValid) {
+      // Alert 경고창 표시
+      alert(validation.message);
+      
+      // 해당 입력폼으로 포커스 이동
+      if (validation.focusTarget) {
+        const element = document.getElementById(validation.focusTarget);
+        if (element) {
+          element.focus();
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+      
+      setError(validation.message);
       return;
     }
 
@@ -331,7 +344,7 @@ export function BlogForm({ mode, id }: BlogFormProps) {
     try {
       const res = await uploadImage(file, {
         maxWidth: target === 'thumbnail' ? 800 : target === 'authorImage' ? 400 : 1600,
-        target: target === 'authorImage' ? 'authorImage' : 'editor',
+        target: target, // target 파라미터를 그대로 전달
       });
       if (target === 'thumbnail') setThumbnail(res.originalUrl);
       else if (target === 'featuredImage') setFeaturedImage(res.originalUrl);
@@ -437,7 +450,12 @@ export function BlogForm({ mode, id }: BlogFormProps) {
         <div style={rowStyle}>
           <div>
             <label style={labelStyle}>제목(ko) <span style={{ color: '#dc2626' }}>*</span></label>
-            <input value={title.ko || ''} onChange={(e) => setTitle((p) => ({ ...p, ko: e.target.value }))} style={inputStyle} />
+            <input 
+              id="title-ko"
+              value={title.ko || ''} 
+              onChange={(e) => setTitle((p) => ({ ...p, ko: e.target.value }))} 
+              style={inputStyle} 
+            />
           </div>
           <div>
             <label style={labelStyle}>제목(en)</label>
@@ -451,6 +469,7 @@ export function BlogForm({ mode, id }: BlogFormProps) {
             <p style={helpTextStyle}>URL에 사용될 고유 식별자입니다. <span style={{ color: '#dc2626' }}>(영문제목을 입력하시고 자동생성버튼을 클릭하셔야 합니다.)</span></p>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <input
+                id="slug"
                 value={slug || ''}
                 onChange={(e) => {
                   setSlugTouched(true);
@@ -495,42 +514,6 @@ export function BlogForm({ mode, id }: BlogFormProps) {
           </div>
         </div>
 
-        {/* Thumbnail, Featured Image 입력 폼 - 현재 사용하지 않음 */}
-        {/* <div style={{ ...rowStyle, marginTop: '1.5rem' }}>
-          <div>
-            <label style={labelStyle}>Thumbnail</label>
-            <p style={helpTextStyle}>블로그 포스트 썸네일 이미지 URL을 입력하거나 파일을 업로드합니다.</p>
-            <div style={{ display: 'grid', gap: '0.5rem' }}>
-              <input value={thumbnail || ''} onChange={(e) => setThumbnail(e.target.value)} placeholder="https://..." style={inputStyle} />
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) void handleUpload(f, 'thumbnail');
-                }}
-                style={{ fontSize: '0.9rem' }}
-              />
-            </div>
-          </div>
-          <div>
-            <label style={labelStyle}>Featured Image</label>
-            <p style={helpTextStyle}>블로그 포스트 대표 이미지 URL을 입력하거나 파일을 업로드합니다.</p>
-            <div style={{ display: 'grid', gap: '0.5rem' }}>
-              <input value={featuredImage || ''} onChange={(e) => setFeaturedImage(e.target.value)} placeholder="https://..." style={inputStyle} />
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) void handleUpload(f, 'featuredImage');
-                }}
-                style={{ fontSize: '0.9rem' }}
-              />
-            </div>
-          </div>
-        </div> */}
-
         {/* 저자명 및 이미지 */}
         <div style={{ ...rowStyle, marginTop: '1.5rem' }}>
           <div>
@@ -570,8 +553,6 @@ export function BlogForm({ mode, id }: BlogFormProps) {
           </div>
         </div>
 
-        {/* 썸네일 이미지 */}
-
         <div style={{ ...rowStyle, marginTop: '1.5rem' }}>
           <div>
             <label style={labelStyle}>추천 포스트</label>
@@ -596,7 +577,60 @@ export function BlogForm({ mode, id }: BlogFormProps) {
             </div>
           </div>
         </div>
+
+        {/* Thumbnail, Featured Image 입력 폼 - 현재 사용하지 않음 */}
+        <div style={{ ...rowStyle, marginTop: '1.5rem' }}>
+          {/* Thumbnail 입력 폼 */}
+          <div>
+            <label style={labelStyle}>
+              Thumbnail {isFeatured && <span style={{ color: '#dc2626' }}>*</span>}
+            </label>
+            <p style={helpTextStyle}>
+              블로그 포스트 썸네일 이미지 파일을 업로드합니다. (이미지 크기: 384px * 200px)
+              {isFeatured && <span style={{ color: '#dc2626', display: 'block', marginTop: '0.25rem' }}>추천 포스트는 썸네일 이미지가 필수입니다.</span>}
+            </p>
+            <div style={{ display: 'grid', gap: '0.5rem' }}>
+              <input 
+                id="thumbnail"
+                value={thumbnail || ''} 
+                onChange={(e) => setThumbnail(e.target.value)} 
+                placeholder="https://..." 
+                style={inputStyle} 
+              />
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) void handleUpload(f, 'thumbnail');
+                }}
+                style={{ fontSize: '0.9rem' }}
+              />
+            </div>
+          </div>
+          {/* Featured Image 입력 폼 */}
+          {/* <div>
+            <label style={labelStyle}>Featured Image</label>
+            <p style={helpTextStyle}>블로그 포스트 대표 이미지 URL을 입력하거나 파일을 업로드합니다.</p>
+            <div style={{ display: 'grid', gap: '0.5rem' }}>
+              <input value={featuredImage || ''} onChange={(e) => setFeaturedImage(e.target.value)} placeholder="https://..." style={inputStyle} />
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) void handleUpload(f, 'featuredImage');
+                }}
+                style={{ fontSize: '0.9rem' }}
+              />
+            </div>
+          </div> */}
+        </div>
+
       </div>
+
+
+
 
       {/* 콘텐츠 */}
       <div style={sectionStyle}>
@@ -664,7 +698,7 @@ export function BlogForm({ mode, id }: BlogFormProps) {
           <div style={{ border: '1px solid #e5e7eb', borderRadius: '0.5rem', overflow: 'hidden' }}>
             {editorType === 'nextra' ? (
               <NextraMarkdownField
-                id={`content-${localeTab}`}
+                id="content-ko"
                 label={`본문 ${localeTab === 'ko' ? '(ko)' : '(en)'}`}
                 locale={localeTab}
                 required={localeTab === 'ko'}
@@ -674,14 +708,16 @@ export function BlogForm({ mode, id }: BlogFormProps) {
                 height="500px"
               />
             ) : (
-              <ToastMarkdownEditor
-                value={(localeTab === 'ko' ? content.ko : content.en) || ''}
-                onChange={(next) => setContent((p) => ({ ...p, [localeTab]: next } as any))}
-                saveFormat={saveFormat}
-                onSaveFormatChange={setSaveFormat}
-                isNewPage={mode === 'create'}
-                height="500px"
-              />
+              <div id="content-ko">
+                <ToastMarkdownEditor
+                  value={(localeTab === 'ko' ? content.ko : content.en) || ''}
+                  onChange={(next) => setContent((p) => ({ ...p, [localeTab]: next } as any))}
+                  saveFormat={saveFormat}
+                  onSaveFormatChange={setSaveFormat}
+                  isNewPage={mode === 'create'}
+                  height="500px"
+                />
+              </div>
             )}
           </div>
         </div>

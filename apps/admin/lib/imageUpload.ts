@@ -8,13 +8,17 @@ export interface ImageUploadResult {
 
 export async function uploadImage(
   file: File, 
-  options?: { maxWidth?: number }
+  options?: { maxWidth?: number; target?: string }
 ): Promise<ImageUploadResult> {
   const formData = new FormData();
   formData.append('file', file);
   
   if (options?.maxWidth) {
     formData.append('maxWidth', String(options.maxWidth));
+  }
+  
+  if (options?.target) {
+    formData.append('target', options.target);
   }
 
   const response = await fetch('/api/images/upload', {

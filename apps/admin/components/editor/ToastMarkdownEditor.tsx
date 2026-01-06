@@ -258,7 +258,7 @@ export function ToastMarkdownEditor({
           addImageBlobHook: async (blob: Blob, callback: (url: string, alt?: string) => void) => {
             try {
               const file = new File([blob], `image-${Date.now()}.png`, { type: blob.type });
-              const { mediumUrl } = await uploadImage(file, { maxWidth: 800 });
+              const { mediumUrl } = await uploadImage(file, { maxWidth: 800, target: 'editor' });
               callback(mediumUrl);
             } catch (error: any) {
               console.error('이미지 업로드 실패:', error);
