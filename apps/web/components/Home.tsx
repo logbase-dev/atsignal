@@ -59,6 +59,15 @@ export default function Home({ locale }: HomeProps) {
   const [isBannerCollapsed, setIsBannerCollapsed] = useState(false);
   const [dotCount, setDotCount] = useState(1);
   const [dotIndex, setDotIndex] = useState(0);
+  
+  // 배너 데이터 유무에 따라 접힘 상태 자동 설정
+  useEffect(() => {
+    if (!isBannerLoading) {
+      // 로딩이 완료되면 데이터 유무에 따라 접힘 상태 설정
+      const hasValidBannerData = bannerItems.length > 0 && bannerItems.some(item => item.text.trim() !== '');
+      setIsBannerCollapsed(!hasValidBannerData);
+    }
+  }, [isBannerLoading, bannerItems]);
   const dotIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const dotSequence = useRef<number[]>([1, 2, 3, 4, 5, 4, 3, 2]).current;
   const benefits = [

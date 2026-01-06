@@ -20,7 +20,14 @@ export function TOC({ content }: TOCProps) {
   useEffect(() => {
     // ReactMarkdown 렌더링 완료를 기다림
     const timer = setTimeout(() => {
-      const headingElements = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6')).filter(
+      // page-renderer-content 클래스 내에서만 헤딩을 찾음
+      const contentContainer = document.querySelector('.page-renderer-content');
+      if (!contentContainer) {
+        setHeadings([]);
+        return;
+      }
+
+      const headingElements = Array.from(contentContainer.querySelectorAll('h1, h2, h3, h4, h5, h6')).filter(
         (el) => el.id // ID가 있는 헤딩만 (rehype-slug가 생성한 것)
       ) as HTMLElement[];
 
@@ -74,17 +81,13 @@ export function TOC({ content }: TOCProps) {
     };
   }, [headings]);
 
-  if (headings.length === 0) {
-    return null;
-  }
-
   const handleClick = (id: string, e: React.MouseEvent) => {
     e.preventDefault();
     const element = document.getElementById(id);
     if (element) {
       const offset = 100; // 헤더 높이 고려
       const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - offset;
+      const offsetPosition = elementPosition + window.scrollY - offset;
 
       window.scrollTo({
         top: offsetPosition,
@@ -98,22 +101,33 @@ export function TOC({ content }: TOCProps) {
       <div className="toc-header">
         <span className="toc-title">On this page</span>
       </div>
-      <ul className="toc-list">
-        {headings.map((heading, index) => (
-          <li
-            key={`${heading.id}-${index}`}
-            className={`toc-item toc-level-${heading.level} ${activeId === heading.id ? 'toc-active' : ''}`}
-          >
-            <a
-              href={`#${heading.id}`}
-              onClick={(e) => handleClick(heading.id, e)}
-              className="toc-link"
+      {headings.length > 0 ? (
+        <ul className="toc-list">
+          {headings.map((heading, index) => (
+            <li
+              key={`${heading.id}-${index}`}
+              className={`toc-item toc-level-${heading.level} ${activeId === heading.id ? 'toc-active' : ''}`}
             >
-              {heading.text}
-            </a>
-          </li>
-        ))}
-      </ul>
+              <a
+                href={`#${heading.id}`}
+                onClick={(e) => handleClick(heading.id, e)}
+                className="toc-link"
+              >
+                {heading.text}
+              </a>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div className="toc-empty" style={{ 
+          color: '#9ca3af', 
+          fontSize: '0.875rem', 
+          fontStyle: 'italic',
+          padding: '0.5rem 0'
+        }}>
+          {/* 목차가 없습니다 */}
+        </div>
+      )}
     </nav>
   );
 }

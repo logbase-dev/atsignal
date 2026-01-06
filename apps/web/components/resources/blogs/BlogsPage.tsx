@@ -246,7 +246,7 @@ export default function BlogsPage({
                         lineHeight: '1.4',
                       }}>
                         <Link
-                          href={`/${locale}/resources/blogs/${blog.id}`}
+                          href={`/${locale}/resources/blogs/${blog.slug || blog.id}`}
                           style={{
                             color: 'inherit',
                             textDecoration: 'none',
@@ -580,7 +580,7 @@ export default function BlogsPage({
                   >
                     <td style={{ padding: '1rem' }}>
                       <Link
-                        href={`/${locale}/resources/blogs/${blog.id}`}
+                        href={`/${locale}/resources/blogs/${blog.slug || blog.id}`}
                         style={{
                           color: '#1a1a1a',
                           textDecoration: 'none',

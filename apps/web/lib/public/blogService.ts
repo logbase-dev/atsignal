@@ -72,6 +72,14 @@ export async function getPublicBlogById(id: string): Promise<BlogPost | null> {
   return (data.blog || null) as BlogPost | null;
 }
 
+export async function getPublicBlogBySlug(slug: string): Promise<BlogPost | null> {
+  const response = await fetch(getPublicApiUrl(`resources/blogs/${slug}`));
+  if (response.status === 404) return null;
+  if (!response.ok) throw new Error('블로그를 불러오는데 실패했습니다.');
+  const data = await response.json().catch(() => ({}));
+  return (data.blog || null) as BlogPost | null;
+}
+
 export async function getPublicBlogCategories(): Promise<any[]> {
   const response = await fetch(getPublicApiUrl('resources/blog-categories'));
   if (!response.ok) throw new Error('블로그 카테고리를 불러오는데 실패했습니다.');

@@ -205,7 +205,7 @@ export function EventForm({ mode, id }: EventFormProps) {
     
     if (!title.ko.trim()) return { message: '제목(ko)은 필수입니다.', ref: titleKoRef };
     if (!oneLiner.ko.trim()) return { message: '한 줄 문구(ko)는 필수입니다.', ref: oneLinerKoRef };
-    if (oneLiner.ko.length > 20) return { message: '한 줄 문구(ko)는 20글자를 초과할 수 없습니다.', ref: oneLinerKoRef };
+    if (oneLiner.ko.length > 50) return { message: '한 줄 문구(ko)는 50글자를 초과할 수 없습니다.', ref: oneLinerKoRef };
 
     // 발행 시 이벤트 기간 필수 체크를 먼저 수행
     if (isPublishing) {
@@ -443,51 +443,51 @@ export function EventForm({ mode, id }: EventFormProps) {
             <label style={labelStyle}>
               롤링 배너용 한 줄 문구(ko) <span style={{ color: '#dc2626' }}>*</span>
               <span style={{ marginLeft: '0.5rem', fontSize: '0.85rem', color: '#6b7280' }}>
-                ({oneLiner.ko.length}/20)
+                ({oneLiner.ko.length}/50)
               </span>
             </label>
-            <p style={helpTextStyle}>홈 상단 롤링 배너에 표시될 한 줄 문구입니다. (최대 20글자)</p>
+            <p style={helpTextStyle}>홈 상단 롤링 배너에 표시될 한 줄 문구입니다. (최대 50글자)</p>
             <input
               ref={oneLinerKoRef}
               type="text"
               value={oneLiner.ko || ''}
               onChange={(e) => {
                 const value = e.target.value;
-                if (value.length <= 20) {
+                if (value.length <= 50) {
                   setOneLiner((p) => ({ ...p, ko: value }));
                 }
               }}
-              placeholder="한 줄 문구를 입력하세요 (최대 20글자)"
+              placeholder="한 줄 문구를 입력하세요 (최대 50글자)"
               style={inputStyle}
-              maxLength={20}
+              maxLength={50}
             />
-            {oneLiner.ko.length > 20 && (
-              <p style={{ color: '#dc2626', fontSize: '0.85rem', marginTop: '0.5rem' }}>20글자를 초과할 수 없습니다.</p>
+            {oneLiner.ko.length > 50 && (
+              <p style={{ color: '#dc2626', fontSize: '0.85rem', marginTop: '0.5rem' }}>50글자를 초과할 수 없습니다.</p>
             )}
           </div>
           <div>
             <label style={labelStyle}>
               롤링 배너용 한 줄 문구(en)
               <span style={{ marginLeft: '0.5rem', fontSize: '0.85rem', color: '#6b7280' }}>
-                ({(oneLiner.en?.length || 0)}/20)
+                ({(oneLiner.en?.length || 0)}/50)
               </span>
             </label>
-            <p style={helpTextStyle}>홈 상단 롤링 배너에 표시될 한 줄 문구입니다. (최대 20글자)</p>
+            <p style={helpTextStyle}>홈 상단 롤링 배너에 표시될 한 줄 문구입니다. (최대 50글자)</p>
             <input
               type="text"
               value={oneLiner.en || ''}
               onChange={(e) => {
                 const value = e.target.value;
-                if (value.length <= 20) {
+                if (value.length <= 50) {
                   setOneLiner((p) => ({ ...p, en: value }));
                 }
               }}
-              placeholder="Enter one-liner (max 20 chars)"
+              placeholder="Enter one-liner (max 50 chars)"
               style={inputStyle}
-              maxLength={20}
+              maxLength={50}
             />
-            {(oneLiner.en?.length || 0) > 20 && (
-              <p style={{ color: '#dc2626', fontSize: '0.85rem', marginTop: '0.5rem' }}>20글자를 초과할 수 없습니다.</p>
+            {(oneLiner.en?.length || 0) > 50 && (
+              <p style={{ color: '#dc2626', fontSize: '0.85rem', marginTop: '0.5rem' }}>50글자를 초과할 수 없습니다.</p>
             )}
           </div>
         </div>

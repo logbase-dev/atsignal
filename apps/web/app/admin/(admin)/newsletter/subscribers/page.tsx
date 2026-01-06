@@ -45,12 +45,43 @@ const formatPhone = (phone: string | undefined): string => {
   if (!phone || phone.trim() === '') return '-';
   const digits = phone.replace(/\D/g, '');
   if (digits.length === 0) return phone;
-  if (digits.length === 11 && digits.startsWith('010')) return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
-  if (digits.length === 10) {
-    if (digits.startsWith('02')) return `${digits.slice(0, 2)}-${digits.slice(2, 6)}-${digits.slice(6)}`;
-    return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+  
+  let formatted = '';
+  if (digits.length === 11 && digits.startsWith('010')) {
+    // 010-1234-5678 형태
+    const part1 = digits.slice(0, 3);   // 010
+    const part2 = digits.slice(3, 7);   // 1234
+    const part3 = digits.slice(7, 9);   // 56 (뒷자리 2자리 제외)
+    const masked = '**';                // 마스킹
+    formatted = `${part1}-${part2}-${part3}${masked}`;
+  } else if (digits.length === 10) {
+    if (digits.startsWith('02')) {
+      // 02-1234-5678 형태
+      const part1 = digits.slice(0, 2);   // 02
+      const part2 = digits.slice(2, 6);   // 1234
+      const part3 = digits.slice(6, 8);   // 56 (뒷자리 2자리 제외)
+      const masked = '**';                // 마스킹
+      formatted = `${part1}-${part2}-${part3}${masked}`;
+    } else {
+      // 031-123-4567 형태
+      const part1 = digits.slice(0, 3);   // 031
+      const part2 = digits.slice(3, 6);   // 123
+      const part3 = digits.slice(6, 8);   // 45 (뒷자리 2자리 제외)
+      const masked = '**';                // 마스킹
+      formatted = `${part1}-${part2}-${part3}${masked}`;
+    }
+  } else {
+    // 기타 형태는 원본 반환하되 뒷자리 2자리만 마스킹
+    if (digits.length >= 2) {
+      const visible = digits.slice(0, -2);
+      const masked = '**';
+      formatted = visible + masked;
+    } else {
+      formatted = phone;
+    }
   }
-  return phone;
+  
+  return formatted;
 };
 
 export default function AdminNewsletterSubscribersPage() {
@@ -162,32 +193,83 @@ export default function AdminNewsletterSubscribersPage() {
 
   return (
     <div style={{ padding: '2rem', maxWidth: '1500px', margin: '0 auto' }}>
+
+      {/* 타이틀 */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <div>
           <h1 style={{ fontSize: '2rem', margin: 0 }}>뉴스레터 구독자</h1>
-          <p style={{ color: '#6b7280', margin: '0.5rem 0 0 0' }}>
-            총 {totalCount}명의 구독자 (페이지 {currentPage} / {totalPages})
-          </p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <label htmlFor="itemsPerPage" style={{ fontSize: '0.875rem', color: '#6b7280' }}>
-              페이지당:
-            </label>
-            <select
-              id="itemsPerPage"
-              value={itemsPerPage}
-              onChange={handleItemsPerPageChange}
-              disabled={loading}
-              style={{ padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.875rem', backgroundColor: '#fff', color: '#374151', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1 }}
-            >
-              {ITEMS_PER_PAGE_OPTIONS.map((option) => (
-                <option key={option} value={option}>
-                  {option}개
-                </option>
-              ))}
-            </select>
+      </div>
+
+      {/* 개인정보 유의 안내 메시지 */}
+      <div style={{ 
+        backgroundColor: '#fef3c7', 
+        border: '1px solid #f59e0b', 
+        borderRadius: '0.5rem', 
+        padding: '1rem 1.5rem', 
+        marginBottom: '2rem',
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: '0.75rem'
+      }}>
+        <div style={{ 
+          fontSize: '1.25rem', 
+          color: '#d97706',
+          marginTop: '0.125rem'
+        }}>
+          ⚠️
+        </div>
+        <div>
+          <div style={{ 
+            fontSize: '1rem', 
+            fontWeight: '600', 
+            color: '#92400e',
+            marginBottom: '0.5rem'
+          }}>
+            개인정보 취급 주의사항
           </div>
+          <div style={{ 
+            fontSize: '0.95rem', 
+            color: '#92400e',
+            lineHeight: '1.5'
+          }}>
+            귀하가 조회하는 정보는 개인정보이므로 유출시 법에 의해 처벌을 받게 됩니다. <br/>목적에 부합하는 용도외의 사용을 일절 금지합니다.
+          </div>
+        </div>
+      </div>
+
+      {/* 총 구독자수 및 페이지 */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '1rem',
+        }}
+      >
+        <div
+          style={{
+            fontSize: '0.875rem',
+            color: '#666',
+          }}
+        >
+          총 {totalCount}명의 구독자 (페이지 {currentPage} / {Math.max(1, totalPages)})
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <label style={{ fontSize: '0.875rem', color: '#666', fontWeight: 'normal' }}>페이지당 표시:</label>
+          <select
+            id="itemsPerPage"
+            value={itemsPerPage}
+            onChange={handleItemsPerPageChange}
+            disabled={loading}
+            style={{ padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.875rem', backgroundColor: '#fff', color: '#374151', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1 }}
+          >
+            {ITEMS_PER_PAGE_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}개
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 

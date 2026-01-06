@@ -44,6 +44,3 @@ env:
     value: "https://web-ssr--atsignal.asia-east1.hosted.app"
   - variable: NEXT_PUBLIC_DOCS_SITE_URL
     value: "https://docs-ssr--atsignal.asia-east1.hosted.app"
-  # Admin API URL (프로덕션용)
-  - variable: NEXT_PUBLIC_ADMIN_API_URL
-    value: "https://asia-northeast3-atsignal.cloudfunctions.net/api"
