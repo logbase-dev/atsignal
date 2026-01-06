@@ -36,11 +36,11 @@ export default function Header() {
   return (
     <header id="header" className="header fixed-top d-flex align-items-center">
       <div className="d-flex align-items-center justify-content-between">
+        <i className="bi bi-list toggle-sidebar-btn"></i>
         <Link href="/admin" className="logo d-flex align-items-center">
           <img src="/assets/img/logo_atsignal.png" alt="" />
           <span className="d-none d-lg-block">atsignal admin</span>
         </Link>
-        <i className="bi bi-list toggle-sidebar-btn"></i>
       </div>
 
       <div className="search-bar">

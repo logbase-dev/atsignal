@@ -21,15 +21,14 @@ export async function GET(
     const isProduction = process.env.NODE_ENV === 'production';
     
     if (isProduction) {
-      // 프로덕션: Admin API 사용
-      const adminApiUrl = process.env.NEXT_PUBLIC_ADMIN_API_URL || 'https://asia-northeast3-atsignal.cloudfunctions.net/api';
-      const response = await fetch(`${adminApiUrl}/blog-likes?blogId=${params.id}&sessionId=${sessionId}&ipAddress=${request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip')}&userAgent=${encodeURIComponent(request.headers.get('user-agent') || '')}`);
+      // 프로덕션: Admin API 프록시 사용 (Firebase App Hosting에서 /api/* 경로 차단 우회)
+      const response = await fetch(`/admin-api/admin/blog-likes?blogId=${params.id}&sessionId=${sessionId}&ipAddress=${encodeURIComponent(request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || '')}&userAgent=${encodeURIComponent(request.headers.get('user-agent') || '')}`);
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('[Blog Like Status API] Admin API 에러:', errorText);
+        console.error('[Blog Like Status API] Admin API 프록시 에러:', errorText);
         return NextResponse.json(
-          { error: 'Admin API error', message: errorText },
+          { error: 'Admin API proxy error', message: errorText },
           { status: response.status }
         );
       }
@@ -92,9 +91,8 @@ export async function POST(
     const isProduction = process.env.NODE_ENV === 'production';
     
     if (isProduction) {
-      // 프로덕션: Admin API 사용
-      const adminApiUrl = process.env.NEXT_PUBLIC_ADMIN_API_URL || 'https://asia-northeast3-atsignal.cloudfunctions.net/api';
-      const response = await fetch(`${adminApiUrl}/blog-likes`, {
+      // 프로덕션: Admin API 프록시 사용 (Firebase App Hosting에서 /api/* 경로 차단 우회)
+      const response = await fetch(`/admin-api/admin/blog-likes`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -110,9 +108,9 @@ export async function POST(
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('[Blog Like API] Admin API 에러:', errorText);
+        console.error('[Blog Like API] Admin API 프록시 에러:', errorText);
         return NextResponse.json(
-          { error: 'Admin API error', message: errorText },
+          { error: 'Admin API proxy error', message: errorText },
           { status: response.status }
         );
       }

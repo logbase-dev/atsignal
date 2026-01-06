@@ -395,7 +395,7 @@ export default function BlogDetailPage({ locale, blog, categories }: Props) {
                           {posts.map((relatedPost) => (
                             <li key={relatedPost.id} style={{ marginBottom: '1rem' }}>
                               <Link
-                                href={`/${locale}/resources/blogs/${relatedPost.id}`}
+                                href={`/${locale}/resources/blogs/${relatedPost.slug || relatedPost.id}`}
                                 style={{
                                   color: '#20BDFF',
                                   textDecoration: 'none',

@@ -25,7 +25,6 @@ export default function EventsPage({
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(initialTotal);
-  const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
 
   const texts = {
     ko: {
@@ -74,18 +73,6 @@ export default function EventsPage({
     }
   };
 
-  const toggleEventExpansion = (eventId: string) => {
-    setExpandedEvents(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(eventId)) {
-        newSet.delete(eventId);
-      } else {
-        newSet.add(eventId);
-      }
-      return newSet;
-    });
-  };
-
   const formatDate = (date: Date | undefined) => {
     if (!date) return '';
     return new Intl.DateTimeFormat(locale, {
@@ -124,7 +111,7 @@ export default function EventsPage({
         {/* 메인 이벤트 */}
         {initialMainEvent && (
           <section style={{ marginBottom: '4rem' }}>
-            <h2 style={{
+            {/* <h2 style={{
               fontSize: '1.5rem',
               fontWeight: '600',
               color: '#1a1a1a',
@@ -132,7 +119,7 @@ export default function EventsPage({
               textAlign: 'center',
             }}>
               {t.mainEvent}
-            </h2>
+            </h2> */}
             <div style={{
               backgroundColor: '#fff',
               borderRadius: '12px',
@@ -228,7 +215,7 @@ export default function EventsPage({
         {/* 서브 이벤트 */}
         {initialSubEvents.length > 0 && (
           <section style={{ marginBottom: '4rem' }}>
-            <h2 style={{
+            {/* <h2 style={{
               fontSize: '1.5rem',
               fontWeight: '600',
               color: '#1a1a1a',
@@ -236,7 +223,7 @@ export default function EventsPage({
               textAlign: 'center',
             }}>
               {t.subEvents}
-            </h2>
+            </h2> */}
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(3, 1fr)',
@@ -379,10 +366,10 @@ export default function EventsPage({
           </section>
         )}
 
-        {/* 기타 이벤트 (아코디언) */}
+        {/* 기타 이벤트 */}
         {otherEvents.length > 0 && (
           <section>
-            <h2 style={{
+            {/* <h2 style={{
               fontSize: '1.5rem',
               fontWeight: '600',
               color: '#1a1a1a',
@@ -390,154 +377,93 @@ export default function EventsPage({
               textAlign: 'center',
             }}>
               {t.otherEvents}
-            </h2>
+            </h2> */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {otherEvents.map((event) => (
                 <div key={event.id} style={{
                   backgroundColor: '#fff',
                   borderRadius: '12px',
-                  overflow: 'hidden',
+                  padding: '1.5rem',
                   boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                }}>
-                  <button
-                    onClick={() => toggleEventExpansion(event.id!)}
-                    style={{
-                      width: '100%',
-                      padding: '1.5rem',
-                      textAlign: 'left',
-                      backgroundColor: 'transparent',
-                      border: 'none',
-                      cursor: 'pointer',
-                      transition: 'background-color 0.2s ease',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = '#f8fafc';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                    }}
-                  >
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                    }}>
-                      <div style={{ flex: 1 }}>
-                        <h3 style={{
-                          fontSize: '1.125rem',
-                          fontWeight: '600',
-                          color: '#1a1a1a',
-                          marginBottom: '0.5rem',
+                  transition: 'box-shadow 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+                }}
+                >
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}>
+                    <div style={{ flex: 1 }}>
+                      <h3 style={{
+                        fontSize: '1.125rem',
+                        fontWeight: '600',
+                        color: '#1a1a1a',
+                        marginBottom: '0.5rem',
+                      }}>
+                        {getLocalizedText(event.title)}
+                      </h3>
+                      {event.oneLiner && (
+                        <p style={{
+                          color: '#666',
+                          marginBottom: '0.75rem',
+                          fontSize: '0.875rem',
+                          lineHeight: '1.4',
                         }}>
-                          {getLocalizedText(event.title)}
-                        </h3>
-                        {event.oneLiner && (
-                          <p style={{
-                            color: '#666',
-                            marginBottom: '0.75rem',
-                            fontSize: '0.875rem',
-                            lineHeight: '1.4',
-                          }}>
-                            {getLocalizedText(event.oneLiner)}
-                          </p>
-                        )}
-                        {(event.eventStartAt || event.eventEndAt) && (
-                          <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            fontSize: '0.75rem',
-                            color: '#9ca3af',
-                          }}>
-                            <svg style={{ width: '0.875rem', height: '0.875rem', marginRight: '0.5rem' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                            <span>
-                              {formatDate(event.eventStartAt)}
-                              {event.eventEndAt && ` - ${formatDate(event.eventEndAt)}`}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                      <div style={{ marginLeft: '1rem' }}>
-                        <svg
-                          style={{
-                            width: '1.25rem',
-                            height: '1.25rem',
-                            color: '#9ca3af',
-                            transition: 'transform 0.2s ease',
-                            transform: expandedEvents.has(event.id!) ? 'rotate(180deg)' : 'rotate(0deg)',
-                          }}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </div>
-                    </div>
-                  </button>
-                  
-                  {expandedEvents.has(event.id!) && (
-                    <div style={{
-                      padding: '0 1.5rem 1.5rem',
-                      borderTop: '1px solid #e5e7eb',
-                      backgroundColor: '#f8fafc',
-                    }}>
-                      <div style={{ paddingTop: '1rem' }}>
-                        {event.description && (
-                          <p style={{
-                            color: '#374151',
-                            marginBottom: '1rem',
-                            lineHeight: '1.6',
-                          }}>
-                            {getLocalizedText(event.description)}
-                          </p>
-                        )}
-                        {event.location && (
-                          <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            fontSize: '0.875rem',
-                            color: '#6b7280',
-                            marginBottom: '1rem',
-                          }}>
-                            <svg style={{ width: '1rem', height: '1rem', marginRight: '0.5rem' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            <span style={{ fontWeight: '500', marginRight: '0.5rem' }}>{t.location}:</span>
-                            <span>{getLocalizedText(event.location)}</span>
-                          </div>
-                        )}
-                        <Link
-                          href={`/${locale}/resources/events/${event.id}`}
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            padding: '0.75rem 1.5rem',
-                            backgroundColor: '#20BDFF',
-                            color: 'white',
-                            textDecoration: 'none',
-                            fontSize: '0.875rem',
-                            fontWeight: '500',
-                            borderRadius: '8px',
-                            transition: 'background-color 0.2s ease',
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#1a9de6';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '#20BDFF';
-                          }}
-                        >
-                          {t.viewDetails}
-                          <svg style={{ marginLeft: '0.5rem', width: '1rem', height: '1rem' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          {getLocalizedText(event.oneLiner)}
+                        </p>
+                      )}
+                      {(event.eventStartAt || event.eventEndAt) && (
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          fontSize: '0.75rem',
+                          color: '#9ca3af',
+                        }}>
+                          <svg style={{ width: '0.875rem', height: '0.875rem', marginRight: '0.5rem' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>
-                        </Link>
-                      </div>
+                          <span>
+                            {formatDate(event.eventStartAt)}
+                            {event.eventEndAt && ` - ${formatDate(event.eventEndAt)}`}
+                          </span>
+                        </div>
+                      )}
                     </div>
-                  )}
+                    <div style={{ marginLeft: '1rem' }}>
+                      <Link
+                        href={`/${locale}/resources/events/${event.id}`}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          padding: '0.75rem 1.5rem',
+                          backgroundColor: '#20BDFF',
+                          color: 'white',
+                          textDecoration: 'none',
+                          fontSize: '0.875rem',
+                          fontWeight: '500',
+                          borderRadius: '8px',
+                          transition: 'background-color 0.2s ease',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#1a9de6';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = '#20BDFF';
+                        }}
+                      >
+                        {t.viewDetails}
+                        <svg style={{ marginLeft: '0.5rem', width: '1rem', height: '1rem' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </Link>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>

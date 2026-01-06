@@ -244,6 +244,13 @@ export function ToastMarkdownEditor({
         previewStyle="vertical"
         usageStatistics={false}
         onChange={handleChange}
+        toolbarItems={[
+          ['heading', 'bold', 'italic', 'strike'],
+          ['hr', 'quote'],
+          ['ul', 'ol', 'task', 'indent', 'outdent'],
+          ['table', 'image', 'link'],
+          ['code', 'codeblock']
+        ]}
         hooks={{
           addImageBlobHook: async (blob: Blob, callback: (url: string, altText: string) => void) => {
             try {

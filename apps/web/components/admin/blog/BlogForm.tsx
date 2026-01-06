@@ -448,7 +448,7 @@ export function BlogForm({ mode, id }: BlogFormProps) {
         <div style={{ ...rowStyle, marginTop: '1.5rem' }}>
           <div>
             <label style={labelStyle}>slug <span style={{ color: '#dc2626' }}>*</span></label>
-            <p style={helpTextStyle}>URL에 사용될 고유 식별자입니다.</p>
+            <p style={helpTextStyle}>URL에 사용될 고유 식별자입니다. <span style={{ color: '#dc2626' }}>(영문제목을 입력하시고 자동생성버튼을 클릭하셔야 합니다.)</span></p>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <input
                 value={slug || ''}

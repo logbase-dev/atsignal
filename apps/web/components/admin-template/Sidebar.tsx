@@ -105,7 +105,7 @@ export default function Sidebar() {
         <li className="nav-item">
           <Link href="/admin/sales-inquiries" className={`nav-link ${pathname?.startsWith('/admin/sales-inquiries') ? '' : 'collapsed'}`}>
             <i className="bi bi-cart-check"></i>
-            <span>구입문의</span>
+            <span>contact sales</span>
           </Link>
         </li>
 
