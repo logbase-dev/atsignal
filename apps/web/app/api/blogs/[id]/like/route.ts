@@ -21,54 +21,21 @@ export async function GET(
     const isProduction = process.env.NODE_ENV === 'production';
     
     if (isProduction) {
-      // 프로덕션: Firebase Admin SDK 사용
-      const { initializeApp, getApps, cert } = await import('firebase-admin/app');
-      const { getFirestore } = await import('firebase-admin/firestore');
+      // 프로덕션: Admin API 사용
+      const adminApiUrl = process.env.NEXT_PUBLIC_ADMIN_API_URL || 'https://asia-northeast3-atsignal.cloudfunctions.net/api';
+      const response = await fetch(`${adminApiUrl}/blog-likes?blogId=${params.id}&sessionId=${sessionId}&ipAddress=${request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip')}&userAgent=${encodeURIComponent(request.headers.get('user-agent') || '')}`);
       
-      // Firebase Admin 초기화 (이미 초기화되어 있으면 재사용)
-      let app;
-      if (getApps().length === 0) {
-        app = initializeApp({
-          credential: cert({
-            projectId: process.env.FIREBASE_PROJECT_ID,
-            clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-            privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-          }),
-        });
-      } else {
-        app = getApps()[0];
-      }
-      
-      const db = getFirestore(app);
-      
-      // 블로그 포스트 정보 가져오기
-      const blogRef = db.collection('blog').doc(params.id);
-      const blogDoc = await blogRef.get();
-      
-      if (!blogDoc.exists) {
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[Blog Like Status API] Admin API 에러:', errorText);
         return NextResponse.json(
-          { error: 'Blog not found', message: '블로그를 찾을 수 없습니다.' },
-          { status: 404 }
+          { error: 'Admin API error', message: errorText },
+          { status: response.status }
         );
       }
       
-      const blogData = blogDoc.data();
-      const likesCount = blogData?.likes || 0;
-      
-      // 사용자 좋아요 여부 확인
-      const likesQuery = await db.collection('blogLikes')
-        .where('blogId', '==', params.id)
-        .where('sessionId', '==', sessionId)
-        .limit(1)
-        .get();
-      
-      const userLiked = !likesQuery.empty;
-      
-      return NextResponse.json({
-        success: true,
-        likes: likesCount,
-        userLiked,
-      });
+      const result = await response.json();
+      return NextResponse.json(result);
       
     } else {
       // 로컬: Functions 에뮬레이터 사용
@@ -125,95 +92,33 @@ export async function POST(
     const isProduction = process.env.NODE_ENV === 'production';
     
     if (isProduction) {
-      // 프로덕션: Firebase Admin SDK 사용
-      const { initializeApp, getApps, cert } = await import('firebase-admin/app');
-      const { getFirestore, FieldValue } = await import('firebase-admin/firestore');
-      
-      // Firebase Admin 초기화 (이미 초기화되어 있으면 재사용)
-      let app;
-      if (getApps().length === 0) {
-        app = initializeApp({
-          credential: cert({
-            projectId: process.env.FIREBASE_PROJECT_ID,
-            clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-            privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-          }),
-        });
-      } else {
-        app = getApps()[0];
-      }
-      
-      const db = getFirestore(app);
-      
-      // 블로그 포스트 존재 확인
-      const blogRef = db.collection('blog').doc(params.id);
-      const blogDoc = await blogRef.get();
-      
-      if (!blogDoc.exists) {
-        return NextResponse.json(
-          { error: 'Blog not found', message: '블로그를 찾을 수 없습니다.' },
-          { status: 404 }
-        );
-      }
-      
-      // 기존 좋아요 확인
-      const likesQuery = await db.collection('blogLikes')
-        .where('blogId', '==', params.id)
-        .where('sessionId', '==', sessionId)
-        .limit(1)
-        .get();
-      
-      const existingLike = !likesQuery.empty ? likesQuery.docs[0] : null;
-      
-      if (action === 'like') {
-        if (existingLike) {
-          return NextResponse.json(
-            { error: 'Already liked', message: '이미 좋아요를 누르셨습니다.' },
-            { status: 409 }
-          );
-        }
-        
-        // 좋아요 추가
-        await db.collection('blogLikes').add({
+      // 프로덕션: Admin API 사용
+      const adminApiUrl = process.env.NEXT_PUBLIC_ADMIN_API_URL || 'https://asia-northeast3-atsignal.cloudfunctions.net/api';
+      const response = await fetch(`${adminApiUrl}/blog-likes`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           blogId: params.id,
+          action,
           sessionId,
           ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
           userAgent: request.headers.get('user-agent'),
-          createdAt: FieldValue.serverTimestamp(),
-        });
-        
-        // 블로그 포스트의 likes 카운트 증가
-        await blogRef.update({
-          likes: FieldValue.increment(1),
-        });
-        
-      } else if (action === 'unlike') {
-        if (!existingLike) {
-          return NextResponse.json(
-            { error: 'Not liked yet', message: '아직 좋아요를 누르지 않으셨습니다.' },
-            { status: 409 }
-          );
-        }
-        
-        // 좋아요 제거
-        await existingLike.ref.delete();
-        
-        // 블로그 포스트의 likes 카운트 감소
-        await blogRef.update({
-          likes: FieldValue.increment(-1),
-        });
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[Blog Like API] Admin API 에러:', errorText);
+        return NextResponse.json(
+          { error: 'Admin API error', message: errorText },
+          { status: response.status }
+        );
       }
       
-      // 업데이트된 좋아요 수 가져오기
-      const updatedBlogDoc = await blogRef.get();
-      const updatedBlog = updatedBlogDoc.data();
-      const likesCount = updatedBlog?.likes || 0;
-      
-      return NextResponse.json({
-        success: true,
-        likes: likesCount,
-        userLiked: action === 'like',
-      });
+      const result = await response.json();
+      return NextResponse.json(result);
       
     } else {
       // 로컬: Functions 에뮬레이터 사용

@@ -73,6 +73,7 @@ const demoRequestsHandler = __importStar(require("./demo-requests"));
 const demoRequestsIdHandler = __importStar(require("./demo-requests/[id]"));
 const salesInquiriesHandler = __importStar(require("./sales-inquiries"));
 const salesInquiriesIdHandler = __importStar(require("./sales-inquiries/[id]"));
+const blogLikesHandler = __importStar(require("./blog-likes"));
 /**
  * Admin API 통합 라우터
  */
@@ -111,12 +112,14 @@ async function router(request, response, path) {
             return await authMeHandler.handle(request, response);
         }
         // 공개 API 경로 (GET 요청만 인증 없이 접근 가능)
-        const publicPaths = ["faqs", "faq-categories", "glossaries", "glossary-categories", "whatsnew", "notice", "event", "blog", "blog/categories"];
+        const publicPaths = ["faqs", "faq-categories", "glossaries", "glossary-categories", "whatsnew", "notice", "event", "blog", "blog/categories", "blog-likes"];
         const isPublicGetRequest = request.method === "GET" &&
             pathParts.length > 0 &&
             publicPaths.includes(pathParts[0]);
-        // A안 정리: login/logout/auth/me, 공개 GET 요청 제외 모든 admin 요청은 여기서 인증 강제
-        if (!isPublicGetRequest) {
+        // 블로그 좋아요는 POST도 공개 접근 허용 (인증 없이)
+        const isBlogLikeRequest = pathParts[0] === "blog-likes";
+        // A안 정리: login/logout/auth/me, 공개 GET 요청, 블로그 좋아요 요청 제외 모든 admin 요청은 여기서 인증 강제
+        if (!isPublicGetRequest && !isBlogLikeRequest) {
             const authed = await (0, adminAuth_1.requireAdmin)(request);
             if (!authed) {
                 response.status(401).json({ error: "Unauthorized" });
@@ -288,6 +291,10 @@ async function router(request, response, path) {
             if (pathParts.length === 2) {
                 return await salesInquiriesIdHandler.handle(request, response, pathParts[1]);
             }
+        }
+        // Blog Likes (블로그 좋아요) - 인증 없이 접근 가능
+        if (pathParts[0] === "blog-likes") {
+            return await blogLikesHandler.handle(request, response);
         }
         // Images
         if (pathParts[0] === "images") {
