@@ -38,6 +38,7 @@ import * as demoRequestsHandler from "./demo-requests";
 import * as demoRequestsIdHandler from "./demo-requests/[id]";
 import * as salesInquiriesHandler from "./sales-inquiries";
 import * as salesInquiriesIdHandler from "./sales-inquiries/[id]";
+import * as blogLikesHandler from "./blog-likes";
 
 
 /**
@@ -84,14 +85,17 @@ export async function router(request: Request, response: Response, path: string)
     }
 
     // 공개 API 경로 (GET 요청만 인증 없이 접근 가능)
-    const publicPaths = ["faqs", "faq-categories", "glossaries", "glossary-categories", "whatsnew", "notice", "event", "blog", "blog/categories"];
+    const publicPaths = ["faqs", "faq-categories", "glossaries", "glossary-categories", "whatsnew", "notice", "event", "blog", "blog/categories", "blog-likes"];
     const isPublicGetRequest = 
       request.method === "GET" && 
       pathParts.length > 0 && 
       publicPaths.includes(pathParts[0]);
 
-    // A안 정리: login/logout/auth/me, 공개 GET 요청 제외 모든 admin 요청은 여기서 인증 강제
-    if (!isPublicGetRequest) {
+    // 블로그 좋아요는 POST도 공개 접근 허용 (인증 없이)
+    const isBlogLikeRequest = pathParts[0] === "blog-likes";
+
+    // A안 정리: login/logout/auth/me, 공개 GET 요청, 블로그 좋아요 요청 제외 모든 admin 요청은 여기서 인증 강제
+    if (!isPublicGetRequest && !isBlogLikeRequest) {
       const authed = await requireAdmin(request);
       if (!authed) {
         response.status(401).json({ error: "Unauthorized" });
@@ -269,6 +273,11 @@ export async function router(request: Request, response: Response, path: string)
       if (pathParts.length === 2) {
         return await salesInquiriesIdHandler.handle(request, response, pathParts[1]);
       }
+    }
+
+    // Blog Likes (블로그 좋아요) - 인증 없이 접근 가능
+    if (pathParts[0] === "blog-likes") {
+      return await blogLikesHandler.handle(request, response);
     }
 
     // Images
