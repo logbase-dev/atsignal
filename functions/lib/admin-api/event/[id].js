@@ -48,8 +48,8 @@ async function handle(request, response, id) {
             // 한 줄 문구 20글자 제한 검증
             if (body.oneLiner !== undefined) {
                 const oneLiner = normalizeLocalized(body.oneLiner);
-                if (oneLiner.ko.length > 20) {
-                    response.status(400).json({ error: "한 줄 문구(oneLiner.ko)는 20글자를 초과할 수 없습니다." });
+                if (oneLiner.ko.length > 50) {
+                    response.status(400).json({ error: "한 줄 문구(oneLiner.ko)는 50글자를 초과할 수 없습니다." });
                     return;
                 }
             }
