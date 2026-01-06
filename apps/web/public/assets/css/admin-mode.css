@@ -1,0 +1,100 @@
+/**
+ * Admin-mode CSS overrides.
+ *
+ * apps/web has a global `apps/web/app/globals.css` that defines `.header`, `.logo`, `.badge`, etc.
+ * That conflicts with the NiceAdmin template classes used by the Admin UI.
+ *
+ * We scope fixes under `body.admin-mode` which is toggled by `components/admin-template/ConditionalLayout.tsx`.
+ */
+
+ body.admin-mode {
+  background: #f6f9ff;
+  color: #444444;
+  font-family: "Open Sans", sans-serif;
+}
+
+/* Restore NiceAdmin header look/positioning */
+body.admin-mode .header {
+  background-color: #fff !important;
+  box-shadow: 0px 2px 20px rgba(1, 41, 112, 0.1) !important;
+  height: 60px !important;
+  padding-left: 20px !important;
+  border-bottom: 0 !important;
+}
+
+/* Header 내부 첫 번째 div width 설정 */
+body.admin-mode .header > div:first-child {
+  width: 280px !important; /* 원하는 width 값으로 변경 */
+}
+
+/* 더 구체적인 선택자 사용 - globals.css의 규칙을 덮어쓰기 */
+body.admin-mode .header .logo,
+body.admin-mode #header .logo {
+  height: auto !important;
+  line-height: 1 !important;
+  text-decoration: none !important;
+  display: flex !important;
+  flex-direction: row !important; /* 가로 방향 명시 */
+  flex-wrap: nowrap !important; /* 줄바꿈 방지 */
+  align-items: center !important; /* 세로 중앙 정렬 */
+}
+
+body.admin-mode .header .logo img,
+body.admin-mode #header .logo img {
+  max-height: 26px !important;
+  margin-right: 6px !important;
+  width: auto !important;
+  display: block !important;
+  flex-shrink: 0 !important; /* 이미지 크기 고정 */
+}
+
+body.admin-mode .header .logo span,
+body.admin-mode #header .logo span {
+  display: inline-block !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important; /* 텍스트 크기 고정 */
+}
+
+body.admin-mode .header-nav .nav-icon {
+  margin-right: 25px !important;
+  position: relative !important;
+}
+
+body.admin-mode .header-nav .badge-number {
+  position: absolute !important;
+  inset: -2px -5px auto auto !important;
+  font-weight: normal !important;
+  font-size: 12px !important;
+  padding: 3px 6px !important;
+}
+
+body.admin-mode .header-nav .nav-profile img {
+  max-height: 40px !important;
+}
+
+body.admin-mode .header-nav .nav-profile span {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+}
+
+/* Restore NiceAdmin footer styling */
+body.admin-mode .footer {
+  background-color: #f6f9ff !important;
+  padding: 20px 0 !important;
+  font-size: 14px !important;
+  border-top: 1px solid #cddfff !important;
+  color: #012970 !important;
+}
+
+body.admin-mode .footer .copyright {
+  text-align: center !important;
+  color: #012970 !important;
+}
+
+body.admin-mode .footer .credits {
+  padding-top: 5px !important;
+  text-align: center !important;
+  font-size: 13px !important;
+  color: #012970 !important;
+}
+

@@ -1,0 +1,8 @@
+packages:
+  - apps/*
+  - functions
+
+onlyBuiltDependencies:
+  - esbuild
+  - protobufjs
+  - sharp

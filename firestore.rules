@@ -1,0 +1,123 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================
+    // Public Collections (읽기: 모든 사용자, 쓰기: 인증된 사용자만)
+    // ============================================
+    
+    // Pages - 동적 페이지
+    match /pages/{pageId} {
+      allow read: if true;  // 모든 사용자가 읽기 가능
+      allow write: if request.auth != null;  // 인증된 사용자만 쓰기 가능 (Functions)
+    }
+    
+    // Menus - 메뉴
+    match /menus/{menuId} {
+      allow read: if true;  // 모든 사용자가 읽기 가능
+      allow write: if request.auth != null;  // 인증된 사용자만 쓰기 가능 (Functions)
+    }
+    
+    // Blog - 블로그 포스트
+    match /blog/{postId} {
+      allow read: if true;  // 모든 사용자가 읽기 가능
+      allow write: if request.auth != null;  // 인증된 사용자만 쓰기 가능 (Functions)
+    }
+    
+    // Blog Categories - 블로그 카테고리
+    match /blogCategories/{categoryId} {
+      allow read: if true;  // 모든 사용자가 읽기 가능
+      allow write: if request.auth != null;  // 인증된 사용자만 쓰기 가능 (Functions)
+    }
+    
+    // Blog Likes - 블로그 좋아요 (익명 사용자도 접근 가능)
+    match /blogLikes/{likeId} {
+      allow read, write: if true;  // 모든 사용자가 읽기/쓰기 가능 (익명 좋아요 지원)
+    }
+    
+    // Events - 이벤트
+    match /events/{eventId} {
+      allow read: if true;  // 모든 사용자가 읽기 가능
+      allow write: if request.auth != null;  // 인증된 사용자만 쓰기 가능 (Functions)
+    }
+    
+    // WhatsNew - 새소식
+    match /whatsnew/{whatsnewId} {
+      allow read: if true;  // 모든 사용자가 읽기 가능
+      allow write: if request.auth != null;  // 인증된 사용자만 쓰기 가능 (Functions)
+    }
+    
+    // Notices - 공지사항
+    match /notices/{noticeId} {
+      allow read: if true;  // 모든 사용자가 읽기 가능
+      allow write: if request.auth != null;  // 인증된 사용자만 쓰기 가능 (Functions)
+    }
+    
+    // FAQs - FAQ
+    match /faqs/{faqId} {
+      allow read: if true;  // 모든 사용자가 읽기 가능
+      allow write: if request.auth != null;  // 인증된 사용자만 쓰기 가능 (Functions)
+    }
+    
+    // FAQ Categories - FAQ 카테고리
+    match /faqCategories/{categoryId} {
+      allow read: if true;  // 모든 사용자가 읽기 가능
+      allow write: if request.auth != null;  // 인증된 사용자만 쓰기 가능 (Functions)
+    }
+    
+    // Glossaries - 주요용어
+    match /glossaries/{glossaryId} {
+      allow read: if true;  // 모든 사용자가 읽기 가능
+      allow write: if request.auth != null;  // 인증된 사용자만 쓰기 가능 (Functions)
+    }
+    
+    // Glossary Categories - 주요용어 카테고리
+    match /glossaryCategories/{categoryId} {
+      allow read: if true;  // 모든 사용자가 읽기 가능
+      allow write: if request.auth != null;  // 인증된 사용자만 쓰기 가능 (Functions)
+    }
+    
+    // ============================================
+    // Private Collections (읽기/쓰기: 인증된 사용자만)
+    // ============================================
+    
+    // Admins - 관리자 정보
+    // Note: Next.js API Route에서 클라이언트 SDK 사용 시 접근 허용
+    match /admins/{adminId} {
+      allow read, write: if true;  // Next.js API Route에서 접근 허용
+    }
+    
+    // Admin Login Logs - 관리자 로그인 로그
+    // Note: Next.js API Route에서 클라이언트 SDK 사용 시 접근 허용
+    match /adminLoginLogs/{logId} {
+      allow read, write: if true;  // Next.js API Route에서 접근 허용
+    }
+    
+    // Event Participants - 이벤트 참가자 (개인정보 포함)
+    match /eventParticipants/{participantId} {
+      allow read, write: if true;  // Next.js API Route에서 접근 허용 (Firebase Admin SDK 사용)
+    }
+    
+    // Demo Requests - 데모 요청 (개인정보 포함)
+    match /demoRequests/{requestId} {
+      allow read, write: if true;  // Next.js API Route에서 접근 허용 (클라이언트 SDK 사용)
+    }
+    
+    // Sales Inquiries - 구매 문의 (개인정보 포함)
+    match /salesInquiries/{inquiryId} {
+      allow read, write: if true;  // Next.js API Route에서 접근 허용 (클라이언트 SDK 사용)
+    }
+    
+    // Newsletter Subscribers - 뉴스레터 구독자 (개인정보 포함)
+    match /newsletterSubscribers/{subscriberId} {
+      allow read, write: if request.auth != null;  // 인증된 사용자만 접근 가능
+    }
+    
+    // ============================================
+    // Default Deny (명시되지 않은 모든 경로)
+    // ============================================
+    match /{document=**} {
+      allow read, write: if false;  // 기본적으로 거부
+    }
+  }
+}

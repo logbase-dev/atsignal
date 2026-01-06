@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<!-- saved from url=(0024)http://localhost:3000/ko -->
+<html lang="ko">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="preload" as="image" href="./AtSignal - 통합 행동데이터 플랫폼_files/logo.svg">
+		<link rel="preload" as="image" href="./AtSignal - 통합 행동데이터 플랫폼_files/signal-main-image.png">
+		<link rel="preload" as="image" href="./AtSignal - 통합 행동데이터 플랫폼_files/fi_263142.svg">
+		<link rel="preload" as="image" href="./AtSignal - 통합 행동데이터 플랫폼_files/fi_263126.svg">
+		<link rel="preload" as="image" href="./AtSignal - 통합 행동데이터 플랫폼_files/fi_263074.svg">
+		<link rel="stylesheet" href="./AtSignal - 통합 행동데이터 플랫폼_files/layout.css" data-precedence="next_static/css/app/layout.css">
+		<link rel="preload" as="script" fetchpriority="low" href="./AtSignal - 통합 행동데이터 플랫폼_files/webpack.js.다운로드">
+		<script src="./AtSignal - 통합 행동데이터 플랫폼_files/main-app.js.다운로드" async=""></script>
+		<script src="./AtSignal - 통합 행동데이터 플랫폼_files/app-pages-internals.js.다운로드" async=""></script>
+		<script src="./AtSignal - 통합 행동데이터 플랫폼_files/page.js.다운로드" async=""></script>
+		<script src="./AtSignal - 통합 행동데이터 플랫폼_files/layout.js.다운로드" async=""></script>
+		<script src="./AtSignal - 통합 행동데이터 플랫폼_files/not-found.js.다운로드" async=""></script>
+		<title>atsignal - 통합 행동데이터 플랫폼</title>
+		<meta name="description" content="Nethru가 보유한 데이터 분석 기술력과 경험을 집약한 통합 행동데이터 플랫폼">
+		<link rel="icon" href="http://localhost:3000/favicon.ico" type="image/x-icon" sizes="16x16">
+		<script src="./AtSignal - 통합 행동데이터 플랫폼_files/polyfills.js.다운로드" nomodule="">
+		</script>
+	</head>
+	<body class="__variable_fb8f2c __variable_f910ec antialiased">    
+	
+
+
+
+
+
+
+
+
+
+
+	<main class="min-h-screen bg-gray-50 dark:bg-gray-900" style="flex:1">
+
+
+		<!-- 필요한 부분 -->
+		<div className="main dark-mode">
+
+		  {/* Hero Section */}
+		  <section className="hero">
+			<div className="hero-container">
+			  <div>
+				<h1 className="hero-title">
+				  <span className="rolling-text-container">
+					{rollingTexts.map((text, index) => {
+					  const isActive = index === currentIndex;
+					  const isPrev = index === (currentIndex - 1 + rollingTexts.length) % rollingTexts.length;
+					  const isNext = index === (currentIndex + 1) % rollingTexts.length;
+					  return (
+						<span
+						  key={`${text}-${index}`}
+						  className={`rolling-text ${isActive ? 'active' : ''} ${isPrev ? 'prev' : ''} ${isNext && !isActive && !isPrev ? 'next' : ''}`}
+						>
+						  {text}
+						</span>
+					  );
+					})}
+				  </span>
+				</h1>
+				<p className="hero-description">
+				  {homeMenu?.description || '핵심 가치의 전달에 집중, 제품의 기능보다 문제 해결과 가치 중심으로 기술'}
+				</p>
+				<div className="hero-buttons">
+				  <Link
+					href="/Pricing/Contact Sales"
+					className="btn-primary"
+				  >
+					Get Demo
+				  </Link>
+				  <Link
+					href="/Pricing/Information"
+					className="btn-secondary"
+				  >
+					Free Trial
+				  </Link>
+				</div>
+			  </div>
+			</div>
+		  </section>
+
+		  {/* signal main-image Section */}
+		  <section className="section section-gray">
+			<div className="section-container">
+			  <img
+				src="/images/signal-main-image.png"
+				alt="signal main image"
+				style={{
+				  width: '100%',
+				  maxWidth: '1200px',
+				  height: 'auto',
+				  display: 'block',
+				  margin: '0 auto',
+				  borderRadius: '1rem',
+				  boxShadow: '0 20px 45px rgba(0, 0, 0, 0.25)',
+				}}
+			  />
+			</div>
+		  </section>
+
+		  {/* Stats Section */}
+		  <section ref={statsSectionRef} className="section section-gray">
+			<div className="section-container">
+			  <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+				<div className="card" style={{ textAlign: 'center' }}>
+				  <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#FFFFFF', marginBottom: '0.5rem' }}>
+					{(statsValues.events / 1000000).toFixed(1)}M+
+				  </div>
+				  <div className="stat-label">이벤트/초 처리</div>
+				</div>
+				<div className="card" style={{ textAlign: 'center' }}>
+				  <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#FFFFFF', marginBottom: '0.5rem' }}>
+					{statsValues.availability.toFixed(2)}%
+				  </div>
+				  <div className="stat-label">가용성</div>
+				</div>
+				<div className="card" style={{ textAlign: 'center' }}>
+				  <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#FFFFFF', marginBottom: '0.5rem' }}>
+					&lt; {statsValues.responseTime}ms
+				  </div>
+				  <div className="stat-label">평균 응답 시간</div>
+				</div>
+				<div className="card" style={{ textAlign: 'center' }}>
+				  <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#FFFFFF', marginBottom: '0.5rem' }}>
+					{statsValues.platforms}+
+				  </div>
+				  <div className="stat-label">연동 플랫폼</div>
+				</div>
+			  </div>
+			</div>
+		  </section>
+
+		  {/* Features Section */}
+		  <section className="section section-white">
+			<div className="section-container">
+			  <div className="features-layout">
+				{/* Left Sidebar - Fixed */}
+				<div className="features-sidebar">
+				  {features.map((feature) => (
+					<button
+					  key={feature.id}
+					  className={`feature-nav-item ${activeFeature === feature.id ? 'active' : ''}`}
+					  onClick={() => {
+						const element = featureRefs.current[feature.id];
+						if (element) {
+						  element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+						}
+					  }}
+					>
+					  {feature.title}
+					</button>
+				  ))}
+				</div>
+
+				{/* Right Content - Scrollable */}
+				<div className="features-content">
+				  {features.map((feature) => (
+					<div
+					  key={feature.id}
+					  ref={(el) => {
+						featureRefs.current[feature.id] = el;
+					  }}
+					  data-feature-id={feature.id}
+					  className="feature-card"
+					>
+					  <div style={{ 
+						width: '3rem', 
+						height: '3rem', 
+						borderRadius: '0.5rem', 
+						background: 'linear-gradient(135deg, var(--blue-600), var(--blue-700))',
+						display: 'flex',
+						alignItems: 'center',
+						justifyContent: 'center',
+						marginBottom: '1rem',
+						color: 'white',
+						fontSize: '1.5rem',
+						fontWeight: 'bold'
+					  }}>
+						{feature.number}
+					  </div>
+					  <h3 className="card-title">
+						{feature.title}
+					  </h3>
+					  <p className="card-description">
+						{feature.description}
+					  </p>
+					  <Link
+						href={feature.link}
+						className="card-link"
+					  >
+						자세히 보기 →
+					  </Link>
+					</div>
+				  ))}
+				</div>
+			  </div>
+			</div>
+		  </section>
+
+		  {/* Solutions Section */}
+		  <section className="section section-gray">
+			<div className="section-container">
+			  <h2 className="section-title">
+				팀별 솔루션
+			  </h2>
+			  <div className="grid">
+				<div className="card">
+				  <img 
+					src="/images/fi_263142.svg" 
+					alt="프로덕트 조직 아이콘" 
+					style={{ width: '48px', height: '48px', marginBottom: '1rem' }}
+				  />
+				  <h3 className="card-title">프로덕트 조직</h3>
+				  <p className="card-description">
+					퍼널 분석, A/B 테스트, UX 개선 등 제품 개발에 필요한 모든 데이터 분석 도구를 제공합니다.
+				  </p>
+				  <Link href={pathToUrl("/Solutions/By Team/Product/Funnel", currentLocale)} className="card-link">
+					제품 솔루션 보기 →
+				  </Link>
+				</div>
+				<div className="card">
+				  <img 
+					src="/images/fi_263126.svg" 
+					alt="마케팅 조직 아이콘" 
+					style={{ width: '48px', height: '48px', marginBottom: '1rem' }}
+				  />
+				  <h3 className="card-title">마케팅 조직</h3>
+				  <p className="card-description">
+					AARRR 프레임워크, 코호트 분석, 어트리뷰션 모델링으로 마케팅 성과를 정확히 측정하세요.
+				  </p>
+				   <Link href={pathToUrl("/Solutions/By Team/Marketing/AARRR", currentLocale)} className="card-link">
+					마케팅 솔루션 보기 →
+				  </Link>
+				</div>
+				<div className="card">
+				  <img 
+					src="/images/fi_263074.svg" 
+					alt="테크 & 개발 조직 아이콘" 
+					style={{ width: '48px', height: '48px', marginBottom: '1rem' }}
+				  />
+				  <h3 className="card-title">테크 & 개발 조직</h3>
+				  <p className="card-description">
+					로그 모니터링, 에러 추적, Core Web Vitals 측정으로 안정적인 서비스를 운영하세요.
+				  </p>
+				   <Link href={pathToUrl("/Solutions/By Team/Engineering/Log Monitoring", currentLocale)} className="card-link">
+					엔지니어링 솔루션 보기 →
+				  </Link>
+				</div>
+			  </div>
+			</div>
+		  </section>
+
+		  {/* Benefits Section */}
+		  <section className="section section-white">
+			<div className="section-container">
+			  <h2 className="section-title">
+				AtSignal을 선택하는 이유
+			  </h2>
+			  <div style={{ 
+				display: 'grid', 
+				gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
+				gap: '1.5rem' 
+			  }}>
+				<div className="benefit-item">
+				  <div className="benefit-icon">✓</div>
+				  <span className="benefit-text">실시간 데이터 처리 및 분석</span>
+				</div>
+				<div className="benefit-item">
+				  <div className="benefit-icon">✓</div>
+				  <span className="benefit-text">엔터프라이즈급 보안 및 규정 준수</span>
+				</div>
+				<div className="benefit-item">
+				  <div className="benefit-icon">✓</div>
+				  <span className="benefit-text">확장 가능한 아키텍처</span>
+				</div>
+				<div className="benefit-item">
+				  <div className="benefit-icon">✓</div>
+				  <span className="benefit-text">24/7 기술 지원</span>
+				</div>
+				<div className="benefit-item">
+				  <div className="benefit-icon">✓</div>
+				  <span className="benefit-text">직관적인 대시보드 및 리포트</span>
+				</div>
+				<div className="benefit-item">
+				  <div className="benefit-icon">✓</div>
+				  <span className="benefit-text">빠른 도입 및 온보딩</span>
+				</div>
+			  </div>
+			</div>
+		  </section>
+
+		  {/* Use Cases Section */}
+		  <section className="section section-gray">
+			<div className="section-container">
+			  <h2 className="section-title">
+				고객 성공 사례
+			  </h2>
+			  <div className="grid">
+				<div className="card">
+				  <h3 className="card-title">전환율 30% 향상</h3>
+				  <p className="card-description">
+					"AtSignal의 퍼널 분석을 통해 구매 프로세스의 병목 지점을 발견하고 개선하여 전환율을 30% 향상시켰습니다."
+				  </p>
+				  <div className="testimonial-author">
+					- 이커머스 기업 A사
+				  </div>
+				</div>
+				<div className="card">
+				  <h3 className="card-title">마케팅 ROI 2배 증가</h3>
+				  <p className="card-description">
+					"어트리뷰션 모델링을 통해 각 채널의 실제 기여도를 파악하고 예산을 재배분하여 마케팅 ROI를 2배로 늘렸습니다."
+				  </p>
+				  <div className="testimonial-author">
+					- 핀테크 기업 B사
+				  </div>
+				</div>
+				<div className="card">
+				  <h3 className="card-title">시스템 안정성 개선</h3>
+				  <p className="card-description">
+					"실시간 로그 모니터링과 에러 추적 기능으로 장애를 사전에 예방하고 시스템 가용성을 99.9%로 향상시켰습니다."
+				  </p>
+				  <div className="testimonial-author">
+					- SaaS 기업 C사
+				  </div>
+				</div>
+			  </div>
+			</div>
+		  </section>
+
+		  {/* CTA Section */}
+		  <section className="section section-gray section-text-center">
+			<div className="section-container">
+			  <div className="form-container">
+				<h2 className="section-title">
+				  지금 시작하세요
+				</h2>
+				<p className="cta-description">
+				  Newsletter를 구독하고 최신 소식을 받아보세요
+				</p>
+				<div className="form-row">
+				  <input
+					type="email"
+					placeholder="이메일 주소"
+					className="form-input"
+					value={emailInput}
+					onChange={(e) => setEmailInput(e.target.value)}
+					onKeyDown={(e) => {
+					  if (e.key === 'Enter') {
+						e.preventDefault();
+						setIsNewsletterModalOpen(true);
+					  }
+					}}
+				  />
+				  <button
+					className="form-button"
+					onClick={() => setIsNewsletterModalOpen(true)}
+					type="button"
+				  >
+					구독하기
+				  </button>
+				</div>
+			  </div>
+			</div>
+		  </section>
+
+		</div>
+
+
+
+	<!--/$-->
+	</main>
+
+
+
+
+
+
+
+
+
+
+
+
+
+	<footer class="footer">
+		<div class="footer-container">
+			<div class="footer-content">
+				<div class="footer-brand">
+					<a class="footer-logo" href="http://localhost:3000/ko">
+					<img src="./AtSignal - 통합 행동데이터 플랫폼_files/logo.svg" alt="AtSignal" class="footer-logo-image">
+					</a>
+					<p class="footer-description">Nethru가 보유한 데이터 분석 기술력과 경험을 집약한 통합 행동데이터 플랫폼</p>
+				</div>
+				<div class="footer-links">
+					<div class="footer-column">
+						<h3 class="footer-column-title">Product</h3>
+						<ul class="footer-link-list">
+						<li>
+						<a class="footer-link" href="http://localhost:3000/ko/product/product-atsignal/log-collecting">@signal</a>
+						</li>
+						<li>
+						<a class="footer-link" href="http://localhost:3000/ko/product/atsignal-overview">atsignal Overview</a>
+						</li>
+						<li>
+						<a href="https://atsignal-dev-docs.vercel.app/" target="_blank" rel="noopener noreferrer" class="footer-link">Docs@signal</a>
+						</li>
+						<li>
+						<a class="footer-link" href="http://localhost:3000/ko/product/security-privacy">Security &amp; Privacy</a>
+						</li>
+						<li>
+						<a class="footer-link" href="http://localhost:3000/ko/product/whats-new">What's New</a>
+						</li>
+						</ul>
+					</div>
+					<div class="footer-column">
+						<h3 class="footer-column-title">Solutions</h3>
+						<ul class="footer-link-list">
+						<li>
+						<a class="footer-link" href="http://localhost:3000/ko/solution/by-industry/ecommerce">By Industry</a>
+						</li>
+						<li>
+						<a class="footer-link" href="http://localhost:3000/ko/solution/by-team/product/funnel">By Team</a>
+						</li>
+						<li>
+						<a class="footer-link" href="http://localhost:3000/ko/solution/by-size/enterprise">By Size</a>
+						</li>
+						</ul>
+					</div>
+					<div class="footer-column">
+						<h3 class="footer-column-title">Resources</h3>
+						<ul class="footer-link-list">
+						<li>
+						<a class="footer-link" href="http://localhost:3000/ko/resources/onboarding-atsignal">Onboarding@signal</a>
+						</li>
+						<li>
+						<a href="https://atsignal-dev-docs.vercel.app/" target="_blank" rel="noopener noreferrer" class="footer-link">  Docs@signal </a>
+						</li>
+						<li>
+						<a class="footer-link" href="http://localhost:3000/ko/resources/customers-atsignal">Customers@signal</a>
+						</li>
+						<li>
+						<a class="footer-link" href="http://localhost:3000/ko/resources/faq">FAQ</a>
+						</li>
+						<li>
+						<a class="footer-link" href="http://localhost:3000/ko/resources/glossary">주요용어</a>
+						</li>
+						</ul>
+					</div>
+					<div class="footer-column">
+						<h3 class="footer-column-title">Pricing</h3>
+						<ul class="footer-link-list">
+						<li>
+						<a class="footer-link" href="http://localhost:3000/ko/pricing/pricing/information">Information</a>
+						</li>
+						<li>
+						<a class="footer-link" href="http://localhost:3000/ko/pricing/comparison">Comparison</a>
+						</li>
+						<li>
+						<a class="footer-link" href="http://localhost:3000/ko/pricing/contact-sales">Contact Sales</a>
+						</li>
+						</ul>
+					</div>
+					<div class="footer-column">
+						<h3 class="footer-column-title">Company</h3>
+						<ul class="footer-link-list">
+						<li>
+						<a class="footer-link" href="http://localhost:3000/ko/company/company/about-us">About us</a>
+						</li>
+						</ul>
+					</div>
+				</div>
+
+			</div>
+			<div class="footer-bottom">
+				<div class="footer-copyright">
+					<p>© <!-- -->2025<!-- --> Nethru. All rights reserved.</p>
+				</div>
+				<div class="footer-legal">
+					<a class="footer-legal-link" href="http://localhost:3000/ko/Product/Security%26Privacy">Privacy Policy</a>
+					<span class="footer-separator">·</span>
+					<a class="footer-legal-link" href="http://localhost:3000/ko/Pricing/Contact%20Sales">Terms of Service</a>
+				</div>
+			</div>
+		</div>
+	</footer>
+
+
+
+
+
+
+
+
+	<script src="./AtSignal - 통합 행동데이터 플랫폼_files/webpack.js.다운로드" async="">
+	</script>
+	<script>(self.__next_f=self.__next_f||[]).push([0]);self.__next_f.push([2,null])</script>
+	<script>self.__next_f.push([1,"1:HL[\"/_next/static/css/app/layout.css?v=1764918028923\",\"style\"]\n0:D{\"name\":\"r2\",\"env\":\"Server\"}\n"])</script>
+	<script>self.__next_f.push([1,"2:I[\"(app-pages-browser)/../../node_modules/.pnpm/next@14.2.32_@opentelemetry_a70b28a7ff09e2764ddd4058cd04de43/node_modules/next/dist/client/components/app-router.js\",[\"app-pages-internals\",\"static/chunks/app-pages-internals.js\"],\"\"]\na:I[\"(app-pages-browser)/../../node_modules/.pnpm/next@14.2.32_@opentelemetry_a70b28a7ff09e2764ddd4058cd04de43/node_modules/next/dist/client/components/error-boundary.js\",[\"app-pages-internals\",\"static/chunks/app-pages-internals.js\"],\"\"]\n3:D{\"name\":\"\",\"env\":\"Server\"}\n4:D{\"name\":\"LocalePage\",\"env\":\"Server\"}\n5:D{\"name\":\"LocaleLayout\",\"env\":\"Server\"}\n6:D{\"name\":\"RootLayout\",\"env\":\"Server\"}\n7:D{\"name\":\"Loading\",\"env\":\"Server\"}\n7:[\"$\",\"div\",null,{\"className\":\"loading-container\",\"children\":[\"$\",\"img\",null,{\"src\":\"/images/loading-transition-2.png\",\"alt\":\"Loading...\",\"className\":\"loading-image\"}]}]\n8:D{\"name\":\"rQ\",\"env\":\"Server\"}\n8:null\n9:D{\"name\":\"\",\"env\":\"Server\"}\nb:[]\n0:[\"$\",\"$L2\",null,{\"buildId\":\"development\",\"assetPrefix\":\"\",\"urlParts\":[\"\",\"ko\"],\"initialTree\":[\"\",{\"children\":[[\"locale\",\"ko\",\"d\"],{\"children\":[\"__PAGE__\",{}]}]},\"$undefined\",\"$undefined\",true],\"initialSeedData\":[\"\",{\"children\":[[\"locale\",\"ko\",\"d\"],{\"children\":[\"__PAGE__\",{},[[\"$L3\",\"$L4\",null],null],null]},[[null,\"$L5\"],null],null]},[[[[\"$\",\"link\",\"0\",{\"rel\":\"stylesheet\",\"href\":\"/_next/static/css/app/layout.css?v=1764918028923\",\"precedence\":\"next_static/css/app/layout.css\",\"crossOrigin\":\"$undefined\"}]],\"$L6\"],null],[\"$7\",[],[]]],\"couldBeIntercepted\":false,\"initialHead\":[\"$8\",\"$L9\"],\"globalErrorComponent\":\"$a\",\"missingSlots\":\"$Wb\"}]\n"])</script>
+	<script>self.__next_f.push([1,"c:I[\"(app-pages-browser)/./components/Home.tsx\",[\"app/[locale]/page\",\"static/chunks/app/%5Blocale%5D/page.js\"],\"default\"]\nd:I[\"(app-pages-browser)/../../node_modules/.pnpm/next@14.2.32_@opentelemetry_a70b28a7ff09e2764ddd4058cd04de43/node_modules/next/dist/client/components/layout-router.js\",[\"app-pages-internals\",\"static/chunks/app-pages-internals.js\"],\"\"]\nf:I[\"(app-pages-browser)/../../node_modules/.pnpm/next@14.2.32_@opentelemetry_a70b28a7ff09e2764ddd4058cd04de43/node_modules/next/dist/client/components/render-from-template-context.js\",[\"app-pages-internals\",\"static/chunks/app-pages-internals.js\"],\"\"]\n4:[\"$\",\"$Lc\",null,{\"locale\":\"ko\"}]\ne:[\"locale\",\"ko\",\"d\"]\n5:[\"$\",\"$Ld\",null,{\"parallelRouterKey\":\"children\",\"segmentPath\":[\"children\",\"$e\",\"children\"],\"error\":\"$undefined\",\"errorStyles\":\"$undefined\",\"errorScripts\":\"$undefined\",\"template\":[\"$\",\"$Lf\",null,{}],\"templateStyles\":\"$undefined\",\"templateScripts\":\"$undefined\",\"notFound\":\"$undefined\",\"notFoundStyles\":\"$undefined\"}]\n9:[[\"$\",\"meta\",\"0\",{\"name\":\"viewport\",\"content\":\"width=device-width, initial-scale=1\"}],[\"$\",\"meta\",\"1\",{\"charSet\":\"utf-8\"}],[\"$\",\"title\",\"2\",{\"children\":\"atsignal - 통합 행동데이터 플랫폼\"}],[\"$\",\"meta\",\"3\",{\"name\":\"description\",\"content\":\"Nethru가 보유한 데이터 분석 기술력과 경험을 집약한 통합 행동데이터 플랫폼\"}],[\"$\",\"link\",\"4\",{\"rel\":\"icon\",\"href\":\"/favicon.ico\",\"type\":\"image/x-icon\",\"sizes\":\"16x16\"}]]\n3:null\n"])</script>
+	<script>self.__next_f.push([1,"10:I[\"(app-pages-browser)/./components/Splash.tsx\",[\"app/layout\",\"static/chunks/app/layout.js\"],\"default\"]\n11:I[\"(app-pages-browser)/./components/Header.tsx\",[\"app/layout\",\"static/chunks/app/layout.js\"],\"default\"]\n12:I[\"(app-pages-browser)/./app/not-found.tsx\",[\"app/not-found\",\"static/chunks/app/not-found.js\"],\"default\"]\n13:I[\"(app-pages-browser)/./components/Footer.tsx\",[\"app/layout\",\"static/chunks/app/layout.js\"],\"default\"]\n"])</script>
+	<script>self.__next_f.push([1,"6:[\"$\",\"html\",null,{\"lang\":\"ko\",\"children\":[\"$\",\"body\",null,{\"className\":\"__variable_fb8f2c __variable_f910ec antialiased\",\"children\":[[\"$\",\"$L10\",null,{}],[\"$\",\"div\",null,{\"style\":{\"display\":\"flex\",\"flexDirection\":\"column\",\"minHeight\":\"100vh\"},\"children\":[[\"$\",\"$L11\",null,{\"menuTree\":[{\"id\":\"j4QohDDFAVZlEnizJDM6\",\"name\":\"Product\",\"path\":\"/product\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[{\"id\":\"F3UQVTzgBGSJqS4oEI5G\",\"name\":\"@signal\",\"path\":\"/product/product-atsignal\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[{\"id\":\"eZhPqJSHrvwYmCZyrBei\",\"name\":\"Log Collecting\",\"path\":\"/product/product-atsignal/log-collecting\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":1},{\"id\":\"MYhfXAVhkRH5GYSlDDnL\",\"name\":\"Ingestion Pipeline\",\"path\":\"/product/product-atsignal/ingestion-pipeline\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":2},{\"id\":\"gstLvRCa0ML6jWtnfuAl\",\"name\":\"Intra Engine\",\"path\":\"/product/product-atsignal/intra-engine\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":3},{\"id\":\"1j7xCBA7RYMCRBq9rI1k\",\"name\":\"Analytics\",\"path\":\"/product/product-atsignal/analytics\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":4},{\"id\":\"hjiWgoo1RdwvrPhs8kgG\",\"name\":\"Integrations\",\"path\":\"/product/product-atsignal/integrations\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":5}],\"order\":1},{\"id\":\"bE0BuwjBlQxiH3hA6wyG\",\"name\":\"atsignal Overview\",\"path\":\"/product/atsignal-overview\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":2},{\"id\":\"JCtzLviuXYIuRMLgxyG8\",\"name\":\"Docs@signal\",\"path\":\"/https:/atsignal-dev-docs.vercel.app\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":3},{\"id\":\"ROS8fZ3y1xONHc1CAcPm\",\"name\":\"Security \u0026 Privacy\",\"path\":\"/product/security-privacy\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":4},{\"id\":\"lNPDGu9MxjMhWZH5k87x\",\"name\":\"What's New\",\"path\":\"/product/whats-new\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":5}],\"order\":2},{\"id\":\"tKATJadt8aUwrtyTWVHS\",\"name\":\"Solutions\",\"path\":\"/solution\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[{\"id\":\"qi6qXvAofk1YdNrK4mpE\",\"name\":\"By Industry\",\"path\":\"/solution/by-industry\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[{\"id\":\"auu1xvvqCqUWUXDkJx0c\",\"name\":\"eCommerce\",\"path\":\"/solution/by-industry/ecommerce\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":1},{\"id\":\"sTqK6j9cicynATC5vMOQ\",\"name\":\"Financial\",\"path\":\"/solution/by-industry/financial\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":2},{\"id\":\"N7XsQycRfJu7RETSLSdY\",\"name\":\"Community \u0026 Fandom\",\"path\":\"/solution/by-industry/community-fandom\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":3},{\"id\":\"sBfuPUpXLNO3h3EXsKha\",\"name\":\"Media \u0026 Entertainment\",\"path\":\"/solution/by-industry/media-entertainment\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":4},{\"id\":\"9cMTdGbr2eXH7GeIMoAD\",\"name\":\"Mobility\",\"path\":\"/solution/by-industry/mobility\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":5},{\"id\":\"ucQcjmKftjL9GhhuDnpz\",\"name\":\"Healthcare\",\"path\":\"/solution/by-industry/healthcare\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":6}],\"order\":1},{\"id\":\"QGFCTIy15a1F0qkXqGRp\",\"name\":\"By Team\",\"path\":\"/solution/by-team\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[{\"id\":\"oMCXbTCKKjweJwPJIWxZ\",\"name\":\"Product\",\"path\":\"/solution/by-team/product\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[{\"id\":\"EVktEDygz5U1c2t0T6fD\",\"name\":\"Funnel\",\"path\":\"/solution/by-team/product/funnel\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":1},{\"id\":\"wCSqFTeksv5FKFAqbb1H\",\"name\":\"Feature Launch \",\"path\":\"/solution/by-team/product/feature-launch\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":2},{\"id\":\"2GOUi7fTnzk1PCMwNNQo\",\"name\":\"UX \u0026 Usability\",\"path\":\"/solution/by-team/product/ux-usability\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":3},{\"id\":\"KcNJsiFMnx3VPuDC7Vot\",\"name\":\"AB test\",\"path\":\"/solution/by-team/product/ab-test\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":4}],\"order\":1},{\"id\":\"TUcGeDDhFTUaamrcbiPH\",\"name\":\"Marketing\",\"path\":\"/solution/by-team/marketing\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[{\"id\":\"hoEivLXjnBrHnp1a8bPG\",\"name\":\"AARRR\",\"path\":\"/solution/by-team/marketing/aarrr\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":1},{\"id\":\"bA3fxiiFXZhvc9yT2t4t\",\"name\":\"Cohort\",\"path\":\"/solution/by-team/marketing/cohort\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":2},{\"id\":\"FkATUgA5KkOgtYyI6oz7\",\"name\":\"Promotion Uplift\",\"path\":\"/solution/by-team/marketing/promotion-uplift\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":3},{\"id\":\"TDRT79Rk7P4D7LGnkWEq\",\"name\":\"LTV\",\"path\":\"/solution/by-team/marketing/ltv\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":4},{\"id\":\"7PVcuzRN5JSNhapDVZyp\",\"name\":\"Segment\u0026Profiling\",\"path\":\"/solution/by-team/marketing/segment-profiling\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":5},{\"id\":\"2D5gw5gd0dLOWva5DZYF\",\"name\":\"Engagement\",\"path\":\"/solution/by-team/marketing/engagement\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":6},{\"id\":\"OX4KoCB7Kfg7r9fg7LqM\",\"name\":\"Attribution\",\"path\":\"/solution/by-team/marketing/attribution\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":7}],\"order\":2},{\"id\":\"MV206MTHBmXr46vD2l6H\",\"name\":\"Engineering\",\"path\":\"/solution/by-team/engineering\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[{\"id\":\"BWcOZPSnSaMIsh5DSlLv\",\"name\":\"Log Monitoring\",\"path\":\"/solution/by-team/engineering/log-monitoring\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":1},{\"id\":\"lpDR5O9CRRRdhGF0Ge59\",\"name\":\"Core Web Vitals\",\"path\":\"/solution/by-team/engineering/core-web-vitals\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":2},{\"id\":\"sJWIgyFRRYIjVGdxCsUh\",\"name\":\"Error\",\"path\":\"/solution/by-team/engineering/error\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":3},{\"id\":\"hSZRBGdYgeTLXiSvt33H\",\"name\":\"Crash\",\"path\":\"/solution/by-team/engineering/crash\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":4}],\"order\":3},{\"id\":\"3PWY6qjXhcv3adZAP9rd\",\"name\":\"Operation/Support\",\"path\":\"/solution/by-team/operation-support\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[{\"id\":\"zopLhyfoiaUVDpzuQOrH\",\"name\":\"Customer Journey\",\"path\":\"/solution/by-team/operation-support/customer-journey\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":1},{\"id\":\"B8xK7xWxfstaYOZ7afRo\",\"name\":\"Optimization\",\"path\":\"/solution/by-team/operation-support/optimization\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":2},{\"id\":\"FWupxRcc0xnNM17OjDqI\",\"name\":\"Merchant Analysis\",\"path\":\"/solution/by-team/operation-support/merchant-analysis\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":3},{\"id\":\"sTwdbUco3TU5uvdDDa2z\",\"name\":\"Regional Analysis\",\"path\":\"/solution/by-team/operation-support/regional-analysis\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":4},{\"id\":\"Jpv3VUhHZjCRLR1zkgZj\",\"name\":\"User-focus View\",\"path\":\"/solution/by-team/operation-support/user-focus-view\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":5}],\"order\":4},{\"id\":\"QyiwOq7KJ71RYcUX6aZk\",\"name\":\"Data\",\"path\":\"/solution/by-team/data\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[{\"id\":\"USoyo7hT9onMQsJnLfK8\",\"name\":\"BI\",\"path\":\"/solution/by-team/data/bi\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":1},{\"id\":\"K6ewIZmAwt5ZHyD738EV\",\"name\":\"Feature Stroe\",\"path\":\"/solution/by-team/data/feature-stroe\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":2},{\"id\":\"ZXDFdMtdFrMGpnEmpXd6\",\"name\":\"CDP\",\"path\":\"/solution/by-team/data/cdp\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":3},{\"id\":\"E3LfO6huezsqFk1aLZGD\",\"name\":\"MLops\",\"path\":\"/solution/by-team/data/mlops\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":4}],\"order\":5},{\"id\":\"DCdIahC7DkGCm1SJyRIz\",\"name\":\"Management\",\"path\":\"/solution/by-team/management\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[{\"id\":\"3Ogn3YRDU1YLU8KFRd5H\",\"name\":\"KPI\",\"path\":\"/solution/by-team/management/kpi\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":1}],\"order\":6}],\"order\":2},{\"id\":\"COxYbiX1dZNuMIle4Vyh\",\"name\":\"By Size\",\"path\":\"/solution/by-size\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[{\"id\":\"oIIe9hwySuGrb41idZ4g\",\"name\":\"Enterprise\",\"path\":\"/solution/by-size/enterprise\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":1},{\"id\":\"luOFXJETwL4Ye9FzWFMS\",\"name\":\"Mid-size\",\"path\":\"/solution/by-size/mid-size\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":2},{\"id\":\"drWeC9g2vKHVfSfjQ0oL\",\"name\":\"Small-size\",\"path\":\"/solution/by-size/small-size\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":3},{\"id\":\"yRUQETkYqHQBjsIAaKK7\",\"name\":\"Startup\",\"path\":\"/solution/by-size/startup\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":4}],\"order\":3}],\"order\":3},{\"id\":\"TEqIXcZPELGfyUAGDFUw\",\"name\":\"Resources\",\"path\":\"/resources\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[{\"id\":\"Tm0qlvsklqpEw25NsSdx\",\"name\":\"Onboarding@signal\",\"path\":\"/resources/onboarding-atsignal\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":1},{\"id\":\"dXaQQCAlsFFVjokVbn6c\",\"name\":\"  Docs@signal \",\"path\":\"/https:/atsignal-dev-docs.vercel.app\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":2},{\"id\":\"vlls5Dd2w9s6va5xsnHG\",\"name\":\"Customers@signal\",\"path\":\"/resources/customers-atsignal\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":3},{\"id\":\"ngjRPgIyHf4fbuSGiqnK\",\"name\":\"FAQ\",\"path\":\"/resources/faq\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":4},{\"id\":\"lWqlLcE9j8U1Cpw5LOJc\",\"name\":\"주요용어\",\"path\":\"/resources/glossary\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":5}],\"order\":4},{\"id\":\"edpFzxVPtvhTjDLrOeNh\",\"name\":\"Pricing\",\"path\":\"/pricing\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[{\"id\":\"JETupAFuk9ukFIaaKaCB\",\"name\":\"Information\",\"path\":\"/pricing/pricing/information\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":1},{\"id\":\"EFC5SC7K4yinDaRVVauK\",\"name\":\"Comparison\",\"path\":\"/pricing/comparison\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":2},{\"id\":\"LzYdzmlherPYFqdYhSGp\",\"name\":\"Contact Sales\",\"path\":\"/pricing/contact-sales\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":5}],\"order\":5},{\"id\":\"DHE5CDUjiVgvH8gXURWQ\",\"name\":\"Company\",\"path\":\"/company/company\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[{\"id\":\"d1yOQZMj3J6reXoTsr95\",\"name\":\"About us\",\"path\":\"/company/company/about-us\",\"url\":\"$undefined\",\"isExternal\":false,\"description\":\"$undefined\",\"children\":[],\"order\":1}],\"order\":6}]}],[\"$\",\"main\",null,{\"className\":\"min-h-screen bg-gray-50 dark:bg-gray-900\",\"style\":{\"flex\":1},\"children\":[\"$\",\"$Ld\",null,{\"parallelRouterKey\":\"children\",\"segmentPath\":[\"children\"],\"error\":\"$undefined\",\"errorStyles\":\"$undefined\",\"errorScripts\":\"$undefined\",\"template\":[\"$\",\"$Lf\",null,{}],\"templateStyles\":\"$undefined\",\"templateScripts\":\"$undefined\",\"notFound\":[\"$\",\"$L12\",null,{}],\"notFoundStyles\":[]}]}],[\"$\",\"$L13\",null,{\"menus\":[{\"id\":\"3Ogn3YRDU1YLU8KFRd5H\",\"labels\":{\"ko\":\"KPI\",\"en\":\"KPI\"},\"label\":\"KPI\",\"path\":\"solution/by-team/management/kpi\",\"depth\":4,\"parentId\":\"DCdIahC7DkGCm1SJyRIz\",\"order\":1,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"BWcOZPSnSaMIsh5DSlLv\",\"labels\":{\"en\":\"Log Monitoring\",\"ko\":\"Log Monitoring\"},\"label\":\"Log Monitoring\",\"path\":\"solution/by-team/engineering/log-monitoring\",\"depth\":4,\"parentId\":\"MV206MTHBmXr46vD2l6H\",\"order\":1,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"EVktEDygz5U1c2t0T6fD\",\"labels\":{\"en\":\"Funnel\",\"ko\":\"Funnel\"},\"label\":\"Funnel\",\"path\":\"solution/by-team/product/funnel\",\"depth\":4,\"parentId\":\"oMCXbTCKKjweJwPJIWxZ\",\"order\":1,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"F3UQVTzgBGSJqS4oEI5G\",\"labels\":{\"ko\":\"@signal\",\"en\":\"@signal\"},\"label\":\"@signal\",\"path\":\"product/product-atsignal\",\"depth\":2,\"parentId\":\"j4QohDDFAVZlEnizJDM6\",\"order\":1,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"JETupAFuk9ukFIaaKaCB\",\"labels\":{\"ko\":\"Information\",\"en\":\"Information\"},\"label\":\"Information\",\"path\":\"pricing/pricing/information\",\"depth\":2,\"parentId\":\"edpFzxVPtvhTjDLrOeNh\",\"order\":1,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"Tm0qlvsklqpEw25NsSdx\",\"labels\":{\"ko\":\"Onboarding@signal\",\"en\":\"Onboarding@signal\"},\"label\":\"Onboarding@signal\",\"path\":\"resources/onboarding-atsignal\",\"depth\":2,\"parentId\":\"TEqIXcZPELGfyUAGDFUw\",\"order\":1,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"USoyo7hT9onMQsJnLfK8\",\"labels\":{\"ko\":\"BI\",\"en\":\"BI\"},\"label\":\"BI\",\"path\":\"solution/by-team/data/bi\",\"depth\":4,\"parentId\":\"QyiwOq7KJ71RYcUX6aZk\",\"order\":1,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"auu1xvvqCqUWUXDkJx0c\",\"labels\":{\"ko\":\"eCommerce\",\"en\":\"eCommerce\"},\"label\":\"eCommerce\",\"path\":\"solution/by-industry/ecommerce\",\"depth\":3,\"parentId\":\"qi6qXvAofk1YdNrK4mpE\",\"order\":1,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"d1yOQZMj3J6reXoTsr95\",\"labels\":{\"en\":\"About us\",\"ko\":\"About us\"},\"label\":\"About us\",\"path\":\"company/company/about-us\",\"depth\":2,\"parentId\":\"DHE5CDUjiVgvH8gXURWQ\",\"order\":1,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"eZhPqJSHrvwYmCZyrBei\",\"labels\":{\"ko\":\"Log Collecting\",\"en\":\"Log Collecting\"},\"label\":\"Log Collecting\",\"path\":\"product/product-atsignal/log-collecting\",\"depth\":3,\"parentId\":\"F3UQVTzgBGSJqS4oEI5G\",\"order\":1,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"hoEivLXjnBrHnp1a8bPG\",\"labels\":{\"ko\":\"AARRR\",\"en\":\"AARRR\"},\"label\":\"AARRR\",\"path\":\"solution/by-team/marketing/aarrr\",\"depth\":4,\"parentId\":\"TUcGeDDhFTUaamrcbiPH\",\"order\":1,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"oIIe9hwySuGrb41idZ4g\",\"labels\":{\"ko\":\"Enterprise\",\"en\":\"Enterprise\"},\"label\":\"Enterprise\",\"path\":\"solution/by-size/enterprise\",\"depth\":3,\"parentId\":\"COxYbiX1dZNuMIle4Vyh\",\"order\":1,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"oMCXbTCKKjweJwPJIWxZ\",\"labels\":{\"en\":\"Product\",\"ko\":\"Product\"},\"label\":\"Product\",\"path\":\"solution/by-team/product\",\"depth\":3,\"parentId\":\"QGFCTIy15a1F0qkXqGRp\",\"order\":1,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"qi6qXvAofk1YdNrK4mpE\",\"labels\":{\"en\":\"By Industry\",\"ko\":\"By Industry\"},\"label\":\"By Industry\",\"path\":\"solution/by-industry\",\"depth\":2,\"parentId\":\"tKATJadt8aUwrtyTWVHS\",\"order\":1,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"zopLhyfoiaUVDpzuQOrH\",\"labels\":{\"ko\":\"Customer Journey\",\"en\":\"Customer Journey\"},\"label\":\"Customer Journey\",\"path\":\"solution/by-team/operation-support/customer-journey\",\"depth\":4,\"parentId\":\"3PWY6qjXhcv3adZAP9rd\",\"order\":1,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"B8xK7xWxfstaYOZ7afRo\",\"labels\":{\"ko\":\"Optimization\",\"en\":\"Optimization\"},\"label\":\"Optimization\",\"path\":\"solution/by-team/operation-support/optimization\",\"depth\":4,\"parentId\":\"3PWY6qjXhcv3adZAP9rd\",\"order\":2,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"EFC5SC7K4yinDaRVVauK\",\"labels\":{\"ko\":\"Comparison\",\"en\":\"Comparison\"},\"label\":\"Comparison\",\"path\":\"pricing/comparison\",\"depth\":2,\"parentId\":\"edpFzxVPtvhTjDLrOeNh\",\"order\":2,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"K6ewIZmAwt5ZHyD738EV\",\"labels\":{\"ko\":\"Feature Stroe\",\"en\":\"Feature Stroe\"},\"label\":\"Feature Stroe\",\"path\":\"solution/by-team/data/feature-stroe\",\"depth\":4,\"parentId\":\"QyiwOq7KJ71RYcUX6aZk\",\"order\":2,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"MYhfXAVhkRH5GYSlDDnL\",\"labels\":{\"en\":\"Ingestion Pipeline\",\"ko\":\"Ingestion Pipeline\"},\"label\":\"Ingestion Pipeline\",\"path\":\"product/product-atsignal/ingestion-pipeline\",\"depth\":3,\"parentId\":\"F3UQVTzgBGSJqS4oEI5G\",\"order\":2,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"QGFCTIy15a1F0qkXqGRp\",\"labels\":{\"en\":\"By Team\",\"ko\":\"By Team\"},\"label\":\"By Team\",\"path\":\"solution/by-team\",\"depth\":2,\"parentId\":\"tKATJadt8aUwrtyTWVHS\",\"order\":2,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"TUcGeDDhFTUaamrcbiPH\",\"labels\":{\"ko\":\"Marketing\",\"en\":\"Marketing\"},\"label\":\"Marketing\",\"path\":\"solution/by-team/marketing\",\"depth\":3,\"parentId\":\"QGFCTIy15a1F0qkXqGRp\",\"order\":2,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"bA3fxiiFXZhvc9yT2t4t\",\"labels\":{\"en\":\"Cohort\",\"ko\":\"Cohort\"},\"label\":\"Cohort\",\"path\":\"solution/by-team/marketing/cohort\",\"depth\":4,\"parentId\":\"TUcGeDDhFTUaamrcbiPH\",\"order\":2,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"bE0BuwjBlQxiH3hA6wyG\",\"labels\":{\"en\":\"AtSignal Overview\",\"ko\":\"atsignal Overview\"},\"label\":\"atsignal Overview\",\"path\":\"product/atsignal-overview\",\"depth\":2,\"parentId\":\"j4QohDDFAVZlEnizJDM6\",\"order\":2,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"dXaQQCAlsFFVjokVbn6c\",\"labels\":{\"ko\":\"  Docs@signal \",\"en\":\"  Docs@signal \"},\"label\":\"  Docs@signal \",\"path\":\"https://atsignal-dev-docs.vercel.app\",\"depth\":2,\"parentId\":\"TEqIXcZPELGfyUAGDFUw\",\"order\":2,\"pageType\":\"links\",\"url\":\"$undefined\"},{\"id\":\"j4QohDDFAVZlEnizJDM6\",\"labels\":{\"en\":\"Product\",\"ko\":\"Product\"},\"label\":\"Product\",\"path\":\"product\",\"depth\":1,\"parentId\":\"0\",\"order\":2,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"lpDR5O9CRRRdhGF0Ge59\",\"labels\":{\"en\":\"Core Web Vitals\",\"ko\":\"Core Web Vitals\"},\"label\":\"Core Web Vitals\",\"path\":\"solution/by-team/engineering/core-web-vitals\",\"depth\":4,\"parentId\":\"MV206MTHBmXr46vD2l6H\",\"order\":2,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"luOFXJETwL4Ye9FzWFMS\",\"labels\":{\"en\":\"Mid-size\",\"ko\":\"Mid-size\"},\"label\":\"Mid-size\",\"path\":\"solution/by-size/mid-size\",\"depth\":3,\"parentId\":\"COxYbiX1dZNuMIle4Vyh\",\"order\":2,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"sTqK6j9cicynATC5vMOQ\",\"labels\":{\"en\":\"Financial\",\"ko\":\"Financial\"},\"label\":\"Financial\",\"path\":\"solution/by-industry/financial\",\"depth\":3,\"parentId\":\"qi6qXvAofk1YdNrK4mpE\",\"order\":2,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"wCSqFTeksv5FKFAqbb1H\",\"labels\":{\"ko\":\"Feature Launch \",\"en\":\"Feature Launch \"},\"label\":\"Feature Launch \",\"path\":\"solution/by-team/product/feature-launch\",\"depth\":4,\"parentId\":\"oMCXbTCKKjweJwPJIWxZ\",\"order\":2,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"2GOUi7fTnzk1PCMwNNQo\",\"labels\":{\"en\":\"UX \u0026 Usability\",\"ko\":\"UX \u0026 Usability\"},\"label\":\"UX \u0026 Usability\",\"path\":\"solution/by-team/product/ux-usability\",\"depth\":4,\"parentId\":\"oMCXbTCKKjweJwPJIWxZ\",\"order\":3,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"COxYbiX1dZNuMIle4Vyh\",\"labels\":{\"ko\":\"By Size\",\"en\":\"By Size\"},\"label\":\"By Size\",\"path\":\"solution/by-size\",\"depth\":2,\"parentId\":\"tKATJadt8aUwrtyTWVHS\",\"order\":3,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"FWupxRcc0xnNM17OjDqI\",\"labels\":{\"ko\":\"Merchant Analysis\",\"en\":\"Merchant Analysis\"},\"label\":\"Merchant Analysis\",\"path\":\"solution/by-team/operation-support/merchant-analysis\",\"depth\":4,\"parentId\":\"3PWY6qjXhcv3adZAP9rd\",\"order\":3,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"FkATUgA5KkOgtYyI6oz7\",\"labels\":{\"en\":\"Promotion Uplift\",\"ko\":\"Promotion Uplift\"},\"label\":\"Promotion Uplift\",\"path\":\"solution/by-team/marketing/promotion-uplift\",\"depth\":4,\"parentId\":\"TUcGeDDhFTUaamrcbiPH\",\"order\":3,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"JCtzLviuXYIuRMLgxyG8\",\"labels\":{\"ko\":\"Docs@signal\",\"en\":\"Docs@signal\"},\"label\":\"Docs@signal\",\"path\":\"https://atsignal-dev-docs.vercel.app\",\"depth\":2,\"parentId\":\"j4QohDDFAVZlEnizJDM6\",\"order\":3,\"pageType\":\"links\",\"url\":\"$undefined\"},{\"id\":\"MV206MTHBmXr46vD2l6H\",\"labels\":{\"en\":\"Engineering\",\"ko\":\"Engineering\"},\"label\":\"Engineering\",\"path\":\"solution/by-team/engineering\",\"depth\":3,\"parentId\":\"QGFCTIy15a1F0qkXqGRp\",\"order\":3,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"N7XsQycRfJu7RETSLSdY\",\"labels\":{\"en\":\"Community \u0026 Fandom\",\"ko\":\"Community \u0026 Fandom\"},\"label\":\"Community \u0026 Fandom\",\"path\":\"solution/by-industry/community-fandom\",\"depth\":3,\"parentId\":\"qi6qXvAofk1YdNrK4mpE\",\"order\":3,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"ZXDFdMtdFrMGpnEmpXd6\",\"labels\":{\"en\":\"CDP\",\"ko\":\"CDP\"},\"label\":\"CDP\",\"path\":\"solution/by-team/data/cdp\",\"depth\":4,\"parentId\":\"QyiwOq7KJ71RYcUX6aZk\",\"order\":3,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"drWeC9g2vKHVfSfjQ0oL\",\"labels\":{\"en\":\"Small-size\",\"ko\":\"Small-size\"},\"label\":\"Small-size\",\"path\":\"solution/by-size/small-size\",\"depth\":3,\"parentId\":\"COxYbiX1dZNuMIle4Vyh\",\"order\":3,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"gstLvRCa0ML6jWtnfuAl\",\"labels\":{\"en\":\"Intra Engine\",\"ko\":\"Intra Engine\"},\"label\":\"Intra Engine\",\"path\":\"product/product-atsignal/intra-engine\",\"depth\":3,\"parentId\":\"F3UQVTzgBGSJqS4oEI5G\",\"order\":3,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"sJWIgyFRRYIjVGdxCsUh\",\"labels\":{\"ko\":\"Error\",\"en\":\"Error\"},\"label\":\"Error\",\"path\":\"solution/by-team/engineering/error\",\"depth\":4,\"parentId\":\"MV206MTHBmXr46vD2l6H\",\"order\":3,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"tKATJadt8aUwrtyTWVHS\",\"labels\":{\"ko\":\"Solutions\",\"en\":\"Solutions\"},\"label\":\"Solutions\",\"path\":\"solution\",\"depth\":1,\"parentId\":\"0\",\"order\":3,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"vlls5Dd2w9s6va5xsnHG\",\"labels\":{\"ko\":\"Customers@signal\",\"en\":\"Customers@signal\"},\"label\":\"Customers@signal\",\"path\":\"resources/customers-atsignal\",\"depth\":2,\"parentId\":\"TEqIXcZPELGfyUAGDFUw\",\"order\":3,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"1j7xCBA7RYMCRBq9rI1k\",\"labels\":{\"ko\":\"Analytics\",\"en\":\"Analytics\"},\"label\":\"Analytics\",\"path\":\"product/product-atsignal/analytics\",\"depth\":3,\"parentId\":\"F3UQVTzgBGSJqS4oEI5G\",\"order\":4,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"3PWY6qjXhcv3adZAP9rd\",\"labels\":{\"en\":\"Operation/Support\",\"ko\":\"Operation/Support\"},\"label\":\"Operation/Support\",\"path\":\"solution/by-team/operation-support\",\"depth\":3,\"parentId\":\"QGFCTIy15a1F0qkXqGRp\",\"order\":4,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"E3LfO6huezsqFk1aLZGD\",\"labels\":{\"en\":\"MLops\",\"ko\":\"MLops\"},\"label\":\"MLops\",\"path\":\"solution/by-team/data/mlops\",\"depth\":4,\"parentId\":\"QyiwOq7KJ71RYcUX6aZk\",\"order\":4,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"KcNJsiFMnx3VPuDC7Vot\",\"labels\":{\"ko\":\"AB test\",\"en\":\"AB test\"},\"label\":\"AB test\",\"path\":\"solution/by-team/product/ab-test\",\"depth\":4,\"parentId\":\"oMCXbTCKKjweJwPJIWxZ\",\"order\":4,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"ROS8fZ3y1xONHc1CAcPm\",\"labels\":{\"en\":\"Security \u0026 Privacy\",\"ko\":\"Security \u0026 Privacy\"},\"label\":\"Security \u0026 Privacy\",\"path\":\"product/security-privacy\",\"depth\":2,\"parentId\":\"j4QohDDFAVZlEnizJDM6\",\"order\":4,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"TDRT79Rk7P4D7LGnkWEq\",\"labels\":{\"ko\":\"LTV\",\"en\":\"LTV\"},\"label\":\"LTV\",\"path\":\"solution/by-team/marketing/ltv\",\"depth\":4,\"parentId\":\"TUcGeDDhFTUaamrcbiPH\",\"order\":4,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"TEqIXcZPELGfyUAGDFUw\",\"labels\":{\"ko\":\"Resources\",\"en\":\"Resources\"},\"label\":\"Resources\",\"path\":\"resources\",\"depth\":1,\"parentId\":\"0\",\"order\":4,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"hSZRBGdYgeTLXiSvt33H\",\"labels\":{\"ko\":\"Crash\",\"en\":\"Crash\"},\"label\":\"Crash\",\"path\":\"solution/by-team/engineering/crash\",\"depth\":4,\"parentId\":\"MV206MTHBmXr46vD2l6H\",\"order\":4,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"ngjRPgIyHf4fbuSGiqnK\",\"labels\":{\"en\":\"FAQ\",\"ko\":\"FAQ\"},\"label\":\"FAQ\",\"path\":\"resources/faq\",\"depth\":2,\"parentId\":\"TEqIXcZPELGfyUAGDFUw\",\"order\":4,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"sBfuPUpXLNO3h3EXsKha\",\"labels\":{\"en\":\"Media \u0026 Entertainment\",\"ko\":\"Media \u0026 Entertainment\"},\"label\":\"Media \u0026 Entertainment\",\"path\":\"solution/by-industry/media-entertainment\",\"depth\":3,\"parentId\":\"qi6qXvAofk1YdNrK4mpE\",\"order\":4,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"sTwdbUco3TU5uvdDDa2z\",\"labels\":{\"en\":\"Regional Analysis\",\"ko\":\"Regional Analysis\"},\"label\":\"Regional Analysis\",\"path\":\"solution/by-team/operation-support/regional-analysis\",\"depth\":4,\"parentId\":\"3PWY6qjXhcv3adZAP9rd\",\"order\":4,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"yRUQETkYqHQBjsIAaKK7\",\"labels\":{\"en\":\"Startup\",\"ko\":\"Startup\"},\"label\":\"Startup\",\"path\":\"solution/by-size/startup\",\"depth\":3,\"parentId\":\"COxYbiX1dZNuMIle4Vyh\",\"order\":4,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"7PVcuzRN5JSNhapDVZyp\",\"labels\":{\"en\":\"Segment\u0026Profiling\",\"ko\":\"Segment\u0026Profiling\"},\"label\":\"Segment\u0026Profiling\",\"path\":\"solution/by-team/marketing/segment-profiling\",\"depth\":4,\"parentId\":\"TUcGeDDhFTUaamrcbiPH\",\"order\":5,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"9cMTdGbr2eXH7GeIMoAD\",\"labels\":{\"en\":\"Mobility\",\"ko\":\"Mobility\"},\"label\":\"Mobility\",\"path\":\"solution/by-industry/mobility\",\"depth\":3,\"parentId\":\"qi6qXvAofk1YdNrK4mpE\",\"order\":5,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"Jpv3VUhHZjCRLR1zkgZj\",\"labels\":{\"ko\":\"User-focus View\",\"en\":\"User-focus View\"},\"label\":\"User-focus View\",\"path\":\"solution/by-team/operation-support/user-focus-view\",\"depth\":4,\"parentId\":\"3PWY6qjXhcv3adZAP9rd\",\"order\":5,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"LzYdzmlherPYFqdYhSGp\",\"labels\":{\"ko\":\"Contact Sales\",\"en\":\"Contact Sales\"},\"label\":\"Contact Sales\",\"path\":\"pricing/contact-sales\",\"depth\":2,\"parentId\":\"edpFzxVPtvhTjDLrOeNh\",\"order\":5,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"QyiwOq7KJ71RYcUX6aZk\",\"labels\":{\"en\":\"Data\",\"ko\":\"Data\"},\"label\":\"Data\",\"path\":\"solution/by-team/data\",\"depth\":3,\"parentId\":\"QGFCTIy15a1F0qkXqGRp\",\"order\":5,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"edpFzxVPtvhTjDLrOeNh\",\"labels\":{\"ko\":\"Pricing\",\"en\":\"Pricing\"},\"label\":\"Pricing\",\"path\":\"pricing\",\"depth\":1,\"parentId\":\"0\",\"order\":5,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"hjiWgoo1RdwvrPhs8kgG\",\"labels\":{\"en\":\"Integrations\",\"ko\":\"Integrations\"},\"label\":\"Integrations\",\"path\":\"product/product-atsignal/integrations\",\"depth\":3,\"parentId\":\"F3UQVTzgBGSJqS4oEI5G\",\"order\":5,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"lNPDGu9MxjMhWZH5k87x\",\"labels\":{\"en\":\"What's New\",\"ko\":\"What's New\"},\"label\":\"What's New\",\"path\":\"product/whats-new\",\"depth\":2,\"parentId\":\"j4QohDDFAVZlEnizJDM6\",\"order\":5,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"lWqlLcE9j8U1Cpw5LOJc\",\"labels\":{\"ko\":\"주요용어\",\"en\":\"Glossary\"},\"label\":\"주요용어\",\"path\":\"resources/glossary\",\"depth\":2,\"parentId\":\"TEqIXcZPELGfyUAGDFUw\",\"order\":5,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"2D5gw5gd0dLOWva5DZYF\",\"labels\":{\"ko\":\"Engagement\",\"en\":\"Engagement\"},\"label\":\"Engagement\",\"path\":\"solution/by-team/marketing/engagement\",\"depth\":4,\"parentId\":\"TUcGeDDhFTUaamrcbiPH\",\"order\":6,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"DCdIahC7DkGCm1SJyRIz\",\"labels\":{\"en\":\"Management\",\"ko\":\"Management\"},\"label\":\"Management\",\"path\":\"solution/by-team/management\",\"depth\":3,\"parentId\":\"QGFCTIy15a1F0qkXqGRp\",\"order\":6,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"DHE5CDUjiVgvH8gXURWQ\",\"labels\":{\"en\":\"Company\",\"ko\":\"Company\"},\"label\":\"Company\",\"path\":\"company/company\",\"depth\":1,\"parentId\":\"0\",\"order\":6,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"ucQcjmKftjL9GhhuDnpz\",\"labels\":{\"en\":\"Healthcare\",\"ko\":\"Healthcare\"},\"label\":\"Healthcare\",\"path\":\"solution/by-industry/healthcare\",\"depth\":3,\"parentId\":\"qi6qXvAofk1YdNrK4mpE\",\"order\":6,\"pageType\":\"dynamic\",\"url\":\"$undefined\"},{\"id\":\"OX4KoCB7Kfg7r9fg7LqM\",\"labels\":{\"ko\":\"Attribution\",\"en\":\"Attribution\"},\"label\":\"Attribution\",\"path\":\"solution/by-team/marketing/attribution\",\"depth\":4,\"parentId\":\"TUcGeDDhFTUaamrcbiPH\",\"order\":7,\"pageType\":\"dynamic\",\"url\":\"$undefined\"}]}]]}]]}]}]\n"])</script>
+	<next-route-announcer style="position: absolute;">
+		<template shadowrootmode="open">
+
+
+		<div aria-live="assertive" id="__next-route-announcer__" role="alert" style="position: absolute; border: 0px; height: 1px; margin: -1px; padding: 0px; width: 1px; clip: rect(0px, 0px, 0px, 0px); overflow: hidden; white-space: nowrap; overflow-wrap: normal;">
+		</div>
+		</template>
+	</next-route-announcer>
+</body>
+</html>

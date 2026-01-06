@@ -1,0 +1,249 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { getNewsletterSendHistory, getNewsletterSendHistoryCount, type NewsletterEmailHistory } from '@/lib/admin/newsletterService';
+
+const ITEMS_PER_PAGE_OPTIONS = [10, 20, 30, 40, 50];
+const DEFAULT_ITEMS_PER_PAGE = 20;
+
+const formatDate = (dateString: string | undefined): string => {
+  if (!dateString || dateString.trim() === '') return '-';
+  try {
+    let normalized = dateString.trim();
+    normalized = normalized.replace(/\s+KST$/, '');
+    normalized = normalized.replace(/\s+([+-])(\d{2})(\d{2})$/, '$1$2:$3');
+    normalized = normalized.replace(' ', 'T');
+    const date = new Date(normalized);
+    if (isNaN(date.getTime())) return '-';
+    return date.toLocaleDateString('ko-KR').replace(/\.$/, '');
+  } catch {
+    return '-';
+  }
+};
+
+const formatPercent = (value: number | undefined): string => {
+  if (value === undefined || value === null || isNaN(value)) return '-';
+  return `${value.toFixed(2)}%`;
+};
+
+export default function AdminNewsletterSendHistoryPage() {
+  const [emails, setEmails] = useState<NewsletterEmailHistory[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(DEFAULT_ITEMS_PER_PAGE);
+
+  useEffect(() => {
+    void loadTotalCount();
+    void loadEmailHistory(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (totalCount > 0) {
+      const newTotalPages = Math.ceil(totalCount / itemsPerPage);
+      setTotalPages(newTotalPages);
+      if (currentPage > newTotalPages && newTotalPages > 0) {
+        setCurrentPage(1);
+        void loadEmailHistory(1);
+      } else {
+        void loadEmailHistory(currentPage);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [itemsPerPage]);
+
+  const loadTotalCount = async () => {
+    try {
+      const data = await getNewsletterSendHistoryCount();
+      const count = data.totalCount || 0;
+      setTotalCount(count);
+      setTotalPages(Math.ceil(count / itemsPerPage));
+    } catch (err: any) {
+      setError(err.message || '프로 요금제가 필요합니다.');
+    }
+  };
+
+  const loadEmailHistory = async (page: number) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const offset = (page - 1) * itemsPerPage;
+      const data = await getNewsletterSendHistory({ offset, limit: itemsPerPage, statistics: true });
+      setEmails(Array.isArray(data.emails) ? data.emails : []);
+      setCurrentPage(page);
+    } catch (err: any) {
+      console.error('Failed to load email history:', err);
+      setError(err.message || '발송 이력을 불러오는데 실패했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages && !loading) {
+      void loadEmailHistory(page);
+    }
+  };
+
+  const handleItemsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newItemsPerPage = parseInt(e.target.value, 10);
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1);
+  };
+
+  const getPageNumbers = (): (number | string)[] => {
+    const pages: (number | string)[] = [];
+    const maxVisible = 5;
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) pages.push(i);
+        pages.push('...');
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1);
+        pages.push('...');
+        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        pages.push('...');
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
+        pages.push('...');
+        pages.push(totalPages);
+      }
+    }
+    return pages;
+  };
+
+  if (loading && emails.length === 0) {
+    return (
+      <div style={{ padding: '2rem', maxWidth: '1500px', margin: '0 auto' }}>
+        <p>로딩 중...</p>
+      </div>
+    );
+  }
+
+  if (error && emails.length === 0) {
+    return (
+      <div style={{ padding: '2rem', maxWidth: '1500px', margin: '0 auto' }}>
+        <div style={{ padding: '1.5rem', backgroundColor: '#fff3cd', border: '1px solid #ffc107', borderRadius: '0.5rem', color: '#856404' }}>
+          <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.25rem' }}>⚠️ 기능 제한 안내</h3>
+          <p style={{ margin: 0, lineHeight: '1.6' }}>
+            <strong>{error}</strong>
+          </p>
+          <p style={{ margin: '1rem 0 0 0', fontSize: '0.9rem', color: '#6b7280' }}>
+            이메일 발송 이력 조회 기능을 사용하려면 Stibee 프로 요금제 이상으로 업그레이드가 필요합니다.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ padding: '2rem', maxWidth: '1500px', margin: '0 auto' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <div>
+          <h1 style={{ fontSize: '2rem', margin: 0 }}>뉴스레터 발송 이력</h1>
+          <p style={{ color: '#6b7280', margin: '0.5rem 0 0 0' }}>
+            총 {totalCount}건의 발송 이력 (페이지 {currentPage} / {totalPages})
+          </p>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <label htmlFor="itemsPerPage" style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+            페이지당:
+          </label>
+          <select
+            id="itemsPerPage"
+            value={itemsPerPage}
+            onChange={handleItemsPerPageChange}
+            disabled={loading}
+            style={{ padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.25rem', fontSize: '0.875rem', backgroundColor: '#fff', color: '#374151', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1 }}
+          >
+            {ITEMS_PER_PAGE_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}개
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {emails.length === 0 ? (
+        <div style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>
+          <p>발송 이력이 없습니다.</p>
+        </div>
+      ) : (
+        <>
+          <div style={{ backgroundColor: '#fff', border: '1px solid #e5e5e5', borderRadius: '0.5rem', overflow: 'hidden' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#f9fafb', borderBottom: '2px solid #e5e5e5' }}>
+                  <th style={{ padding: '0.75rem 1rem', textAlign: 'left', fontWeight: 600 }}>제목</th>
+                  <th style={{ padding: '0.75rem 1rem', textAlign: 'left', fontWeight: 600 }}>발송일</th>
+                  <th style={{ padding: '0.75rem 1rem', textAlign: 'right', fontWeight: 600 }}>수신자 수</th>
+                  <th style={{ padding: '0.75rem 1rem', textAlign: 'right', fontWeight: 600 }}>오픈율</th>
+                  <th style={{ padding: '0.75rem 1rem', textAlign: 'right', fontWeight: 600 }}>클릭율</th>
+                </tr>
+              </thead>
+              <tbody>
+                {emails.map((email, index) => (
+                  <tr
+                    key={email.id || index}
+                    style={{ borderBottom: '1px solid #e5e5e5', transition: 'background-color 0.2s' }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#f9fafb';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#fff';
+                    }}
+                  >
+                    <td style={{ padding: '0.75rem 1rem' }}>{email.subject || '-'}</td>
+                    <td style={{ padding: '0.75rem 1rem' }}>{formatDate(email.sentAt)}</td>
+                    <td style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>{email.recipientCount.toLocaleString()}명</td>
+                    <td style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>{formatPercent(email.openRate)}</td>
+                    <td style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>{formatPercent(email.clickRate)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {totalPages > 1 && (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '2rem', gap: '0.5rem' }}>
+              <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1 || loading} style={{ padding: '0.5rem 1rem', backgroundColor: currentPage === 1 ? '#e5e7eb' : '#fff', color: currentPage === 1 ? '#9ca3af' : '#374151', border: '1px solid #d1d5db', borderRadius: '0.25rem', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', fontSize: '0.875rem' }}>
+                이전
+              </button>
+
+              {getPageNumbers().map((page, index) => {
+                if (page === '...') {
+                  return (
+                    <span key={`ellipsis-${index}`} style={{ padding: '0.5rem', color: '#6b7280' }}>
+                      ...
+                    </span>
+                  );
+                }
+                const pageNum = page as number;
+                const isActive = pageNum === currentPage;
+                return (
+                  <button key={pageNum} onClick={() => handlePageChange(pageNum)} disabled={loading} style={{ padding: '0.5rem 1rem', minWidth: '2.5rem', backgroundColor: isActive ? '#0070f3' : '#fff', color: isActive ? '#fff' : '#374151', border: '1px solid #d1d5db', borderRadius: '0.25rem', cursor: loading ? 'not-allowed' : 'pointer', fontSize: '0.875rem', fontWeight: isActive ? 600 : 400 }}>
+                    {pageNum}
+                  </button>
+                );
+              })}
+
+              <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages || loading} style={{ padding: '0.5rem 1rem', backgroundColor: currentPage === totalPages ? '#e5e7eb' : '#fff', color: currentPage === totalPages ? '#9ca3af' : '#374151', border: '1px solid #d1d5db', borderRadius: '0.25rem', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', fontSize: '0.875rem' }}>
+                다음
+              </button>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+

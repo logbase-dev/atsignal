@@ -1,0 +1,49 @@
+# Firebase App Hosting configuration for web app
+runtime: nodejs20
+
+# pnpm을 사용하여 빌드 (Firebase App Hosting)
+buildCommand: pnpm install && pnpm run build
+runCommand: pnpm start
+
+# Firebase 환경 변수
+env:
+  - variable: NODE_ENV
+    value: production
+  # Firebase 설정 (빌드 시점에 필요)
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: AIzaSyB_y1IIZ9-vjqkmhnb3Y4wnXB6ycaKJ93A
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: atsignal.firebaseapp.com
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: atsignal
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: atsignal.firebasestorage.app
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: "188493461836"
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: 1:188493461836:web:8c80b5912194bdf9e537e9
+  # App Hosting에서는 `/api/*` 경로가 403으로 막힐 수 있으므로
+  # 관리자 API는 `/admin-api/*` 프록시 경로를 사용한다.
+  - variable: NEXT_PUBLIC_ADMIN_USE_FUNCTIONS
+    value: "true"
+  # 미리보기 관련 환경 변수
+  - variable: NEXT_PUBLIC_PREVIEW_SECRET
+    value: "atsignal-preview"
+  - variable: NEXT_PUBLIC_WEB_PREVIEW_ORIGIN
+    value: "https://web-ssr--atsignal.asia-east1.hosted.app"
+  - variable: NEXT_PUBLIC_DOCS_PREVIEW_ORIGIN
+    value: "https://docs-ssr--atsignal.asia-east1.hosted.app"
+  # Stibee API 설정 (뉴스레터 구독용)
+  - variable: STIBEE_API_KEY
+    value: "e2f41bf8ae6b8b8eb3c6228f2cba8e068f3e7cbcdb4a937df0dcd2e0e2ee82dacbc55df3f3c1cd70b49ad4bb338cf8f1d38510ae61507fb5e6eaac9bc57267c5"
+  - variable: STIBEE_LIST_ID
+    value: "460183"
+  - variable: NEXT_PUBLIC_SUBSCRIBE_API_URL
+    value: "https://asia-northeast3-atsignal.cloudfunctions.net/subscribeNewsletterApi"
+  - variable: NEXT_PUBLIC_WEB_SITE_URL
+    value: "https://web-ssr--atsignal.asia-east1.hosted.app"
+  - variable: NEXT_PUBLIC_DOCS_SITE_URL
+    value: "https://docs-ssr--atsignal.asia-east1.hosted.app"
+  # Admin API URL (프로덕션용)
+  - variable: NEXT_PUBLIC_ADMIN_API_URL
+    value: "https://asia-northeast3-atsignal.cloudfunctions.net/api"
