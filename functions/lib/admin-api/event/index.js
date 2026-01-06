@@ -53,9 +53,9 @@ async function handle(request, response) {
                 response.status(400).json({ error: "title.ko, oneLiner.ko, content.ko, published는 필수입니다." });
                 return;
             }
-            // 한 줄 문구 20글자 제한 검증
-            if (normOneLiner.ko.length > 20) {
-                response.status(400).json({ error: "한 줄 문구(oneLiner.ko)는 20글자를 초과할 수 없습니다." });
+            // 한 줄 문구 50글자 제한 검증
+            if (normOneLiner.ko.length > 50) {
+                response.status(400).json({ error: "한 줄 문구(oneLiner.ko)는 50글자를 초과할 수 없습니다." });
                 return;
             }
             const id = await (0, eventService_1.createEvent)({

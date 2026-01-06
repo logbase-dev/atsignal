@@ -673,7 +673,38 @@ app.use(async (req, res, next) => {
     if (path.startsWith("/resources/blogs")) {
         if (req.method === "GET") {
             const blogIdMatch = path.match(/^\/resources\/blogs\/([^\/]+)$/);
-            if (blogIdMatch) {
+            const blogSlugMatch = path.match(/^\/resources\/blogs\/slug\/([^\/]+)$/);
+            if (blogSlugMatch) {
+                // slug로 개별 블로그 조회
+                const slug = blogSlugMatch[1];
+                try {
+                    const blog = await (0, blogService_1.getBlogPostBySlug)(slug);
+                    if (!blog) {
+                        res.status(404).json({ error: "Blog not found" });
+                        return;
+                    }
+                    // 공개된 블로그만 반환
+                    if (!blog.published) {
+                        res.status(404).json({ error: "Blog not found" });
+                        return;
+                    }
+                    // 조회수 증가
+                    try {
+                        await (0, blogService_1.incrementBlogPostViews)(blog.id);
+                    }
+                    catch (viewError) {
+                        console.error('[API] Error incrementing blog views:', viewError);
+                        // 조회수 증가 실패는 무시하고 계속 진행
+                    }
+                    res.json({ blog });
+                }
+                catch (error) {
+                    console.error('[API] Error fetching blog by slug:', error);
+                    res.status(500).json({ error: "Failed to fetch blog" });
+                }
+                return;
+            }
+            else if (blogIdMatch) {
                 // 개별 블로그 조회
                 const blogId = blogIdMatch[1];
                 try {

@@ -254,6 +254,19 @@ export async function getBlogPostById(id: string): Promise<BlogPost | null> {
   }
 }
 
+export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> {
+  try {
+    const q = firestore.collection(COLLECTIONS.BLOGS).where("slug", "==", slug).limit(1);
+    const snap = await withTimeout(q.get(), 5000);
+    if (snap.empty) return null;
+    const doc = snap.docs[0];
+    return mapPost(doc.id, (doc.data() || {}) as Record<string, any>);
+  } catch (error: any) {
+    console.error("[getBlogPostBySlug] 에러:", error?.message || error);
+    return null;
+  }
+}
+
 export async function createBlogPost(post: Omit<BlogPost, "id">): Promise<string> {
   const now = Timestamp.fromDate(new Date());
   const uniqueSlug = await ensureUniqueSlug(post.slug);

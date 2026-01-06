@@ -8,7 +8,7 @@ import { getFAQs, getFAQById } from "../lib/admin/faqService";
 import { getFAQCategories } from "../lib/admin/faqCategoryService";
 import { getGlossaries, getGlossaryById } from "../lib/admin/glossaryService";
 import { getGlossaryCategories } from "../lib/admin/glossaryCategoryService";
-import { getBlogPosts, getBlogPostById, incrementBlogPostViews } from "../lib/admin/blogService";
+import { getBlogPosts, getBlogPostById, getBlogPostBySlug, incrementBlogPostViews } from "../lib/admin/blogService";
 import { getBlogCategories } from "../lib/admin/blogCategoryService";
 import { getNotices, getNoticeById, incrementNoticeViews } from "../lib/admin/noticeService";
 import { URL } from "url";
@@ -711,8 +711,39 @@ app.use(async (req: Request, res: Response, next: NextFunction) => {
   if (path.startsWith("/resources/blogs")) {
     if (req.method === "GET") {
       const blogIdMatch = path.match(/^\/resources\/blogs\/([^\/]+)$/);
+      const blogSlugMatch = path.match(/^\/resources\/blogs\/slug\/([^\/]+)$/);
       
-      if (blogIdMatch) {
+      if (blogSlugMatch) {
+        // slug로 개별 블로그 조회
+        const slug = blogSlugMatch[1];
+        try {
+          const blog = await getBlogPostBySlug(slug);
+          if (!blog) {
+            res.status(404).json({ error: "Blog not found" });
+            return;
+          }
+          
+          // 공개된 블로그만 반환
+          if (!blog.published) {
+            res.status(404).json({ error: "Blog not found" });
+            return;
+          }
+          
+          // 조회수 증가
+          try {
+            await incrementBlogPostViews(blog.id!);
+          } catch (viewError) {
+            console.error('[API] Error incrementing blog views:', viewError);
+            // 조회수 증가 실패는 무시하고 계속 진행
+          }
+          
+          res.json({ blog });
+        } catch (error) {
+          console.error('[API] Error fetching blog by slug:', error);
+          res.status(500).json({ error: "Failed to fetch blog" });
+        }
+        return;
+      } else if (blogIdMatch) {
         // 개별 블로그 조회
         const blogId = blogIdMatch[1];
         try {

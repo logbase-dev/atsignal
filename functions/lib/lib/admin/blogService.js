@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getBlogPosts = getBlogPosts;
 exports.getBlogPostById = getBlogPostById;
+exports.getBlogPostBySlug = getBlogPostBySlug;
 exports.createBlogPost = createBlogPost;
 exports.updateBlogPost = updateBlogPost;
 exports.incrementBlogPostViews = incrementBlogPostViews;
@@ -235,6 +236,20 @@ async function getBlogPostById(id) {
     }
     catch (error) {
         console.error("[getBlogPostById] 에러:", error?.message || error);
+        return null;
+    }
+}
+async function getBlogPostBySlug(slug) {
+    try {
+        const q = firebase_1.firestore.collection(types_1.COLLECTIONS.BLOGS).where("slug", "==", slug).limit(1);
+        const snap = await withTimeout(q.get(), 5000);
+        if (snap.empty)
+            return null;
+        const doc = snap.docs[0];
+        return mapPost(doc.id, (doc.data() || {}));
+    }
+    catch (error) {
+        console.error("[getBlogPostBySlug] 에러:", error?.message || error);
         return null;
     }
 }
