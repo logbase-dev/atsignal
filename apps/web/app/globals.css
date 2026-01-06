@@ -682,6 +682,7 @@ body:not(.admin-mode) .dropdown-item:hover {
   background: linear-gradient(135deg, rgba(0, 161, 239, 0.1), rgba(0, 125, 199, 0.18));
   border-radius: 16px;
   border: 1px dashed rgba(0, 161, 239, 0.35);
+  overflow: hidden;
 }
 
 .benefits-list {

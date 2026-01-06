@@ -133,6 +133,8 @@ export default function Home({ locale }: HomeProps) {
   const [activeFeature, setActiveFeature] = useState<string>('log-collecting');
   const featureRefs = useRef<{ [key: string]: HTMLElement | null }>({});
   const featuresContentRef = useRef<HTMLDivElement>(null);
+  const benefitsListRef = useRef<HTMLDivElement>(null);
+  const [benefitsHeight, setBenefitsHeight] = useState<number>();
   const [isNewsletterModalOpen, setIsNewsletterModalOpen] = useState(false);
   const [emailInput, setEmailInput] = useState('');
 
@@ -188,6 +190,21 @@ export default function Home({ locale }: HomeProps) {
       }
     };
   }, [isBannerCollapsed]);
+
+  // Benefits 섹션 높이를 비주얼 래퍼에 맞춘다
+  useEffect(() => {
+    const updateBenefitsHeight = () => {
+      if (benefitsListRef.current) {
+        setBenefitsHeight(benefitsListRef.current.offsetHeight);
+      } else {
+        setBenefitsHeight(undefined);
+      }
+    };
+
+    updateBenefitsHeight();
+    window.addEventListener('resize', updateBenefitsHeight);
+    return () => window.removeEventListener('resize', updateBenefitsHeight);
+  }, []);
 
   // 카운트업 애니메이션
   useEffect(() => {
@@ -673,9 +690,16 @@ export default function Home({ locale }: HomeProps) {
         <div className="section-container">
           <h2 className="section-title benefits-title">atsignal을 선택하는 이유</h2>
           <div className="benefits-layout">
-            <div className="benefits-visual" aria-hidden="true" />
+            <div
+              className="benefits-visual-wrapper"
+              style={benefitsHeight ? { height: benefitsHeight } : undefined}
+            >
+              <div className="benefits-visual" aria-hidden="true">
+                <img src="/images/desk_coding.jpg" style={{ width: '355.19px', height: '504px' }} alt="" />
+              </div>
+            </div>
             <div className="benefits-list">
-              <div className="benefits-list-items">
+              <div className="benefits-list-items" ref={benefitsListRef}>
                 {benefits.map((benefit) => (
                   <div className="benefit-item benefit-item-expandable" key={benefit.title} tabIndex={0}>
                     <div className="benefit-row">
@@ -696,6 +720,7 @@ export default function Home({ locale }: HomeProps) {
           </div>
         </div>
       </section>
+
 
       {/*
       <section className="section section-gray">

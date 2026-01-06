@@ -62,6 +62,9 @@ async function uploadViaNextjsApi(
   if (maxWidth) {
     formData.append('maxWidth', maxWidth.toString());
   }
+  if (target) {
+    formData.append('target', target);
+  }
 
   const response = await fetch('/api/admin/images/upload', {
     method: 'POST',
@@ -109,6 +112,9 @@ async function uploadViaFunctions(
   formData.append('file', fileToUpload);
   if (maxWidth) {
     formData.append('maxWidth', maxWidth.toString());
+  }
+  if (target) {
+    formData.append('target', target);
   }
 
   const response = await fetch(getAdminApiUrl('images/upload'), {

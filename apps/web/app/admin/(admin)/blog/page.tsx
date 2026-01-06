@@ -343,15 +343,27 @@ export default function BlogPage() {
                   }}
                 >
                   {/* 썸네일 이미지 */}
-                  {post.featuredImage && (
-                    <div style={{
-                      width: '100%',
-                      height: '120px',
-                      backgroundImage: `url(${post.featuredImage})`,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                    }} />
-                  )}
+                  <div style={{
+                    width: '100%',
+                    height: '160px',
+                    backgroundImage: post.thumbnail ? `url(${post.thumbnail})` : 'none',
+                    backgroundColor: post.thumbnail ? 'transparent' : '#f3f4f6',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                    {!post.thumbnail && (
+                      <span style={{
+                        color: '#9ca3af',
+                        fontSize: '0.875rem',
+                        fontWeight: '500',
+                      }}>
+                        썸네일 없음
+                      </span>
+                    )}
+                  </div>
                   
                   <div style={{ padding: '1rem' }}>
                     {/* 제목 */}

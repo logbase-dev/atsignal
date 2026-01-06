@@ -45,7 +45,7 @@ export function NextraMarkdownField({
   const handleImageUpload = async (file: File) => {
     setIsUploading(true);
     try {
-      const { mediumUrl } = await uploadImage(file, { maxWidth: 800 });
+      const { mediumUrl } = await uploadImage(file, { maxWidth: 800, target: 'editor' });
       
       // 현재 커서 위치에 이미지 마크다운 삽입
       const textarea = textareaRef.current;
