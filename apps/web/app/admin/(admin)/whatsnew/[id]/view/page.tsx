@@ -404,29 +404,11 @@ export default function ViewWhatsNewPage({ params }: { params: { id: string } })
         <h3 style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1.25rem' }}>노출 정보</h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem' }}>
           <div>
-            <strong>배너 노출:</strong> {whatsnew.showInBanner ? <span style={{ color: '#28a745' }}>노출</span> : <span style={{ color: '#666' }}>미노출</span>}
-          </div>
-          {whatsnew.showInBanner && (
-            <div>
-              <strong>배너 우선순위:</strong> {whatsnew.bannerPriority}
-            </div>
-          )}
-          <div>
             <strong>발행 상태:</strong> {whatsnew.published ? <span style={{ color: '#28a745' }}>발행</span> : <span style={{ color: '#666' }}>초안</span>}
           </div>
           {whatsnew.publishedAt && (
             <div>
               <strong>발행일:</strong> {new Date(whatsnew.publishedAt).toLocaleDateString()}
-            </div>
-          )}
-          {whatsnew.displayStartAt && (
-            <div>
-              <strong>노출 시작일시:</strong> {new Date(whatsnew.displayStartAt).toLocaleString()}
-            </div>
-          )}
-          {whatsnew.displayEndAt && (
-            <div>
-              <strong>노출 종료일시:</strong> {new Date(whatsnew.displayEndAt).toLocaleString()}
             </div>
           )}
           <div>

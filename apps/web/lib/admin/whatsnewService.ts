@@ -7,7 +7,6 @@ export async function getWhatsNews(options?: {
   page?: number;
   limit?: number;
   published?: boolean;
-  showInBanner?: boolean;
   search?: string;
 }): Promise<{ whatsnews: WhatsNew[]; total: number; page: number; limit: number; totalPages: number }> {
   const page = options?.page || 1;
@@ -18,9 +17,6 @@ export async function getWhatsNews(options?: {
   });
   if (options?.published !== undefined) {
     params.append('published', String(options.published));
-  }
-  if (options?.showInBanner !== undefined) {
-    params.append('showInBanner', String(options.showInBanner));
   }
   if (options?.search) {
     params.append('search', options.search);

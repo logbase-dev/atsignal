@@ -15,8 +15,8 @@ export default function WhatsNewPage() {
   const [total, setTotal] = useState(0);
   const [admins, setAdmins] = useState<Map<string, { name: string; username: string }>>(new Map());
   const [publishedFilter, setPublishedFilter] = useState<string>('all');
-  const [bannerFilter, setBannerFilter] = useState<string>('all');
-  const [searchText, setSearchText] = useState<string>('');
+  const [searchInput, setSearchInput] = useState<string>(''); // 입력값
+  const [searchQuery, setSearchQuery] = useState<string>(''); // 실제 검색어
   const [itemsPerPage, setItemsPerPage] = useState(20);
   const ITEMS_PER_PAGE_OPTIONS = [10, 20, 50, 100];
 
@@ -29,7 +29,7 @@ export default function WhatsNewPage() {
     setCurrentPage(1);
     void loadWhatsNews();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [publishedFilter, bannerFilter, searchText, itemsPerPage]);
+  }, [publishedFilter, searchQuery, itemsPerPage]);
 
   useEffect(() => {
     void loadWhatsNews();
@@ -52,16 +52,15 @@ export default function WhatsNewPage() {
     }
   };
 
-  const loadWhatsNews = async (overrideFilters?: { publishedFilter?: string; bannerFilter?: string; searchText?: string; page?: number }) => {
+  const loadWhatsNews = async (overrideFilters?: { publishedFilter?: string; searchQuery?: string; page?: number }) => {
     setLoading(true);
     setError(null);
     try {
       const effectivePublishedFilter = overrideFilters?.publishedFilter ?? publishedFilter;
-      const effectiveBannerFilter = overrideFilters?.bannerFilter ?? bannerFilter;
-      const effectiveSearchText = overrideFilters?.searchText ?? searchText;
+      const effectiveSearchQuery = overrideFilters?.searchQuery ?? searchQuery;
       const effectivePage = overrideFilters?.page ?? currentPage;
 
-      const options: { page: number; limit: number; published?: boolean; showInBanner?: boolean; search?: string } = {
+      const options: { page: number; limit: number; published?: boolean; search?: string } = {
         page: effectivePage,
         limit: itemsPerPage,
       };
@@ -69,12 +68,8 @@ export default function WhatsNewPage() {
         options.published = effectivePublishedFilter === 'published';
         console.log('[WhatsNew Page] 발행 상태 필터:', effectivePublishedFilter, '->', options.published);
       }
-      if (effectiveBannerFilter !== 'all') {
-        options.showInBanner = effectiveBannerFilter === 'true';
-        console.log('[WhatsNew Page] 배너 노출 필터:', effectiveBannerFilter, '->', options.showInBanner);
-      }
-      if (effectiveSearchText && effectiveSearchText.trim()) {
-        options.search = effectiveSearchText.trim();
+      if (effectiveSearchQuery && effectiveSearchQuery.trim()) {
+        options.search = effectiveSearchQuery.trim();
         console.log('[WhatsNew Page] 검색어:', options.search);
       }
 
@@ -115,17 +110,17 @@ export default function WhatsNewPage() {
   };
 
   const handleSearch = () => {
+    setSearchQuery(searchInput); // 입력값을 검색어로 설정
     setCurrentPage(1); // 검색 시 첫 페이지로 이동
-    void loadWhatsNews();
   };
 
   const handleReset = () => {
     setPublishedFilter('all');
-    setBannerFilter('all');
-    setSearchText('');
+    setSearchInput(''); // 입력값 초기화
+    setSearchQuery(''); // 검색어 초기화
     setCurrentPage(1);
     // 초기화 후 데이터 다시 로드
-    void loadWhatsNews({ publishedFilter: 'all', bannerFilter: 'all', searchText: '', page: 1 });
+    void loadWhatsNews({ publishedFilter: 'all', searchQuery: '', page: 1 });
   };
 
   if (loading) {
@@ -171,14 +166,14 @@ export default function WhatsNewPage() {
       >
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-end' }}>
           {/* 제목/내용 검색 */}
-          <div style={{ flex: '1 1 250px', minWidth: '250px' }}>
+          <div style={{ flex: '1 1 400px', minWidth: '250px' }}>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500, color: '#374151' }}>
               제목/내용 검색
             </label>
             <input
               type="text"
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   handleSearch();
@@ -223,7 +218,7 @@ export default function WhatsNewPage() {
           </div>
 
           {/* 배너 노출 검색 */}
-          <div style={{ flex: '1 1 150px', minWidth: '150px' }}>
+          {/* <div style={{ flex: '1 1 150px', minWidth: '150px' }}>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500, color: '#374151' }}>
               배너 노출
             </label>
@@ -247,7 +242,7 @@ export default function WhatsNewPage() {
               <option value="true">노출</option>
               <option value="false">미노출</option>
             </select>
-          </div>
+          </div> */}
 
           {/* 검색 버튼 */}
           <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -347,7 +342,6 @@ export default function WhatsNewPage() {
           <tr style={{ backgroundColor: '#f5f5f5' }}>
             <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '1px solid #e5e5e5' }}>제목</th>
             <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '1px solid #e5e5e5' }}>고정</th>
-            <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '1px solid #e5e5e5' }}>배너 노출</th>
             <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '1px solid #e5e5e5' }}>발행 상태</th>
             <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '1px solid #e5e5e5' }}>작성자</th>
             <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '1px solid #e5e5e5' }}>수정자</th>
@@ -359,7 +353,7 @@ export default function WhatsNewPage() {
         <tbody>
           {whatsnews.length === 0 ? (
             <tr>
-              <td colSpan={9} style={{ padding: '3rem', textAlign: 'center', color: '#666', fontSize: '0.9rem' }}>
+              <td colSpan={8} style={{ padding: '3rem', textAlign: 'center', color: '#666', fontSize: '0.9rem' }}>
                 What's new가 없습니다.
               </td>
             </tr>
@@ -389,13 +383,6 @@ export default function WhatsNewPage() {
                       <span style={{ color: '#ffc107', fontWeight: 'bold' }}>✓</span>
                     ) : (
                       <span style={{ color: '#ccc' }}>-</span>
-                    )}
-                  </td>
-                  <td style={{ padding: '1rem', borderBottom: '1px solid #e5e5e5' }}>
-                    {whatsnew.showInBanner ? (
-                      <span style={{ color: '#28a745' }}>노출</span>
-                    ) : (
-                      <span style={{ color: '#666' }}>미노출</span>
                     )}
                   </td>
                   <td style={{ padding: '1rem', borderBottom: '1px solid #e5e5e5' }}>

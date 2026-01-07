@@ -71,11 +71,6 @@ export function WhatsNewForm({ mode, id }: WhatsNewFormProps) {
   const [oneLiner, setOneLiner] = useState<LocalizedField>(emptyLocalized());
   const [content, setContent] = useState<LocalizedField>(emptyLocalized());
 
-  const [showInBanner, setShowInBanner] = useState(false);
-  const [bannerPriority, setBannerPriority] = useState(999);
-  const [displayStartAt, setDisplayStartAt] = useState('');
-  const [displayEndAt, setDisplayEndAt] = useState('');
-
   const [published, setPublished] = useState(false);
   const [enabledKo, setEnabledKo] = useState(true);
   const [enabledEn, setEnabledEn] = useState(false);
@@ -123,10 +118,6 @@ export function WhatsNewForm({ mode, id }: WhatsNewFormProps) {
         setTitle(whatsnew.title || emptyLocalized());
         setOneLiner(whatsnew.oneLiner || emptyLocalized());
         setContent(whatsnew.content || emptyLocalized());
-        setShowInBanner(whatsnew.showInBanner ?? false);
-        setBannerPriority(whatsnew.bannerPriority ?? 999);
-        setDisplayStartAt(whatsnew.displayStartAt ? new Date(whatsnew.displayStartAt).toISOString().slice(0, 16) : '');
-        setDisplayEndAt(whatsnew.displayEndAt ? new Date(whatsnew.displayEndAt).toISOString().slice(0, 16) : '');
         setPublished(whatsnew.published ?? false);
         setEnabledKo(whatsnew.enabled?.ko ?? true);
         setEnabledEn(whatsnew.enabled?.en ?? false);
@@ -146,12 +137,6 @@ export function WhatsNewForm({ mode, id }: WhatsNewFormProps) {
     if (!oneLiner.ko.trim()) return '한 줄 문구(ko)는 필수입니다.';
     if (oneLiner.ko.length > 50) return '한 줄 문구(ko)는 50글자를 초과할 수 없습니다.';
     if (!content.ko.trim()) return '본문(ko)은 필수입니다.';
-    if (showInBanner && bannerPriority < 0) return '배너 우선순위는 0 이상이어야 합니다.';
-    if (displayStartAt && displayEndAt) {
-      const start = new Date(displayStartAt);
-      const end = new Date(displayEndAt);
-      if (end < start) return '종료일시는 시작일시보다 이후여야 합니다.';
-    }
     return null;
   };
 
@@ -160,10 +145,6 @@ export function WhatsNewForm({ mode, id }: WhatsNewFormProps) {
       title: { ko: title.ko.trim(), ...(title.en?.trim() ? { en: title.en.trim() } : {}) },
       oneLiner: { ko: oneLiner.ko.trim(), ...(oneLiner.en?.trim() ? { en: oneLiner.en.trim() } : {}) },
       content: { ko: content.ko.trim(), ...(content.en?.trim() ? { en: content.en.trim() } : {}) },
-      showInBanner,
-      bannerPriority,
-      displayStartAt: displayStartAt ? new Date(displayStartAt) : undefined,
-      displayEndAt: displayEndAt ? new Date(displayEndAt) : undefined,
       published: publishedOverride !== undefined ? publishedOverride : published,
       editorType,
       saveFormat: editorType === 'nextra' ? 'markdown' : saveFormat,
@@ -304,12 +285,12 @@ export function WhatsNewForm({ mode, id }: WhatsNewFormProps) {
         <div style={{ ...rowStyle, marginTop: '1.5rem' }}>
           <div>
             <label style={labelStyle}>
-              롤링 배너용 한 줄 문구(ko) <span style={{ color: '#dc2626' }}>*</span>
+              아코디언 노출 메세지(ko) <span style={{ color: '#dc2626' }}>*</span>
               <span style={{ marginLeft: '0.5rem', fontSize: '0.85rem', color: '#6b7280' }}>
                 ({oneLiner.ko.length}/50)
               </span>
             </label>
-            <p style={helpTextStyle}>홈 상단 롤링 배너에 표시될 한 줄 문구입니다. (최대 50글자)</p>
+            <p style={helpTextStyle}>아코디언에 표시될 한 줄 문구입니다. (최대 50글자)</p>
             <input
               type="text"
               value={oneLiner.ko}
@@ -329,12 +310,12 @@ export function WhatsNewForm({ mode, id }: WhatsNewFormProps) {
           </div>
           <div>
             <label style={labelStyle}>
-              롤링 배너용 한 줄 문구(en)
+              아코디언 노출 메세지(en)
               <span style={{ marginLeft: '0.5rem', fontSize: '0.85rem', color: '#6b7280' }}>
                 ({(oneLiner.en?.length || 0)}/50)
               </span>
             </label>
-            <p style={helpTextStyle}>홈 상단 롤링 배너에 표시될 한 줄 문구입니다. (최대 50글자)</p>
+            <p style={helpTextStyle}>아코디언에 표시될 한 줄 문구입니다. (최대 50글자)</p>
             <input
               type="text"
               value={oneLiner.en || ''}
@@ -391,69 +372,7 @@ export function WhatsNewForm({ mode, id }: WhatsNewFormProps) {
           </div>
         </div>
       </div>
-
-      {/* 노출 제어 섹션 */}
-      <div style={sectionStyle}>
-        <h2 style={{ marginTop: 0 }}>노출 제어</h2>
-
-        <div style={rowStyle}>
-          {/* 배너 노출 여부 */}
-          <div>
-            <label style={labelStyle}>
-              <input
-                type="checkbox"
-                checked={showInBanner}
-                onChange={(e) => setShowInBanner(e.target.checked)}
-                style={{ marginRight: '0.5rem' }}
-              />
-              홈 상단 롤링 배너에 노출
-            </label>
-            <p style={helpTextStyle}>체크하면 홈 상단 롤링 배너에 이 What's new가 표시됩니다.</p>
-          </div>
-
-          {/* 배너 우선순위 */}
-          <div>
-            <label style={labelStyle}>
-              배너 노출 우선순위
-              {showInBanner && <span style={{ color: '#dc2626' }}>*</span>}
-            </label>
-            <p style={helpTextStyle}>낮을수록 우선 표시됩니다. (기본값: 999)</p>
-            <input
-              type="number"
-              value={bannerPriority}
-              onChange={(e) => setBannerPriority(parseInt(e.target.value, 10) || 999)}
-              min="0"
-              disabled={!showInBanner}
-              style={{ ...inputStyle, opacity: showInBanner ? 1 : 0.5 }}
-            />
-          </div>
-        </div>
-
-        {/* 노출 기간 */}
-        <div style={{ ...rowStyle, marginTop: '1.5rem' }}>
-          <div>
-            <label style={labelStyle}>노출 시작일시 (선택사항)</label>
-            <p style={helpTextStyle}>이 날짜 이후부터 노출됩니다.</p>
-            <input
-              type="datetime-local"
-              value={displayStartAt}
-              onChange={(e) => setDisplayStartAt(e.target.value)}
-              style={inputStyle}
-            />
-          </div>
-          <div>
-            <label style={labelStyle}>노출 종료일시 (선택사항)</label>
-            <p style={helpTextStyle}>이 날짜까지 노출됩니다.</p>
-            <input
-              type="datetime-local"
-              value={displayEndAt}
-              onChange={(e) => setDisplayEndAt(e.target.value)}
-              style={inputStyle}
-            />
-          </div>
-        </div>
-      </div>
-
+      
       {/* 콘텐츠 섹션 */}
       <div style={sectionStyle}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
