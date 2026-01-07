@@ -246,8 +246,8 @@ export default function EventDetailPage({ locale, event }: Props) {
                     {event.eventStartAt && formatDate(event.eventStartAt)}
                     {event.eventEndAt && (
                       <>
-                        <br />
-                        ~ {formatDate(event.eventEndAt)}
+                        &nbsp; ~ &nbsp;
+                        {formatDate(event.eventEndAt)}
                       </>
                     )}
                   </div>

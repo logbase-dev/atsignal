@@ -147,6 +147,7 @@ export default function AdminGlossaryPage() {
   const handleClearSearch = () => {
     setSearchInput('');
     setSearchQuery('');
+    setSelectedCategoryId(''); // 카테고리 필터도 초기화
     setCurrentPage(1);
   };
 
@@ -312,16 +313,18 @@ export default function AdminGlossaryPage() {
               </button>
               <button
                 onClick={handleClearSearch}
+                disabled={!searchQuery && !selectedCategoryId} // 검색어나 카테고리 필터가 있을 때만 활성화
                 style={{
                   padding: '0.5rem 1rem',
-                  backgroundColor: '#6c757d',
-                  color: 'white',
+                  backgroundColor: (!searchQuery && !selectedCategoryId) ? '#e5e7eb' : '#6c757d', // 비활성화 시 회색
+                  color: (!searchQuery && !selectedCategoryId) ? '#9ca3af' : 'white', // 비활성화 시 연한 회색 텍스트
                   border: 'none',
                   borderRadius: '0.375rem',
-                  cursor: 'pointer',
+                  cursor: (!searchQuery && !selectedCategoryId) ? 'not-allowed' : 'pointer', // 비활성화 시 커서 변경
                   whiteSpace: 'nowrap',
                   fontSize: '0.875rem',
                   fontWeight: '500',
+                  opacity: (!searchQuery && !selectedCategoryId) ? 0.6 : 1, // 비활성화 시 투명도 조정
                 }}
               >
                 초기화
@@ -589,7 +592,7 @@ export default function AdminGlossaryPage() {
                                             fontSize: '0.875rem',
                                           }}
                                         >
-                                          {link.title || link.url} ({link.linkType})
+                                          {link.title || link.url} {/* ({link.linkType}) */}
                                         </a>
                                       ))}
                                     </div>

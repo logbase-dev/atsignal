@@ -329,7 +329,7 @@ export interface WhatsNew {
 export interface RelatedLink {
   url: string; // 문서 URL (예: /docs/ko/getting-started, /faq/123)
   title?: string; // 문서 제목 (자동 추출 또는 수동 입력)
-  linkType: 'docs' | 'faq' | 'blog' | 'notice'; // 링크 타입
+  linkType: 'docs' | 'faq' | 'blog' | 'notice' | 'external'; // 링크 타입
 }
 
 export interface GlossaryCategory {

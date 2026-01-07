@@ -158,6 +158,7 @@ export default function FAQPage({ params }: PageProps) {
   const handleClearSearch = () => {
     setSearchInput('');
     setSearchQuery('');
+    setSelectedCategoryId('all'); // 카테고리 필터도 초기화
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -195,7 +196,7 @@ export default function FAQPage({ params }: PageProps) {
 
         {/* 상단 고정 FAQ 캐러셀 */}
         {!topFaqsLoading && topFaqs.length > 0 && (
-          <div style={{ marginBottom: '4rem' }}>
+          <div style={{ marginBottom: '2rem' }}>
             {/* <h2 style={{
               fontSize: '1.5rem',
               fontWeight: '600',
@@ -208,6 +209,127 @@ export default function FAQPage({ params }: PageProps) {
             <FAQCardCarousel faqs={topFaqs} locale={locale} />
           </div>
         )}
+
+        {/* 검색 및 필터 섹션 */}
+        <div style={{
+          backgroundColor: '#fff',
+          borderRadius: '12px',
+          padding: '1.5rem',
+          marginBottom: '2rem',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+        }}>
+          <div style={{ 
+            display: 'flex', 
+            flexWrap: 'wrap', 
+            gap: '1rem', 
+            alignItems: 'flex-end' 
+          }}>
+            {/* 검색 */}
+            <div style={{ flex: '1 1 300px', minWidth: '250px' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '0.5rem', 
+                fontSize: '0.875rem', 
+                fontWeight: '500', 
+                color: '#374151' 
+              }}>
+                {locale === 'en' ? 'Search' : '검색'}
+              </label>
+              <input
+                type="text"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={locale === 'en' ? 'Search by question or answer' : '질문이나 답변으로 검색하세요'}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '8px',
+                  fontSize: '0.875rem',
+                  outline: 'none',
+                  transition: 'border-color 0.2s ease',
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = '#20BDFF';
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = '#d1d5db';
+                }}
+              />
+            </div>
+
+            {/* 카테고리 필터 */}
+            <div style={{ flex: '0 1 200px', minWidth: '150px' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '0.5rem', 
+                fontSize: '0.875rem', 
+                fontWeight: '500', 
+                color: '#374151' 
+              }}>
+                {locale === 'en' ? 'Category' : '카테고리'}
+              </label>
+              <select
+                value={selectedCategoryId}
+                onChange={(e) => handleCategoryChange(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '8px',
+                  fontSize: '0.875rem',
+                  backgroundColor: '#fff',
+                  cursor: 'pointer',
+                }}
+              >
+                <option value="all">{locale === 'en' ? 'All' : '전체'}</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {locale === 'en' ? category.name?.en || category.name?.ko : category.name?.ko || category.name?.en}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* 버튼 */}
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                type="button"
+                onClick={handleSearch}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  backgroundColor: '#20BDFF',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                }}
+              >
+                {locale === 'en' ? 'Search' : '검색'}
+              </button>
+              <button
+                type="button"
+                onClick={handleClearSearch}
+                disabled={!searchQuery && selectedCategoryId === 'all'}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  backgroundColor: (!searchQuery && selectedCategoryId === 'all') ? '#e5e7eb' : '#6b7280',
+                  color: (!searchQuery && selectedCategoryId === 'all') ? '#9ca3af' : 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: (!searchQuery && selectedCategoryId === 'all') ? 'not-allowed' : 'pointer',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                }}
+              >
+                {locale === 'en' ? 'Reset' : '초기화'}
+              </button>
+            </div>
+          </div>
+        </div>
 
         {/* 뷰 모드 전환 버튼 */}
         <div style={{ 

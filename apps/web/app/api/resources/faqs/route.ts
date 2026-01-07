@@ -15,9 +15,11 @@ export async function GET(request: NextRequest) {
     const categoryId = searchParams.get('categoryId');
     const enabledKo = searchParams.get('enabledKo');
     const enabledEn = searchParams.get('enabledEn');
+    const orderBy = searchParams.get('orderBy') || 'createdAt';
+    const orderDirection = searchParams.get('orderDirection') || 'desc';
     
     console.log('[FAQs API] Using Firebase Admin SDK with options:', { 
-      page, limit, search, categoryId, enabledKo, enabledEn 
+      page, limit, search, categoryId, enabledKo, enabledEn, orderBy, orderDirection 
     });
 
     // Firebase Admin SDK로 직접 조회
@@ -57,6 +59,31 @@ export async function GET(request: NextRequest) {
         faq.answer?.en?.toLowerCase().includes(searchLower)
       );
     }
+
+    // 정렬 적용
+    faqs.sort((a: any, b: any) => {
+      if (orderBy === 'isTop') {
+        // isTop: true가 먼저 오도록 정렬, 그 다음 level 오름차순
+        if (a.isTop !== b.isTop) {
+          return orderDirection === 'desc' 
+            ? (b.isTop === true ? 1 : -1) 
+            : (a.isTop === true ? 1 : -1);
+        }
+        // isTop이 같으면 level로 정렬 (낮은 값이 먼저)
+        const levelA = a.level ?? 999;
+        const levelB = b.level ?? 999;
+        return levelA - levelB;
+      } else if (orderBy === 'level') {
+        const levelA = a.level ?? 999;
+        const levelB = b.level ?? 999;
+        return orderDirection === 'asc' ? levelA - levelB : levelB - levelA;
+      } else {
+        // createdAt 기본 정렬
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return orderDirection === 'asc' ? dateA - dateB : dateB - dateA;
+      }
+    });
 
     const total = faqs.length;
     const totalPages = Math.ceil(total / limit);
