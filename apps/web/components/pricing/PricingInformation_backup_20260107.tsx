@@ -104,8 +104,6 @@ export default function PricingInformation({ locale: _locale }: PricingInformati
       : ANNUAL_FEES[ANNUAL_FEES.length - 1];
     const interpolatedMonthly = interpolatedEvent < 500000 ? 0 : interpolatedMonthlyRaw;
     const interpolatedAnnual = interpolatedEvent < 500000 ? 0 : interpolatedAnnualRaw;
-    const annualTotal = interpolatedMonthly * 12;
-    const annualPrepaidTotal = interpolatedAnnual * 12;
 
     const svgWidth = BASE_WIDTH * chartScale;
     const svgHeight = BASE_HEIGHT * chartScale;
@@ -136,8 +134,6 @@ export default function PricingInformation({ locale: _locale }: PricingInformati
       interpolatedUnitPrice,
       interpolatedMonthly,
       interpolatedAnnual,
-      annualTotal,
-      annualPrepaidTotal,
       svgWidth,
       svgHeight,
       padding,
@@ -355,37 +351,21 @@ export default function PricingInformation({ locale: _locale }: PricingInformati
               </button>
             </div>
           ) : (
-            <>
-              <div className="mtu-fee-inline">
-                <div className="mtu-fee-inline-item">
-                  <div className="inline-value-row">
-                    <span className="inline-label-strong">월요금</span>
-                    <span className="mtu-value-small" id="display-monthly-fee">
-                      ₩{Math.round(derived.interpolatedMonthly).toLocaleString()}
-                    </span>
-                    <span className="inline-sub">(연간 총 ₩{Math.round(derived.annualTotal).toLocaleString()}원)</span>
-                  </div>
+            <div className="mtu-display-box fee-row">
+              <div className="mtu-fee-item">
+                <div className="mtu-value-small" id="display-monthly-fee">
+                  ₩{Math.round(derived.interpolatedMonthly).toLocaleString()}
                 </div>
-                <div className="mtu-fee-inline-item">
-                  <div className="inline-value-row">
-                    <span className="inline-label-strong">연선납시 월요금</span>
-                    <span className="mtu-value-small" id="display-annual-fee">
-                      ₩{Math.round(derived.interpolatedAnnual).toLocaleString()}
-                    </span>
-                    <span className="inline-sub">(연간 총 ₩{Math.round(derived.annualPrepaidTotal).toLocaleString()}원)</span>
-                  </div>
-                </div>
+                <div className="mtu-label">월별 요금</div>
               </div>
-            </>
+              <div className="mtu-fee-item">
+                <div className="mtu-value-small" id="display-annual-fee">
+                  ₩{Math.round(derived.interpolatedAnnual).toLocaleString()}
+                </div>
+                <div className="mtu-label">연선납시 월별요금</div>
+              </div>
+            </div>
           )}
-        <ul className="fee-notes">
-          <li>연선납시 16.67%가 할인됩니다. (2개월 무료에 해당)</li>
-          <li>월별기준이벤트수 + 16.67% 이내는 초과 요금이 발생하지 않습니다. (초과분은 월기준요금의 30%할증)</li>
-          <li>연간 계약 시 총 이벤트 수는 좌측 이벤트 수 × 12가 최대입니다. (연선납후 매월 월기준이벤트수의 116.67%이내이면, 총이벤트수를 넘어서는 항목은 월 정상요금을 적용)</li>
-          <li>
-            연선납후 중도해지나 변경과 관련된 내용은 <a href="./general-terms-conditions" className="fee-link">여기</a>에서 확인할 수 있습니다.
-          </li>
-        </ul>
         </div>
       </div>
 
@@ -1024,11 +1004,11 @@ export default function PricingInformation({ locale: _locale }: PricingInformati
           flex-direction: column;
           justify-content: flex-end;
           align-items: center;
-          padding: 20px;
-          border-radius: 20px;
-          background: linear-gradient(135deg, #f9fbff 0%, #e8f0ff 100%);
-          border: 1px solid #d7e3f3;
-          box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+          padding: 24px;
+          border-radius: 24px;
+          background: linear-gradient(135deg, #f8fbff 0%, #eef6ff 100%);
+          border: 1px solid #d9e2ec;
+          box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
           min-width: 320px;
         }
         .graph-mtu-info {
@@ -1098,25 +1078,22 @@ export default function PricingInformation({ locale: _locale }: PricingInformati
         }
         .mtu-calculator-wrapper {
           flex: 2;
-          background: linear-gradient(135deg, #f9fbff 0%, #e8f0ff 100%);
-          padding: 20px;
-          border-radius: 20px;
-          border: 1px solid #d7e3f3;
-          box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+          background: linear-gradient(135deg, #f8fbff 0%, #eef6ff 100%);
+          padding: 40px;
+          border-radius: 24px;
+          border: 1px solid #d9e2ec;
+          box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
           text-align: center;
         }
         .subtitle {
           color: #666;
           font-size: 15px;
-          margin-bottom: 18px;
+          margin-bottom: 32px;
         }
         .mtu-display-box {
           display: flex;
-          justify-content: center;
-          gap: 12px;
-          padding: 6px 0;
-          margin-bottom: 8px;
-          flex-wrap: wrap;
+          justify-content: space-around;
+          margin-bottom: 32px;
         }
         .mtu-display-item {
           text-align: center;
@@ -1128,135 +1105,33 @@ export default function PricingInformation({ locale: _locale }: PricingInformati
           margin-bottom: 4px;
         }
         .mtu-value-small {
-          font-size: 18px;
+          font-size: 24px;
           font-weight: 700;
-          color: #0f2167;
-          margin-bottom: 0;
-          line-height: 1.05;
-        }
-        .mtu-fee-inline {
-          display: flex;
-          gap: 12px;
-          justify-content: center;
-          align-items: center;
-          margin: 10px 0;
-          flex-wrap: nowrap;
-        }
-        .mtu-fee-inline-item {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 4px;
-          background: #f4f7ff;
-          border: 1px solid #d9e4f7;
-          border-radius: 12px;
-          padding: 10px 14px;
-          box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
-          min-width: 180px;
-        }
-        .mtu-label-inline {
-          font-size: 13px;
-          color: #4b5563;
-          line-height: 1.2;
-        }
-        .inline-value-row {
-          display: flex;
-          align-items: baseline;
-          gap: 4px;
-          justify-content: center;
-          flex-wrap: nowrap;
-          text-align: center;
-        }
-        .inline-label-strong {
-          font-size: 12px;
-          font-weight: 700;
-          color: #0f2167;
-          white-space: nowrap;
-        }
-        .inline-sub {
-          color: #6b7280;
-          font-weight: 500;
-          font-size: 12px;
-          white-space: nowrap;
-        }
-        @media (max-width: 900px) {
-          .mtu-fee-inline {
-            flex-wrap: wrap;
-          }
-          .mtu-fee-inline-item {
-            min-width: 200px;
-          }
-          .inline-value-row {
-            flex-wrap: wrap;
-          }
+          color: #1a2a6c;
+          margin-bottom: 4px;
         }
         .mtu-display-item-stacked {
           text-align: center;
         }
         .fee-row {
-          gap: 12px;
+          gap: 40px;
           justify-content: center;
-          align-items: center;
-        }
-        .mtu-fee-item {
-          background: #f4f7ff;
-          border: 1px solid #d9e4f7;
-          border-radius: 12px;
-          padding: 10px 12px;
-          min-width: 150px;
-          box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 2px;
+          align-items: flex-start;
         }
         .enterprise-contact {
-          flex-direction: row;
+          flex-direction: column;
           align-items: center;
-          justify-content: center;
-          gap: 6px;
-          padding: 6px 10px;
-          min-height: 0;
-          background: transparent;
-          border: 1px solid transparent;
-          border-radius: 10px;
-          box-shadow: none;
-        }
-        .enterprise-contact .cta-button {
-          padding: 6px 10px;
-          font-size: 0.9rem;
-          box-shadow: 0 4px 10px rgba(0, 161, 239, 0.28);
+          gap: 10px;
         }
         .mtu-fee-item:first-child {
-          margin-bottom: 4px;
+          margin-bottom: 16px;
         }
         .mtu-label {
-          font-size: 12px;
-          color: #6b7280;
-          line-height: 1.15;
-        }
-        .fee-notes {
-          list-style: disc;
-          padding: 10px 14px 10px 22px;
-          margin: 10px 0 0;
-          background: #f9fbff;
-          border: 1px solid #e3ebf7;
-          border-radius: 12px;
-          color: #4b5563;
-          font-size: 12px;
-          line-height: 1.55;
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-          text-align: left;
-        }
-        .fee-link {
-          color: #0f2167;
-          font-weight: 600;
-          text-decoration: underline;
+          font-size: 14px;
+          color: #777;
         }
         .mtu-slider-container {
-          margin: 18px 0;
+          margin: 30px 0;
           position: relative;
         }
         .mtu-slider-track {

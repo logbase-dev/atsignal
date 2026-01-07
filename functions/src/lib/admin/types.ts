@@ -314,11 +314,7 @@ export interface WhatsNew {
   };
   published: boolean;
   publishedAt?: Date;
-  showInBanner?: boolean;
-  bannerPriority?: number;
   isTop?: boolean;
-  displayStartAt?: Date;
-  displayEndAt?: Date;
   views?: number;
   createdAt?: Date;
   updatedAt?: Date;
