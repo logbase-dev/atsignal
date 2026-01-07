@@ -367,6 +367,19 @@ export default function NoticePage() {
             notices.map((notice) => (
               <tr key={notice.id}>
                   <td style={{ padding: '1rem', borderBottom: '1px solid #e5e5e5' }}>
+                  {notice.isTop && (
+                    <span style={{
+                      padding: '0.25rem 0.5rem',
+                      backgroundColor: '#dc2626',
+                      color: 'white',
+                      borderRadius: '4px',
+                      fontSize: '0.75rem',
+                      fontWeight: '600',
+                      marginRight: '0.5rem',
+                    }}>
+                      중요
+                    </span> 
+                  )}                
                     <Link
                       href={`/admin/notice/${notice.id}/view`}
                       style={{

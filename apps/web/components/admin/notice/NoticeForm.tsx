@@ -130,6 +130,7 @@ export function NoticeForm({ mode, id }: NoticeFormProps) {
         setPublished(notice.published ?? false);
         setEnabledKo(notice.enabled?.ko ?? true);
         setEnabledEn(notice.enabled?.en ?? false);
+        setIsTop(notice.isTop ?? false);
         setEditorType(notice.editorType || 'toast');
         setSaveFormat(notice.saveFormat || 'markdown');
       } catch (e: any) {

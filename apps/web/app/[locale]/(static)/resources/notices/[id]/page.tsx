@@ -56,3 +56,6 @@ export default async function NoticeDetailPageRoute({ params }: PageProps) {
     notFound();
   }
 }
+
+// 5분마다 캐시 갱신
+export const revalidate = 300;

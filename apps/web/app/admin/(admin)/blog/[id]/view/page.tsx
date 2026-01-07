@@ -319,6 +319,32 @@ export default function BlogPostViewPage({ params }: { params: { id: string } })
               </div>
             </header>
 
+            {/* 썸네일 이미지 */}
+            {post?.thumbnail && (
+              <div style={{
+                marginBottom: '2rem',
+                borderRadius: '12px',
+                overflow: 'hidden',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+              }}>
+                <img
+                  src={post.thumbnail}
+                  alt={post.title?.ko || post.title?.en || '썸네일 이미지'}
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                    maxHeight: '400px',
+                    objectFit: 'cover',
+                    display: 'block',
+                  }}
+                  onError={(e) => {
+                    // 이미지 로드 실패 시 숨기기
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+              </div>
+            )}
+
             {/* 본문 */}
             <div
               style={{

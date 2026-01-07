@@ -54,3 +54,6 @@ export default async function BlogsListPage({ params }: PageProps) {
     );
   }
 }
+
+// 5분마다 캐시 갱신
+export const revalidate = 300;

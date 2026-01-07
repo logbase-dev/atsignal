@@ -71,7 +71,7 @@ export default function BlogsPage({
   useEffect(() => {
     const loadFeaturedBlogs = async () => {
       try {
-        const featured = await getPublicFeaturedBlogs(3);
+        const featured = await getPublicFeaturedBlogs(50); // 최대 50개까지 가져오기
         setFeaturedBlogs(featured);
       } catch (error) {
         console.error('Failed to load featured blogs:', error);
@@ -179,193 +179,226 @@ export default function BlogsPage({
           }}>
             {t.featured}
           </h2>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: '1.5rem',
-          }}>
-            {/* 항상 3개의 카드 슬롯을 표시 */}
-            {Array.from({ length: 3 }, (_, index) => {
-              const blog = featuredBlogs[index];
+          
+          {/* 추천 블로그를 3개씩 행으로 나누어 표시 */}
+          {(() => {
+            const rows = [];
+            const totalSlots = Math.max(3, Math.ceil(featuredBlogs.length / 3) * 3); // 최소 3개, 3의 배수로 맞춤
+            
+            for (let i = 0; i < totalSlots; i += 3) {
+              const rowBlogs = [];
+              for (let j = 0; j < 3; j++) {
+                const blog = featuredBlogs[i + j];
+                rowBlogs.push(blog || null);
+              }
               
-              if (blog) {
-                // 실제 블로그 카드
-                return (
-                  <div
-                    key={blog.id}
-                    style={{
-                      backgroundColor: '#fff',
-                      borderRadius: '12px',
-                      overflow: 'hidden',
-                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                      transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-4px)';
-                      e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.15)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
-                    }}
-                  >
-                    {/* 썸네일 이미지 */}
-                    <div style={{
-                      width: '100%',
-                      height: '200px',
-                      backgroundImage: blog.thumbnail ? `url(${blog.thumbnail})` : 'none',
-                      backgroundColor: blog.thumbnail ? 'transparent' : '#f3f4f6',
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}>
-                      {!blog.thumbnail && (
-                        <span style={{
-                          color: '#9ca3af',
-                          fontSize: '0.875rem',
-                          fontWeight: '500',
-                        }}>
-                          썸네일 없음
-                        </span>
-                      )}
-                    </div>
+              rows.push(
+                <div
+                  key={`row-${i / 3}`}
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(3, 1fr)',
+                    gap: '1.5rem',
+                    marginBottom: i + 3 < totalSlots ? '1.5rem' : '0', // 마지막 행이 아니면 여백 추가
+                  }}
+                >
+                  {rowBlogs.map((blog, index) => {
+                    const cardIndex = i + index;
                     
-                    <div style={{ padding: '1rem' }}> {/* 1.5rem에서 1rem으로 줄임 */}
-                      {/* 카테고리 */}
-                      {blog.categoryId && (
-                        <div style={{ marginBottom: '0.5rem' }}> {/* 0.75rem에서 0.5rem으로 줄임 */}
-                          <span style={{
-                            padding: '0.25rem 0.75rem',
-                            backgroundColor: '#eff6ff',
-                            color: '#1d4ed8',
-                            borderRadius: '999px',
-                            fontSize: '0.75rem',
-                            fontWeight: '500',
-                          }}>
-                            {getCategoryName(blog.categoryId)}
-                          </span>
-                        </div>
-                      )}
-
-                      {/* 제목 */}
-                      <h3 style={{
-                        fontSize: '1.125rem', // 1.25rem에서 1.125rem으로 줄임
-                        fontWeight: '600',
-                        color: '#1a1a1a',
-                        marginBottom: '0.5rem', // 0.75rem에서 0.5rem으로 줄임
-                        lineHeight: '1.4',
-                      }}>
-                        <Link
-                          href={`/${locale}/resources/blogs/${blog.slug || blog.id}`}
+                    if (blog) {
+                      // 실제 블로그 카드
+                      return (
+                        <div
+                          key={blog.id}
                           style={{
-                            color: 'inherit',
-                            textDecoration: 'none',
+                            backgroundColor: '#fff',
+                            borderRadius: '12px',
+                            overflow: 'hidden',
+                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
                           }}
                           onMouseEnter={(e) => {
-                            e.currentTarget.style.color = '#20BDFF';
+                            e.currentTarget.style.transform = 'translateY(-4px)';
+                            e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.15)';
                           }}
                           onMouseLeave={(e) => {
-                            e.currentTarget.style.color = '#1a1a1a';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
                           }}
                         >
-                          {getLocalizedText(blog.title)}
-                        </Link>
-                      </h3>
+                          {/* 썸네일 이미지 */}
+                          <Link href={`/${locale}/resources/blogs/${blog.slug || blog.id}`}>
+                            <div style={{
+                              width: '100%',
+                              height: '200px',
+                              backgroundImage: blog.thumbnail ? `url(${blog.thumbnail})` : 'none',
+                              backgroundColor: blog.thumbnail ? 'transparent' : '#f3f4f6',
+                              backgroundSize: 'cover',
+                              backgroundPosition: 'center',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              cursor: 'pointer',
+                              transition: 'opacity 0.2s ease',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.opacity = '0.8';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.opacity = '1';
+                            }}
+                            >
+                              {!blog.thumbnail && (
+                                <span style={{
+                                  color: '#9ca3af',
+                                  fontSize: '0.875rem',
+                                  fontWeight: '500',
+                                }}>
+                                  썸네일 없음
+                                </span>
+                              )}
+                            </div>
+                          </Link>
+                          
+                          <div style={{ padding: '1rem' }}>
+                            {/* 카테고리 */}
+                            {blog.categoryId && (
+                              <div style={{ marginBottom: '0.5rem' }}>
+                                <span style={{
+                                  padding: '0.25rem 0.75rem',
+                                  backgroundColor: '#eff6ff',
+                                  color: '#1d4ed8',
+                                  borderRadius: '999px',
+                                  fontSize: '0.75rem',
+                                  fontWeight: '500',
+                                }}>
+                                  {getCategoryName(blog.categoryId)}
+                                </span>
+                              </div>
+                            )}
 
-                      {/* 요약 */}
-                      <p style={{
-                        color: '#666',
-                        fontSize: '0.875rem',
-                        lineHeight: '1.5',
-                        marginBottom: '0.75rem',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                      }}>
-                        {getLocalizedText(blog.excerpt) || 
-                         (getLocalizedText(blog.content) ? 
-                          getLocalizedText(blog.content).replace(/<[^>]*>/g, '').substring(0, 100) + '...' : 
-                          '내용이 없습니다.')}
-                      </p>
+                            {/* 제목 */}
+                            <h3 style={{
+                              fontSize: '1.125rem',
+                              fontWeight: '600',
+                              color: '#1a1a1a',
+                              marginBottom: '0.5rem',
+                              lineHeight: '1.4',
+                            }}>
+                              <Link
+                                href={`/${locale}/resources/blogs/${blog.slug || blog.id}`}
+                                style={{
+                                  color: 'inherit',
+                                  textDecoration: 'none',
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.color = '#20BDFF';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.color = '#1a1a1a';
+                                }}
+                              >
+                                {getLocalizedText(blog.title)}
+                              </Link>
+                            </h3>
 
-                      {/* 메타 정보 */}
-                      <div style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        fontSize: '0.75rem',
-                        color: '#9ca3af',
-                      }}>
-                        <div style={{ display: 'flex', gap: '1rem' }}>
-                          {blog.authorName && (
-                            <span>{blog.authorName}</span>
-                          )}
-                          <span>{formatDate(blog.createdAt)}</span>
+                            {/* 요약 */}
+                            <p style={{
+                              color: '#666',
+                              fontSize: '0.875rem',
+                              lineHeight: '1.5',
+                              marginBottom: '0.75rem',
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
+                            }}>
+                              {getLocalizedText(blog.excerpt) || 
+                               (getLocalizedText(blog.content) ? 
+                                getLocalizedText(blog.content).replace(/<[^>]*>/g, '').substring(0, 100) + '...' : 
+                                '내용이 없습니다.')}
+                            </p>
+
+                            {/* 메타 정보 */}
+                            <div style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              fontSize: '0.75rem',
+                              color: '#9ca3af',
+                            }}>
+                              <div style={{ display: 'flex', gap: '1rem' }}>
+                                {blog.authorName && (
+                                  <span>{blog.authorName}</span>
+                                )}
+                                <span>{formatDate(blog.createdAt)}</span>
+                              </div>
+                              <span>{(blog.views || 0).toLocaleString()} views</span>
+                            </div>
+                          </div>
                         </div>
-                        <span>{(blog.views || 0).toLocaleString()} views</span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              } else {
-                // 빈 카드 플레이스홀더
-                return (
-                  <div
-                    key={`empty-${index}`}
-                    style={{
-                      backgroundColor: '#f8f9fa',
-                      borderRadius: '12px',
-                      border: '2px dashed #e9ecef',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      minHeight: '220px', // 300px에서 220px로 줄임
-                      padding: '1.5rem', // 2rem에서 1.5rem으로 줄임
-                    }}
-                  >
-                    <div style={{
-                      width: '50px', // 60px에서 50px로 줄임
-                      height: '50px', // 60px에서 50px로 줄임
-                      backgroundColor: '#e9ecef',
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      marginBottom: '0.75rem', // 1rem에서 0.75rem으로 줄임
-                    }}>
-                      <svg 
-                        width="20" // 24에서 20으로 줄임
-                        height="20" // 24에서 20으로 줄임
-                        fill="none" 
-                        stroke="#adb5bd" 
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                      >
-                        <path 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round" 
-                          d="M12 4.5v15m7.5-7.5h-15" 
-                        />
-                      </svg>
-                    </div>
-                    <p style={{
-                      color: '#adb5bd',
-                      fontSize: '0.875rem',
-                      textAlign: 'center',
-                      margin: 0,
-                      fontWeight: '500',
-                    }}>
-                      {locale === 'ko' ? '추천 블로그가 없습니다' : 'No featured blog'}
-                    </p>
-                  </div>
-                );
-              }
-            })}
-          </div>
+                      );
+                    } else {
+                      // 빈 카드 플레이스홀더
+                      return (
+                        <div
+                          key={`empty-${cardIndex}`}
+                          style={{
+                            backgroundColor: '#f8f9fa',
+                            borderRadius: '12px',
+                            border: '2px dashed #e9ecef',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            minHeight: '220px',
+                            padding: '1.5rem',
+                          }}
+                        >
+                          <div style={{
+                            width: '50px',
+                            height: '50px',
+                            backgroundColor: '#e9ecef',
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            marginBottom: '0.75rem',
+                          }}>
+                            <svg 
+                              width="20"
+                              height="20"
+                              fill="none" 
+                              stroke="#adb5bd" 
+                              viewBox="0 0 24 24"
+                              strokeWidth={1.5}
+                            >
+                              <path 
+                                strokeLinecap="round" 
+                                strokeLinejoin="round" 
+                                d="M12 4.5v15m7.5-7.5h-15" 
+                              />
+                            </svg>
+                          </div>
+                          <p style={{
+                            color: '#adb5bd',
+                            fontSize: '0.875rem',
+                            textAlign: 'center',
+                            margin: 0,
+                            fontWeight: '500',
+                          }}>
+                            {locale === 'ko' ? '추천 블로그가 없습니다' : 'No featured blog'}
+                          </p>
+                        </div>
+                      );
+                    }
+                  })}
+                </div>
+              );
+            }
+            
+            return rows;
+          })()}
         </div>
 
         {/* 검색 및 필터 */}
