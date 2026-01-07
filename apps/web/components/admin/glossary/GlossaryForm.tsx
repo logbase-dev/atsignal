@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { getGlossaryCategories } from '@/lib/admin/glossaryCategoryService';
-import { extractTitleFromUrl } from '@/lib/admin/glossaryService';
 import type { Glossary, GlossaryCategory, RelatedLink } from '@/lib/admin/types';
 import { NextraMarkdownField } from '@/components/editor/NextraMarkdownField';
 
@@ -105,7 +104,7 @@ export function GlossaryForm({ initialGlossary, onSubmit, onCancel, submitting }
     enabled: { ko: true, en: true },
     relatedLinks: [] as RelatedLink[],
   });
-  const [linkInput, setLinkInput] = useState({ url: '', linkType: 'docs' as 'docs' | 'faq' | 'blog' | 'notice' });
+  const [linkInput, setLinkInput] = useState({ url: '', linkType: 'external' as 'docs' | 'faq' | 'blog' | 'notice' | 'external' });
   const [linkLoading, setLinkLoading] = useState(false);
 
   useEffect(() => {
@@ -139,21 +138,42 @@ export function GlossaryForm({ initialGlossary, onSubmit, onCancel, submitting }
     }
   };
 
+  // URL 유효성 검사 함수
+  const isValidUrl = (string: string): boolean => {
+    // 상대 경로 허용 (/, /docs, /faq 등으로 시작하는 경우)
+    // if (string.startsWith('/')) {
+    //   return true;
+    // }
+    // 절대 URL 검사
+    try {
+      new URL(string);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  };
+
   const handleAddLink = async () => {
-    if (!linkInput.url.trim()) {
+    const trimmedUrl = linkInput.url.trim();
+    
+    if (!trimmedUrl) {
       alert('URL을 입력해주세요.');
+      return;
+    }
+
+    // URL 유효성 검사
+    if (!isValidUrl(trimmedUrl)) {
+      alert('유효한 URL 형식이 아닙니다. (예: https://example.com 또는 https://example.com/docs) ');
       return;
     }
 
     setLinkLoading(true);
     try {
-      // URL에서 제목 추출 시도
-      const title = await extractTitleFromUrl(linkInput.url, linkInput.linkType);
-      
+      // 외부 링크는 제목 추출 시도하지 않음
       const newLink: RelatedLink = {
-        url: linkInput.url.trim(),
-        title: title || undefined,
-        linkType: linkInput.linkType,
+        url: trimmedUrl,
+        title: undefined,
+        linkType: 'external',
       };
 
       setFormData((prev) => ({
@@ -161,19 +181,19 @@ export function GlossaryForm({ initialGlossary, onSubmit, onCancel, submitting }
         relatedLinks: [...prev.relatedLinks, newLink],
       }));
 
-      setLinkInput({ url: '', linkType: 'docs' });
+      setLinkInput({ url: '', linkType: 'external' });
     } catch (err) {
-      console.error('Failed to extract title:', err);
-      // 제목 추출 실패해도 링크는 추가 (수동으로 제목 입력 가능)
+      console.error('Failed to add link:', err);
+      // 에러 발생해도 링크는 추가
       const newLink: RelatedLink = {
-        url: linkInput.url.trim(),
-        linkType: linkInput.linkType,
+        url: trimmedUrl,
+        linkType: 'external',
       };
       setFormData((prev) => ({
         ...prev,
         relatedLinks: [...prev.relatedLinks, newLink],
       }));
-      setLinkInput({ url: '', linkType: 'docs' });
+      setLinkInput({ url: '', linkType: 'external' });
     } finally {
       setLinkLoading(false);
     }
@@ -384,19 +404,11 @@ export function GlossaryForm({ initialGlossary, onSubmit, onCancel, submitting }
             type="text"
             value={linkInput.url}
             onChange={(e) => setLinkInput((p) => ({ ...p, url: e.target.value }))}
-            placeholder="URL 입력 (예: /docs/ko/getting-started, /faq/123)"
+            placeholder="URL 입력 (예: https://example.com/docs)"
             style={{ flex: 1, ...inputStyle }}
           />
-          <select
-            value={linkInput.linkType}
-            onChange={(e) => setLinkInput((p) => ({ ...p, linkType: e.target.value as any }))}
-            style={{ ...inputStyle, width: 'auto', minWidth: '120px' }}
-          >
-            <option value="docs">docs</option>
-            <option value="faq">faq</option>
-            <option value="blog">blog</option>
-            <option value="notice">notice</option>
-          </select>
+          {/* linkType은 항상 'external'로 고정 */}
+          <input type="hidden" value="external" />
           <button
             type="button"
             onClick={() => void handleAddLink()}

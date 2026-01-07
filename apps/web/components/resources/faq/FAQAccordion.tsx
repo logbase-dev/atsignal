@@ -27,21 +27,21 @@ export function FAQAccordion({ faqs, locale }: FAQAccordionProps) {
     });
   };
 
-  if (faqs.length === 0) {
-    return (
-      <div style={{ 
-        padding: '3rem 1rem', 
-        textAlign: 'center', 
-        color: '#666',
-        minHeight: '200px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
-        <p>FAQ가 없습니다.</p>
-      </div>
-    );
-  }
+  // if (faqs.length === 0) {
+  //   return (
+  //     <div style={{ 
+  //       padding: '3rem 1rem', 
+  //       textAlign: 'center', 
+  //       color: '#666',
+  //       minHeight: '200px',
+  //       display: 'flex',
+  //       alignItems: 'center',
+  //       justifyContent: 'center'
+  //     }}>
+  //       <p>FAQ가 없습니다.</p>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto' }}>

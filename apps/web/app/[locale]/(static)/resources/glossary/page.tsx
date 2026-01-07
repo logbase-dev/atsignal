@@ -653,6 +653,68 @@ export default function GlossaryPage({ params }: PageProps) {
                           </ReactMarkdown>
                         )}
                       </div>
+
+                      {/* 관련 문서 링크 */}
+                      {glossary.relatedLinks && glossary.relatedLinks.length > 0 && (
+                        <div style={{
+                          marginTop: '1rem',
+                          paddingTop: '1rem',
+                          borderTop: '1px solid #e5e5e5',
+                        }}>
+                          <div style={{
+                            fontSize: '0.875rem',
+                            fontWeight: '600',
+                            color: '#374151',
+                            marginBottom: '0.5rem',
+                          }}>
+                            {locale === 'en' ? 'Related Links' : '관련 문서'}
+                          </div>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                            {glossary.relatedLinks.map((link, linkIndex) => (
+                              <a
+                                key={linkIndex}
+                                href={link.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.25rem',
+                                  padding: '0.375rem 0.75rem',
+                                  backgroundColor: '#f3f4f6',
+                                  color: '#20BDFF',
+                                  borderRadius: '0.375rem',
+                                  fontSize: '0.875rem',
+                                  textDecoration: 'none',
+                                  transition: 'background-color 0.2s ease',
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.backgroundColor = '#e5e7eb';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor = '#f3f4f6';
+                                }}
+                              >
+                                <svg 
+                                  width="14" 
+                                  height="14" 
+                                  viewBox="0 0 24 24" 
+                                  fill="none" 
+                                  stroke="currentColor" 
+                                  strokeWidth="2"
+                                  strokeLinecap="round" 
+                                  strokeLinejoin="round"
+                                >
+                                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                                  <polyline points="15 3 21 3 21 9" />
+                                  <line x1="10" y1="14" x2="21" y2="3" />
+                                </svg>
+                                {link.title || link.url}
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
                 })}

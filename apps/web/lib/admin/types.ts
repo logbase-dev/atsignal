@@ -361,7 +361,7 @@ export interface WhatsNew {
 export interface RelatedLink {
   url: string;
   title?: string;
-  linkType: 'docs' | 'faq' | 'blog' | 'notice';
+  linkType: 'docs' | 'faq' | 'blog' | 'notice' | 'external';
 }
 
 export interface GlossaryCategory {
