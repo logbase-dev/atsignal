@@ -128,6 +128,18 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    // isTop이 true인 항목을 상단으로 정렬
+    notices.sort((a: any, b: any) => {
+      // isTop이 true인 항목을 먼저 정렬
+      if (a.isTop && !b.isTop) return -1;
+      if (!a.isTop && b.isTop) return 1;
+      
+      // 둘 다 isTop이거나 둘 다 아닌 경우, 생성일 기준으로 최신순 정렬
+      const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const bDate = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return bDate - aDate;
+    });
+
     const total = notices.length;
     const totalPages = Math.ceil(total / limit);
     const startIndex = (page - 1) * limit;

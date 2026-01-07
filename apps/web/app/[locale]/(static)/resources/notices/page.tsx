@@ -49,3 +49,6 @@ export default async function NoticesListPage({ params }: PageProps) {
     );
   }
 }
+
+// 5분마다 캐시 갱신
+export const revalidate = 300;

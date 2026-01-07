@@ -465,7 +465,7 @@ export default function BlogDetailPage({ locale, blog, categories }: Props) {
                   flexWrap: 'wrap' 
                 }}>
                   {/* 작성자 이미지 */}
-                  {blog?.authorImage && (
+                  {blog?.authorImage ? (
                     <img
                       src={blog.authorImage}
                       alt={blog.authorName || t.author}
@@ -476,7 +476,34 @@ export default function BlogDetailPage({ locale, blog, categories }: Props) {
                         objectFit: 'cover',
                         border: '2px solid #e5e7eb',
                       }}
+                      onError={(e) => {
+                        console.error('작성자 이미지 로드 실패:', blog.authorImage);
+                        // 이미지 로드 실패 시 기본 아바타로 대체
+                        e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNGM0Y0RjYiLz4KPHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeD0iOCIgeT0iOCI+CjxwYXRoIGQ9Ik0xMiAxMkM5Ljc5IDEyIDggMTAuMjEgOCA4UzkuNzkgNiAxMiA2czQgMS43OSA0IDQtMS43OSA0LTQgNHptMCAyYzIuNjcgMCA4IDEuMzQgOCA0djJINHYtMmMwLTIuNjYgNS4zMy00IDgtNHoiIGZpbGw9IiM5Q0EzQUYiLz4KPHN2Zz4KPHN2Zz4=';
+                      }}
+                      onLoad={() => {
+                        console.log('작성자 이미지 로드 성공:', blog.authorImage);
+                      }}
                     />
+                  ) : blog?.authorName && (
+                    // 이미지가 없으면 이름의 첫 글자로 아바타 생성
+                    <div
+                      style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '50%',
+                        backgroundColor: '#f3f4f6',
+                        border: '2px solid #e5e7eb',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '1rem',
+                        fontWeight: '600',
+                        color: '#6b7280',
+                      }}
+                    >
+                      {blog.authorName.charAt(0).toUpperCase()}
+                    </div>
                   )}
                   
                   {/* 작성자 이름 */}
@@ -616,6 +643,33 @@ export default function BlogDetailPage({ locale, blog, categories }: Props) {
                   </div>
                 )}
               </header>
+              
+              {/* 썸네일 이미지 */}
+              {blog?.thumbnail && (
+                <div style={{
+                  marginTop: '2rem',
+                  marginBottom: '2rem',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                }}>
+                  <img
+                    src={blog.thumbnail}
+                    alt={getLocalizedText(blog.title) || '썸네일 이미지'}
+                    style={{
+                      width: '100%',
+                      height: 'auto',
+                      maxHeight: '400px',
+                      objectFit: 'cover',
+                      display: 'block',
+                    }}
+                    onError={(e) => {
+                      // 이미지 로드 실패 시 숨기기
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                </div>
+              )}
 
               {/* 본문 */}
               <div style={{

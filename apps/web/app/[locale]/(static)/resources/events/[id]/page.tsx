@@ -90,3 +90,6 @@ export default async function Page({ params }: Props) {
     notFound();
   }
 }
+
+// 5분마다 캐시 갱신
+export const revalidate = 300;
