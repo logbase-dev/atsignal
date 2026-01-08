@@ -129,7 +129,7 @@ export default function NoticesPage({
       <div className="hero-page">
         <div className="hero-page-container">
           <h1>atsignal Notices</h1>
-          <p>설명 문구가 들어가는 곳입니다.</p>
+          <p>atsignal 과 관련된 각종 안내, 언론 자료, 기타 서비스 점검 등 다양한 내용을 확인할 수 있습니다.</p>
           {/* <p>수집 로그 규모에 따라 가장 적합한 요금제를 선택하세요.</p> */}
         </div>
       </div>

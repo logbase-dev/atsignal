@@ -201,8 +201,8 @@ export default function GlossaryPage({ params }: PageProps) {
       <div className="hero-page">
         <div className="hero-page-container">
           <h1>atsignal Glossary</h1>
-          <p>설명 문구가 들어가는 곳입니다.</p>
-          {/* <p>수집 로그 규모에 따라 가장 적합한 요금제를 선택하세요.</p> */}
+          <p>Analytics 전반에서 사용되는 다양한 용어들을 정리하였습니다.</p>
+          <p>관련 문서가 존재하는 경우 해당 링크를 선택하시면 좀더 구체적인 사례를 보실 수 있습니다.</p>
         </div>
       </div>
 

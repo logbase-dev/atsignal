@@ -183,7 +183,7 @@ export default function FAQPage({ params }: PageProps) {
       <div className="hero-page">
         <div className="hero-page-container">
           <h1>atsignal FAQ</h1>
-          <p>설명 문구가 들어가는 곳입니다.</p>
+          <p>많은 분들이 atsignal에 대하여 궁금해하는 항목을 정리해두었습니다.</p>
           {/* <p>수집 로그 규모에 따라 가장 적합한 요금제를 선택하세요.</p> */}
         </div>
       </div>

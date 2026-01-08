@@ -28,8 +28,8 @@ export default function BlogsPage({
 
   const texts = {
     ko: {
-      title: '블로그',
-      subtitle: 'AtSignal의 최신 기술 블로그와 인사이트를 확인하세요',
+      title: 'atsignal blogs',
+      subtitle: 'atsignal 블로그에서 Product Analytics와 관련된 구축사례, 주요 개념, 업계 트렌드를 확인하세요.',
       search: '검색',
       searchPlaceholder: '제목이나 내용을 검색하세요',
       category: '카테고리',
@@ -46,7 +46,7 @@ export default function BlogsPage({
       featured: '추천 블로그',
     },
     en: {
-      title: 'Blog',
+      title: 'atsignal blog',
       subtitle: 'Check out the latest tech blog and insights from AtSignal',
       search: 'Search',
       searchPlaceholder: 'Search by title or content',
@@ -158,7 +158,7 @@ export default function BlogsPage({
       <div className="hero-page">
         <div className="hero-page-container">
           <h1>atsignal blogs</h1>
-          <p>설명 문구가 들어가는 곳입니다.</p>
+          <p>atsignal 블로그에서 Product Analytics와 관련된 구축사례, 주요 개념, 업계 트렌드를 확인하세요.</p>
           {/* <p>수집 로그 규모에 따라 가장 적합한 요금제를 선택하세요.</p> */}
         </div>
       </div>
