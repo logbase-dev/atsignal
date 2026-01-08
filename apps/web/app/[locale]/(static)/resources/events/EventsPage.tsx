@@ -87,6 +87,37 @@ export default function EventsPage({
     return field[locale] || field.ko || '';
   };
 
+  const getEventStatus = (event: Event) => {
+    const now = new Date();
+    const startDate = event.eventStartAt ? new Date(event.eventStartAt) : null;
+    const endDate = event.eventEndAt ? new Date(event.eventEndAt) : null;
+
+    if (endDate && now > endDate) {
+      return 'ended';
+    } else if (startDate && now < startDate) {
+      return 'upcoming';
+    }
+    return 'active';
+  };
+
+  const getStatusBadge = (status: string) => {
+    if (status === 'active') return null;
+    
+    return (
+      <span style={{
+        padding: '0.5rem 1rem',
+        borderRadius: '20px',
+        fontSize: '0.875rem',
+        fontWeight: '500',
+        backgroundColor: status === 'ended' ? '#fef2f2' : '#fefce8',
+        color: status === 'ended' ? '#dc2626' : '#d97706',
+        border: `1px solid ${status === 'ended' ? '#fecaca' : '#fed7aa'}`,
+      }}>
+        {status === 'ended' ? '종료된 이벤트' : '예정된 이벤트'}
+      </span>
+    );
+  };
+
   return (
     <div style={{ 
       minHeight: '100vh', 
@@ -159,6 +190,16 @@ export default function EventsPage({
                         </div>
                       </div>
                     )}
+                    
+                    {/* 이벤트 상태 배지 */}
+                    <div style={{
+                      position: 'absolute',
+                      top: '1rem',
+                      right: '1rem',
+                    }}>
+                      {getStatusBadge(getEventStatus(initialMainEvent))}
+                    </div>
+                    
                     <div style={{
                       position: 'absolute',
                       inset: 0,
@@ -295,6 +336,15 @@ export default function EventsPage({
                                   </div>
                                 </div>
                               )}
+                              
+                              {/* 이벤트 상태 배지 */}
+                              <div style={{
+                                position: 'absolute',
+                                top: '0.75rem',
+                                right: '0.75rem',
+                              }}>
+                                {getStatusBadge(getEventStatus(subEvent))}
+                              </div>
                             </div>
                             <div style={{ 
                               padding: '1.5rem',
@@ -444,7 +494,16 @@ export default function EventsPage({
                           </div>
                         )}
                       </div>
-                      <div style={{ marginLeft: '1rem' }}>
+                      <div style={{ 
+                        marginLeft: '1rem',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'flex-end',
+                        gap: '0.5rem',
+                      }}>
+                        {/* 이벤트 상태 배지 */}
+                        {getStatusBadge(getEventStatus(event))}
+                        
                         <Link
                           href={`/${locale}/resources/events/${event.id}`}
                           style={{
