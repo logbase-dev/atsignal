@@ -97,7 +97,7 @@ export default function EventsPage({
       <div className="hero-page">
         <div className="hero-page-container">
           <h1>atsignal Events</h1>
-          <p>설명 문구가 들어가는 곳입니다.</p>
+          <p>atsignal과 관련된 다양한 세미나, 웨비나, 기타 행사 정보를 확인하실 수 있습니다.</p>
         </div>
       </div>
 
