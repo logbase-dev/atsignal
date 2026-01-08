@@ -235,14 +235,14 @@ export default function EventDetailPage({ locale, event }: Props) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 <div>
-                  <div style={{
+                  <span style={{
                     fontWeight: '600',
                     color: '#1a1a1a',
-                    marginBottom: '0.25rem',
+                    marginRight: '0.5rem',
                   }}>
-                    {t.period}
-                  </div>
-                  <div style={{ color: '#666', fontSize: '0.875rem', lineHeight: '1.4' }}>
+                    {t.period} :
+                  </span>
+                  <span style={{ color: '#666', fontSize: '0.875rem', lineHeight: '1.4' }}>
                     {event.eventStartAt && formatDate(event.eventStartAt)}
                     {event.eventEndAt && (
                       <>
@@ -250,7 +250,7 @@ export default function EventDetailPage({ locale, event }: Props) {
                         {formatDate(event.eventEndAt)}
                       </>
                     )}
-                  </div>
+                  </span>
                 </div>
               </div>
             )}
