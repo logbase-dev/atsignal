@@ -381,7 +381,11 @@ export default function PricingInformation({ locale: _locale }: PricingInformati
         <ul className="fee-notes">
           <li>연선납시 16.67%가 할인됩니다. (2개월 무료에 해당)</li>
           <li>월별기준이벤트수 + 16.67% 이내는 초과 요금이 발생하지 않습니다. (초과분은 월기준요금의 30%할증)</li>
-          <li>연간 계약 시 총 이벤트 수는 좌측 이벤트 수 × 12가 최대입니다. (연선납후 매월 월기준이벤트수의 116.67%이내이면, 총이벤트수를 넘어서는 항목은 월 정상요금을 적용)</li>
+          <li>
+            연간 계약 시 총 이벤트 수는 {Math.round(derived.interpolatedEvent).toLocaleString()} × 12가 최대입니다.
+            <br />
+            (연선납후 매월 월기준이벤트수의 116.67%이내이면, 총이벤트수를 넘어서는 항목은 월 정상요금을 적용)
+          </li>
           <li>
             연선납후 중도해지나 변경과 관련된 내용은 <a href="./general-terms-conditions" className="fee-link">여기</a>에서 확인할 수 있습니다.
           </li>
@@ -1099,7 +1103,7 @@ export default function PricingInformation({ locale: _locale }: PricingInformati
         .mtu-calculator-wrapper {
           flex: 2;
           background: linear-gradient(135deg, #f9fbff 0%, #e8f0ff 100%);
-          padding: 20px;
+          padding: 12px;
           border-radius: 20px;
           border: 1px solid #d7e3f3;
           box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
@@ -1135,14 +1139,19 @@ export default function PricingInformation({ locale: _locale }: PricingInformati
           line-height: 1.05;
         }
         .mtu-fee-inline {
-          display: flex;
-          gap: 12px;
-          justify-content: center;
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 8px;
+          justify-items: center;
           align-items: center;
-          margin: 10px 0;
-          flex-wrap: nowrap;
+          margin: 10px auto 0;
+          width: 100%;
+          max-width: 100%;
+          padding: 0;
+          box-sizing: border-box;
         }
         .mtu-fee-inline-item {
+          width: 100%;
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -1152,7 +1161,7 @@ export default function PricingInformation({ locale: _locale }: PricingInformati
           border-radius: 12px;
           padding: 10px 14px;
           box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
-          min-width: 180px;
+          min-width: 0;
         }
         .mtu-label-inline {
           font-size: 13px;
@@ -1166,6 +1175,7 @@ export default function PricingInformation({ locale: _locale }: PricingInformati
           justify-content: center;
           flex-wrap: nowrap;
           text-align: center;
+          white-space: nowrap;
         }
         .inline-label-strong {
           font-size: 12px;
@@ -1179,6 +1189,9 @@ export default function PricingInformation({ locale: _locale }: PricingInformati
           font-size: 12px;
           white-space: nowrap;
         }
+        .mtu-value-small {
+          white-space: nowrap;
+        }
         @media (max-width: 900px) {
           .mtu-fee-inline {
             flex-wrap: wrap;
@@ -1188,6 +1201,7 @@ export default function PricingInformation({ locale: _locale }: PricingInformati
           }
           .inline-value-row {
             flex-wrap: wrap;
+            white-space: normal;
           }
         }
         .mtu-display-item-stacked {
@@ -1238,7 +1252,9 @@ export default function PricingInformation({ locale: _locale }: PricingInformati
         .fee-notes {
           list-style: disc;
           padding: 10px 14px 10px 22px;
-          margin: 10px 0 0;
+          margin: 12px auto 0;
+          width: 100%;
+          max-width: 100%;
           background: #f9fbff;
           border: 1px solid #e3ebf7;
           border-radius: 12px;
