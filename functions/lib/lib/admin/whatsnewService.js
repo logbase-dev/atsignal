@@ -6,7 +6,6 @@ exports.createWhatsNew = createWhatsNew;
 exports.updateWhatsNew = updateWhatsNew;
 exports.incrementWhatsNewViews = incrementWhatsNewViews;
 exports.deleteWhatsNew = deleteWhatsNew;
-exports.getBannerWhatsNews = getBannerWhatsNews;
 const firestore_1 = require("firebase-admin/firestore");
 const firebase_1 = require("../../firebase");
 const types_1 = require("./types");
@@ -83,10 +82,6 @@ function mapWhatsNew(id, data) {
         title: normalizeLocalizedField(data.title),
         oneLiner: normalizeLocalizedField(data.oneLiner),
         content: normalizeLocalizedField(data.content),
-        showInBanner: Boolean(data.showInBanner ?? false),
-        bannerPriority: typeof data.bannerPriority === "number" ? data.bannerPriority : 999,
-        displayStartAt: convertTimestamp(data.displayStartAt),
-        displayEndAt: convertTimestamp(data.displayEndAt),
         published: Boolean(data.published),
         publishedAt: convertTimestamp(data.publishedAt),
         createdAt: convertTimestamp(data.createdAt),
@@ -111,10 +106,6 @@ async function getWhatsNews(options) {
         if (options?.published !== undefined) {
             query = query.where("published", "==", options.published);
             console.log("[getWhatsNews] 발행 상태 필터 적용:", options.published);
-        }
-        if (options?.showInBanner !== undefined) {
-            query = query.where("showInBanner", "==", options.showInBanner);
-            console.log("[getWhatsNews] 배너 노출 필터 적용:", options.showInBanner);
         }
         // 검색어 필터링을 위해 더 많은 데이터를 가져와서 필터링
         // (Firestore에서 텍스트 검색은 복잡하므로 클라이언트 측 필터링 사용)
@@ -219,8 +210,6 @@ async function createWhatsNew(whatsnew) {
     const now = firestore_1.Timestamp.fromDate(new Date());
     const data = {
         ...stripUndefinedDeep(whatsnew),
-        showInBanner: whatsnew.showInBanner ?? false,
-        bannerPriority: whatsnew.bannerPriority ?? 999,
         enabled: whatsnew.enabled ?? { ko: true, en: false },
         isTop: whatsnew.isTop ?? false,
         views: 0, // 조회수는 0으로 초기화
@@ -229,13 +218,6 @@ async function createWhatsNew(whatsnew) {
         publishedAt: whatsnew.published ? now : null,
     };
     console.log(`[createWhatsNew] isTop 설정: ${data.isTop} (원본: ${whatsnew.isTop})`);
-    // Date를 Timestamp로 변환
-    if (whatsnew.displayStartAt instanceof Date) {
-        data.displayStartAt = firestore_1.Timestamp.fromDate(whatsnew.displayStartAt);
-    }
-    if (whatsnew.displayEndAt instanceof Date) {
-        data.displayEndAt = firestore_1.Timestamp.fromDate(whatsnew.displayEndAt);
-    }
     console.log(`[createWhatsNew] 생성 데이터:`, JSON.stringify(data, null, 2));
     const docRef = await withTimeout(firebase_1.firestore.collection(types_1.COLLECTIONS.WHATSNEW).add(data), 5000);
     return docRef.id;
@@ -263,13 +245,7 @@ async function updateWhatsNew(id, patch) {
     else {
         console.log(`[updateWhatsNew] isTop이 undefined이므로 설정하지 않음`);
     }
-    // Date를 Timestamp로 변환
-    if (patch.displayStartAt instanceof Date) {
-        updateData.displayStartAt = firestore_1.Timestamp.fromDate(patch.displayStartAt);
-    }
-    if (patch.displayEndAt instanceof Date) {
-        updateData.displayEndAt = firestore_1.Timestamp.fromDate(patch.displayEndAt);
-    }
+    // Date를 Timestamp로 변환 (배너 관련 필드 제거됨)
     console.log(`[updateWhatsNew] 최종 업데이트 데이터:`, JSON.stringify(updateData, null, 2));
     console.log(`[updateWhatsNew] isTop 필드 존재 여부:`, 'isTop' in updateData, `값:`, updateData.isTop);
     console.log(`[updateWhatsNew] Firestore 업데이트 시작 - 문서 ID: ${id}`);
@@ -363,41 +339,5 @@ async function deleteWhatsNew(id) {
     // Firestore 문서 삭제
     await withTimeout(whatsnewRef.delete(), 5000);
 }
-// 배너 노출용 What's new 조회
-async function getBannerWhatsNews(locale = "ko") {
-    try {
-        const now = new Date();
-        const whatsnewsRef = firebase_1.firestore.collection(types_1.COLLECTIONS.WHATSNEW);
-        // 배너 노출 조건: showInBanner=true, published=true, enabled[locale]=true
-        let query = whatsnewsRef
-            .where("showInBanner", "==", true)
-            .where("published", "==", true)
-            .where(`enabled.${locale}`, "==", true);
-        const snap = await withTimeout(query.get(), 5000);
-        const whatsnews = snap.docs
-            .map((d) => mapWhatsNew(d.id, d.data()))
-            .filter((whatsnew) => {
-            // 노출 기간 체크
-            if (whatsnew.displayStartAt && whatsnew.displayStartAt > now)
-                return false;
-            if (whatsnew.displayEndAt && whatsnew.displayEndAt < now)
-                return false;
-            return true;
-        })
-            .sort((a, b) => {
-            // bannerPriority ASC, publishedAt DESC
-            if (a.bannerPriority !== b.bannerPriority) {
-                return a.bannerPriority - b.bannerPriority;
-            }
-            const aDate = a.publishedAt?.getTime() || 0;
-            const bDate = b.publishedAt?.getTime() || 0;
-            return bDate - aDate;
-        });
-        return whatsnews;
-    }
-    catch (error) {
-        console.error("[getBannerWhatsNews] 에러:", error?.message || error);
-        return [];
-    }
-}
+// 배너 노출용 What's new 조회 기능 제거됨
 //# sourceMappingURL=whatsnewService.js.map

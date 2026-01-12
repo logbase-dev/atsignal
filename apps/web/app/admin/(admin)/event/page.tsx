@@ -484,11 +484,11 @@ export default function EventPage() {
               </button>
             </div>
           </div>
-          {mainEvent.thumbnailImage && (
+          {mainEvent.featuredImage && (
             <Link href={`/admin/event/${mainEvent.id}/view`}>
               <img
-                src={mainEvent.thumbnailImage}
-                alt="메인 이벤트 썸네일"
+                src={mainEvent.featuredImage}
+                alt="메인 이벤트 대표이미지"
                 style={{ 
                   width: '100%', 
                   maxHeight: '300px', 
