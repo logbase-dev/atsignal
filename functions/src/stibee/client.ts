@@ -40,7 +40,7 @@ export const syncSubscriber = async (
       fields: {
         name: payload.name,
         company: payload.company,
-        phone: payload.phoneNormalized,
+        ...(payload.phoneNormalized && payload.phoneNormalized.trim() && { phone: payload.phoneNormalized }), // 휴대폰 번호가 있을 때만 포함
       },
     },
     updateEnabled: false, // ✅ 변경: 이미 구독 중인 경우 업데이트하지 않음

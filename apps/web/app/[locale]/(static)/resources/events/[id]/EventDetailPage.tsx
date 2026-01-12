@@ -327,21 +327,26 @@ export default function EventDetailPage({ locale, event }: Props) {
                 fontWeight: '600',
                 borderRadius: '8px',
                 border: 'none',
-                cursor: eventStatus === 'active' ? 'pointer' : 'not-allowed',
                 transition: 'background-color 0.2s ease',
-                backgroundColor: eventStatus === 'active' ? '#20BDFF' : '#e5e7eb',
-                color: eventStatus === 'active' ? 'white' : '#9ca3af',
+                cursor: 'pointer',
+                backgroundColor: '#20BDFF',
+                color: 'white',
+                // cursor: eventStatus === 'active' ? 'pointer' : 'not-allowed',
+                // backgroundColor: eventStatus === 'active' ? '#20BDFF' : '#e5e7eb',
+                // color: eventStatus === 'active' ? 'white' : '#9ca3af',
               }}
-              disabled={eventStatus !== 'active'}
+              // disabled={eventStatus !== 'active'}
               onMouseEnter={(e) => {
-                if (eventStatus === 'active') {
-                  e.currentTarget.style.backgroundColor = '#1a9de6';
-                }
+                e.currentTarget.style.backgroundColor = '#1a9de6';
+                // if (eventStatus === 'active') {
+                //   e.currentTarget.style.backgroundColor = '#1a9de6';
+                // }
               }}
               onMouseLeave={(e) => {
-                if (eventStatus === 'active') {
-                  e.currentTarget.style.backgroundColor = '#20BDFF';
-                }
+                e.currentTarget.style.backgroundColor = '#1a9de6';
+                // if (eventStatus === 'active') {
+                //   e.currentTarget.style.backgroundColor = '#20BDFF';
+                // }
               }}
             >
               {getLocalizedText(event.ctaButtonText)}

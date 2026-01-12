@@ -15,14 +15,11 @@ async function handle(request, response) {
             const published = request.query.published !== undefined && request.query.published !== ""
                 ? (request.query.published === "true" || request.query.published === "1")
                 : undefined;
-            const showInBanner = request.query.showInBanner !== undefined && request.query.showInBanner !== ""
-                ? (request.query.showInBanner === "true" || request.query.showInBanner === "1")
-                : undefined;
             const search = request.query.search && String(request.query.search).trim()
                 ? String(request.query.search).trim()
                 : undefined;
-            console.log("[WhatsNew API] 검색 파라미터:", { page, limit, published, showInBanner, search });
-            const result = await (0, whatsnewService_1.getWhatsNews)({ page, limit, published, showInBanner, search });
+            console.log("[WhatsNew API] 검색 파라미터:", { page, limit, published, search });
+            const result = await (0, whatsnewService_1.getWhatsNews)({ page, limit, published, search });
             response.json(result);
             return;
         }
@@ -58,10 +55,6 @@ async function handle(request, response) {
                 title: normTitle,
                 oneLiner: normOneLiner,
                 content: normContent,
-                showInBanner: body.showInBanner !== undefined ? Boolean(body.showInBanner) : false,
-                bannerPriority: typeof body.bannerPriority === "number" ? body.bannerPriority : 999,
-                displayStartAt: body.displayStartAt ? new Date(body.displayStartAt) : undefined,
-                displayEndAt: body.displayEndAt ? new Date(body.displayEndAt) : undefined,
                 editorType: body.editorType === "toast" || body.editorType === "nextra" ? body.editorType : undefined,
                 saveFormat: body.saveFormat === "markdown" || body.saveFormat === "html" ? body.saveFormat : undefined,
                 enabled: body.enabled && typeof body.enabled === "object"

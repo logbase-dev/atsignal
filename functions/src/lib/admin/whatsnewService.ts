@@ -76,12 +76,6 @@ function mapWhatsNew(id: string, data: Record<string, any>): WhatsNew {
     oneLiner: normalizeLocalizedField(data.oneLiner),
     content: normalizeLocalizedField(data.content),
 
-    showInBanner: Boolean(data.showInBanner ?? false),
-    bannerPriority: typeof data.bannerPriority === "number" ? data.bannerPriority : 999,
-
-    displayStartAt: convertTimestamp(data.displayStartAt),
-    displayEndAt: convertTimestamp(data.displayEndAt),
-
     published: Boolean(data.published),
     publishedAt: convertTimestamp(data.publishedAt),
     createdAt: convertTimestamp(data.createdAt),
@@ -105,7 +99,6 @@ export async function getWhatsNews(options?: {
   page?: number;
   limit?: number;
   published?: boolean;
-  showInBanner?: boolean;
   search?: string;
 }): Promise<{ whatsnews: WhatsNew[]; total: number; page: number; limit: number; totalPages: number }> {
   try {
@@ -120,10 +113,6 @@ export async function getWhatsNews(options?: {
     if (options?.published !== undefined) {
       query = query.where("published", "==", options.published);
       console.log("[getWhatsNews] 발행 상태 필터 적용:", options.published);
-    }
-    if (options?.showInBanner !== undefined) {
-      query = query.where("showInBanner", "==", options.showInBanner);
-      console.log("[getWhatsNews] 배너 노출 필터 적용:", options.showInBanner);
     }
 
     // 검색어 필터링을 위해 더 많은 데이터를 가져와서 필터링
@@ -238,8 +227,6 @@ export async function createWhatsNew(whatsnew: Omit<WhatsNew, "id">): Promise<st
   const now = Timestamp.fromDate(new Date());
   const data: Record<string, any> = {
     ...stripUndefinedDeep(whatsnew),
-    showInBanner: whatsnew.showInBanner ?? false,
-    bannerPriority: whatsnew.bannerPriority ?? 999,
     enabled: whatsnew.enabled ?? { ko: true, en: false },
     isTop: whatsnew.isTop ?? false,
     views: 0, // 조회수는 0으로 초기화
@@ -249,14 +236,6 @@ export async function createWhatsNew(whatsnew: Omit<WhatsNew, "id">): Promise<st
   };
   
   console.log(`[createWhatsNew] isTop 설정: ${data.isTop} (원본: ${whatsnew.isTop})`);
-  
-  // Date를 Timestamp로 변환
-  if (whatsnew.displayStartAt instanceof Date) {
-    data.displayStartAt = Timestamp.fromDate(whatsnew.displayStartAt);
-  }
-  if (whatsnew.displayEndAt instanceof Date) {
-    data.displayEndAt = Timestamp.fromDate(whatsnew.displayEndAt);
-  }
   
   console.log(`[createWhatsNew] 생성 데이터:`, JSON.stringify(data, null, 2));
   const docRef = await withTimeout<FirebaseFirestore.DocumentReference<FirebaseFirestore.DocumentData>>(
@@ -293,13 +272,7 @@ export async function updateWhatsNew(id: string, patch: Partial<WhatsNew>): Prom
     console.log(`[updateWhatsNew] isTop이 undefined이므로 설정하지 않음`);
   }
   
-  // Date를 Timestamp로 변환
-  if (patch.displayStartAt instanceof Date) {
-    updateData.displayStartAt = Timestamp.fromDate(patch.displayStartAt);
-  }
-  if (patch.displayEndAt instanceof Date) {
-    updateData.displayEndAt = Timestamp.fromDate(patch.displayEndAt);
-  }
+  // Date를 Timestamp로 변환 (배너 관련 필드 제거됨)
   
   console.log(`[updateWhatsNew] 최종 업데이트 데이터:`, JSON.stringify(updateData, null, 2));
   console.log(`[updateWhatsNew] isTop 필드 존재 여부:`, 'isTop' in updateData, `값:`, updateData.isTop);
@@ -410,41 +383,5 @@ export async function deleteWhatsNew(id: string): Promise<void> {
   await withTimeout(whatsnewRef.delete(), 5000);
 }
 
-// 배너 노출용 What's new 조회
-export async function getBannerWhatsNews(locale: "ko" | "en" = "ko"): Promise<WhatsNew[]> {
-  try {
-    const now = new Date();
-    const whatsnewsRef = firestore.collection(COLLECTIONS.WHATSNEW);
-
-    // 배너 노출 조건: showInBanner=true, published=true, enabled[locale]=true
-    let query: FirebaseFirestore.Query = whatsnewsRef
-      .where("showInBanner", "==", true)
-      .where("published", "==", true)
-      .where(`enabled.${locale}`, "==", true);
-
-    const snap = await withTimeout(query.get(), 5000);
-    const whatsnews = snap.docs
-      .map((d) => mapWhatsNew(d.id, d.data() as Record<string, any>))
-      .filter((whatsnew) => {
-        // 노출 기간 체크
-        if (whatsnew.displayStartAt && whatsnew.displayStartAt > now) return false;
-        if (whatsnew.displayEndAt && whatsnew.displayEndAt < now) return false;
-        return true;
-      })
-      .sort((a, b) => {
-        // bannerPriority ASC, publishedAt DESC
-        if (a.bannerPriority !== b.bannerPriority) {
-          return a.bannerPriority - b.bannerPriority;
-        }
-        const aDate = a.publishedAt?.getTime() || 0;
-        const bDate = b.publishedAt?.getTime() || 0;
-        return bDate - aDate;
-      });
-
-    return whatsnews;
-  } catch (error: any) {
-    console.error("[getBannerWhatsNews] 에러:", error?.message || error);
-    return [];
-  }
-}
+// 배너 노출용 What's new 조회 기능 제거됨
 

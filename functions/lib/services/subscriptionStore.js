@@ -55,7 +55,7 @@ const parseSubscribeRequest = (body) => {
     if (!body || typeof body !== "object") {
         throw new functions.https.HttpsError("invalid-argument", "요청 본문이 올바르지 않습니다.");
     }
-    const { name, company, email, phone, privacyConsent } = body;
+    const { name, company, email, phone, privacyConsent, variant } = body;
     if (typeof name !== "string" || name.trim().length < 2) {
         throw new functions.https.HttpsError("invalid-argument", "성함을 정확히 입력해 주세요.");
     }
@@ -67,9 +67,22 @@ const parseSubscribeRequest = (body) => {
         !EMAIL_REGEX.test(email)) {
         throw new functions.https.HttpsError("invalid-argument", "이메일 형식이 올바르지 않습니다.");
     }
-    if (typeof phone !== "string" ||
-        !PHONE_REGEX.test(phone)) {
-        throw new functions.https.HttpsError("invalid-argument", "휴대폰 번호 형식이 올바르지 않습니다.");
+    // 뉴스레터 신청이 아닌 경우에만 휴대폰 번호 필수 검증
+    const isNewsletter = !variant || variant === 'newsletter';
+    if (isNewsletter) {
+        // 뉴스레터 신청: 휴대폰 번호는 선택사항
+        // 휴대폰 번호가 제공되었고 비어있지 않은 경우에만 형식 검증
+        if (phone && typeof phone === "string" && phone.trim() && !PHONE_REGEX.test(phone)) {
+            throw new functions.https.HttpsError("invalid-argument", "휴대폰 번호 형식이 올바르지 않습니다.");
+        }
+    }
+    else {
+        // 뉴스레터가 아닌 경우: 휴대폰 번호 필수
+        if (typeof phone !== "string" ||
+            !phone.trim() ||
+            !PHONE_REGEX.test(phone)) {
+            throw new functions.https.HttpsError("invalid-argument", "휴대폰 번호 형식이 올바르지 않습니다.");
+        }
     }
     if (privacyConsent !== true) {
         throw new functions.https.HttpsError("invalid-argument", "개인정보 처리방침에 동의해야 합니다.");
@@ -78,7 +91,7 @@ const parseSubscribeRequest = (body) => {
         name: name.trim(),
         company: company.trim(),
         email: (0, exports.normalizeEmail)(email),
-        phone,
+        phone: phone || "", // 빈 문자열로 기본값 설정
         privacyConsent: true,
     };
 };
@@ -95,7 +108,7 @@ const createPendingSubscription = async (payload) => {
     await docRef.set({
         ...payload,
         emailNormalized: payload.email,
-        phoneNormalized: (0, exports.normalizePhone)(payload.phone),
+        phoneNormalized: payload.phone ? (0, exports.normalizePhone)(payload.phone) : "", // 휴대폰 번호가 없으면 빈 문자열
         status: "pending",
         stibee: {
             listId: stibee_1.stibeeConfig.listId,
@@ -171,7 +184,7 @@ const createSyncedSubscription = async (payload, stibeeResult) => {
     await docRef.set({
         ...payload,
         emailNormalized: payload.email,
-        phoneNormalized: (0, exports.normalizePhone)(payload.phone),
+        phoneNormalized: payload.phone ? (0, exports.normalizePhone)(payload.phone) : "", // 휴대폰 번호가 없으면 빈 문자열
         status: "subscribed", // ✅ 바로 subscribed 상태
         stibee: {
             listId: stibee_1.stibeeConfig.listId,

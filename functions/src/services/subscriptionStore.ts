@@ -37,7 +37,7 @@ export const parseSubscribeRequest = (
     );
   }
 
-  const { name, company, email, phone, privacyConsent } =
+  const { name, company, email, phone, privacyConsent, variant } =
     body;
 
   if (typeof name !== "string" || name.trim().length < 2) {
@@ -67,14 +67,30 @@ export const parseSubscribeRequest = (
     );
   }
 
-  if (
-    typeof phone !== "string" ||
-    !PHONE_REGEX.test(phone)
-  ) {
-    throw new functions.https.HttpsError(
-      "invalid-argument",
-      "휴대폰 번호 형식이 올바르지 않습니다."
-    );
+  // 뉴스레터 신청이 아닌 경우에만 휴대폰 번호 필수 검증
+  const isNewsletter = !variant || variant === 'newsletter';
+  
+  if (isNewsletter) {
+    // 뉴스레터 신청: 휴대폰 번호는 선택사항
+    // 휴대폰 번호가 제공되었고 비어있지 않은 경우에만 형식 검증
+    if (phone && typeof phone === "string" && phone.trim() && !PHONE_REGEX.test(phone)) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "휴대폰 번호 형식이 올바르지 않습니다."
+      );
+    }
+  } else {
+    // 뉴스레터가 아닌 경우: 휴대폰 번호 필수
+    if (
+      typeof phone !== "string" ||
+      !phone.trim() ||
+      !PHONE_REGEX.test(phone)
+    ) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "휴대폰 번호 형식이 올바르지 않습니다."
+      );
+    }
   }
 
   if (privacyConsent !== true) {
@@ -88,7 +104,7 @@ export const parseSubscribeRequest = (
     name: name.trim(),
     company: company.trim(),
     email: normalizeEmail(email),
-    phone,
+    phone: phone || "", // 빈 문자열로 기본값 설정
     privacyConsent: true,
   };
 };
@@ -112,7 +128,7 @@ export const createPendingSubscription = async (
   await docRef.set({
     ...payload,
     emailNormalized: payload.email,
-    phoneNormalized: normalizePhone(payload.phone),
+    phoneNormalized: payload.phone ? normalizePhone(payload.phone) : "", // 휴대폰 번호가 없으면 빈 문자열
     status: "pending",
     stibee: {
       listId: stibeeConfig.listId,
@@ -215,7 +231,7 @@ export const createSyncedSubscription = async (
   await docRef.set({
     ...payload,
     emailNormalized: payload.email,
-    phoneNormalized: normalizePhone(payload.phone),
+    phoneNormalized: payload.phone ? normalizePhone(payload.phone) : "", // 휴대폰 번호가 없으면 빈 문자열
     status: "subscribed", // ✅ 바로 subscribed 상태
     stibee: {
       listId: stibeeConfig.listId,

@@ -5,25 +5,36 @@ if (admin.apps.length === 0) {
   try {
     // 환경에 따라 다른 초기화 방식 사용
     if (process.env.NODE_ENV === 'development') {
-      // 개발 환경: Service Account Key 사용
-      const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+      // 개발 환경: Firebase 에뮬레이터 또는 Service Account Key 사용
+      const useEmulator = process.env.FIREBASE_AUTH_EMULATOR_HOST || process.env.FIRESTORE_EMULATOR_HOST;
       
-      if (serviceAccount) {
-        // 환경 변수에서 Service Account Key 사용
+      if (useEmulator) {
+        // 에뮬레이터 사용 시
         admin.initializeApp({
-          credential: admin.credential.cert(JSON.parse(serviceAccount)),
           projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'atsignal',
           storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || 'atsignal.firebasestorage.app',
         });
-        console.log('[Firebase Admin] 개발 환경 초기화 완료 (Service Account Key 사용)');
+        console.log('[Firebase Admin] 개발 환경 초기화 완료 (에뮬레이터 사용)');
       } else {
-        // Service Account Key가 없으면 ADC 사용 (Signed URL 제한)
-        admin.initializeApp({
-          projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'atsignal',
-          storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || 'atsignal.firebasestorage.app',
-          credential: admin.credential.applicationDefault(),
-        });
-        console.log('[Firebase Admin] 개발 환경 초기화 완료 (ADC 사용 - Signed URL 제한)');
+        // Service Account Key 사용
+        const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+        
+        if (serviceAccount) {
+          admin.initializeApp({
+            credential: admin.credential.cert(JSON.parse(serviceAccount)),
+            projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'atsignal',
+            storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || 'atsignal.firebasestorage.app',
+          });
+          console.log('[Firebase Admin] 개발 환경 초기화 완료 (Service Account Key 사용)');
+        } else {
+          // ADC 사용
+          admin.initializeApp({
+            projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'atsignal',
+            storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || 'atsignal.firebasestorage.app',
+            credential: admin.credential.applicationDefault(),
+          });
+          console.log('[Firebase Admin] 개발 환경 초기화 완료 (ADC 사용)');
+        }
       }
     } else {
       // 프로덕션 환경: 기본 초기화

@@ -71,7 +71,7 @@ const subscribeNewsletter = async (req, res) => {
                 email: payload.email,
                 name: payload.name,
                 company: payload.company,
-                phoneNormalized: (0, subscriptionStore_1.normalizePhone)(payload.phone),
+                phoneNormalized: payload.phone ? (0, subscriptionStore_1.normalizePhone)(payload.phone) : "", // 휴대폰 번호가 없으면 빈 문자열
             });
             // ✅ Stibee API 응답 구조 확인
             // 응답 형식: { Ok: true, Error: null, Value: { failExistEmail: [], success: [], update: [] } }

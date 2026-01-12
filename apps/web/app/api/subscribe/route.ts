@@ -42,10 +42,21 @@ export async function POST(request: NextRequest) {
       admin.initializeApp();
     }
 
-    const { name, company, email, phone, privacyConsent } = body;
+    const { name, company, email, phone, privacyConsent, variant } = body;
+    
+    console.log('[Subscribe API] 받은 데이터:', { name, company, email, phone, privacyConsent, variant });
 
-    // 필수 필드 검증
-    if (!name || !company || !email || !phone || !privacyConsent) {
+    // 필수 필드 검증 (뉴스레터는 휴대폰 번호 선택사항)
+    const isNewsletter = !variant || variant === 'newsletter';
+    console.log('[Subscribe API] 뉴스레터 여부:', isNewsletter);
+    
+    const requiredFields = [name, company, email, privacyConsent];
+    if (!isNewsletter) {
+      requiredFields.push(phone);
+    }
+    
+    if (requiredFields.some(field => !field)) {
+      console.log('[Subscribe API] 필수 필드 누락');
       return NextResponse.json(
         { error: 'Missing required fields', message: '필수 항목을 모두 입력해주세요.' },
         { status: 400 }
@@ -61,13 +72,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 전화번호 형식 검증
-    const phoneRegex = /^010-?\d{4}-?\d{4}$/;
-    if (!phoneRegex.test(phone)) {
-      return NextResponse.json(
-        { error: 'Invalid phone format', message: '휴대폰 번호 형식이 올바르지 않습니다.' },
-        { status: 400 }
-      );
+    // 전화번호 형식 검증 (휴대폰 번호가 있는 경우에만)
+    console.log('[Subscribe API] 휴대폰 번호 검증:', { phone, hasPhone: !!(phone && phone.trim()) });
+    if (phone && phone.trim()) {
+      const phoneRegex = /^010-?\d{4}-?\d{4}$/;
+      if (!phoneRegex.test(phone)) {
+        console.log('[Subscribe API] 휴대폰 번호 형식 오류');
+        return NextResponse.json(
+          { error: 'Invalid phone format', message: '휴대폰 번호 형식이 올바르지 않습니다.' },
+          { status: 400 }
+        );
+      }
     }
 
     // Stibee API 호출 (Functions 로직과 동일)
@@ -93,7 +108,7 @@ export async function POST(request: NextRequest) {
         fields: {
           name: name.trim(),
           company: company.trim(),
-          phone: phone.replace(/[^\d]/g, ""), // 숫자만 남기기
+          ...(phone && phone.trim() && { phone: phone.replace(/[^\d]/g, "") }), // 휴대폰 번호가 있을 때만 포함
         },
       },
       updateEnabled: false,

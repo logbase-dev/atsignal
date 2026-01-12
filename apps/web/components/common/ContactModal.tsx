@@ -381,12 +381,12 @@ export default function ContactModal({
 
             <div className="contact-form-group contact-form-inline">
               <label htmlFor="contact-phone">
-                {t.phoneLabel || '휴대폰 번호'} <span className="required">*</span>
+                {t.phoneLabel || '휴대폰 번호'} {variant !== 'newsletter' && <span className="required">*</span>}
               </label>
               <input
                 id="contact-phone"
                 type="tel"
-                required
+                required={variant !== 'newsletter'}
                 pattern="010-\d{4}-\d{4}"
                 maxLength={13}
                 value={formData.phone}
