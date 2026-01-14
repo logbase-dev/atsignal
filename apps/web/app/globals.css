@@ -2669,9 +2669,10 @@ body:not(.admin-mode) .dropdown-item:hover {
   display: grid;
   grid-template-columns: 1fr;
   gap: 2rem;
-  max-width: 1280px;
+  /* max-width: 1280px;
   margin: 0 auto;
-  padding: 8rem 1.5rem 4rem;
+  padding: 8rem 1.5rem 4rem; */
+  margin: 0 0;
   background-color: #ffffff; /* 기본 배경색 */
 }
 
@@ -2687,9 +2688,8 @@ body:not(.admin-mode) .dropdown-item:hover {
 }
 
 .page-renderer-content {
-  max-width: 1200px;
-  margin: 0 auto;
   width: 100%;
+  margin: 0 auto;
 }
 
 .page-renderer-toc {
@@ -2964,6 +2964,7 @@ body:not(.admin-mode) .dropdown-item:hover {
   position: relative;
   text-align: center;
   background: #e1f6ff;
+  height: 300px; /* 서브페이지 hero 섹션 height */
 }
 
 .hero-page::before {

@@ -6,6 +6,7 @@ import type { WhatsNew } from '@/lib/admin/types';
 import { WhatsNewSearch } from '@/components/product/whatsnew/WhatsNewSearch';
 import { WhatsNewAccordion } from '@/components/product/whatsnew/WhatsNewAccordion';
 import { WhatsNewPagination } from '@/components/product/whatsnew/WhatsNewPagination';
+import Image from 'next/image';
 
 interface PageProps {
   params: Promise<{
@@ -131,10 +132,36 @@ export default function WhatsNewPage({ params }: PageProps) {
     }}>
 
       <div className="hero-page">
-        <div className="hero-page-container">
-          <h1>atsignal What's new</h1>
-          <p>atsignal의 새로운 기능 추가 및 개선사항과 관련된 내용을 알려드립니다.</p>
-          {/* <p>수집 로그 규모에 따라 가장 적합한 요금제를 선택하세요.</p> */}
+        <div className="hero-page-container" style={{ 
+          display: 'flex', 
+          alignItems: 'flex-start', 
+          gap: '2rem',
+          flexWrap: 'wrap',
+          padding: '8rem 1rem', // padding 줄여서 위로 올림
+          paddingTop: '8rem' // 상단 padding 줄임
+        }}>
+          <div style={{ 
+            flexShrink: 0,
+            maxWidth: '20%',
+            minWidth: '150px',
+            position: 'relative',
+            marginTop: '-1rem' // 이미지만 더 위로 올림
+          }}>
+            <Image
+              src="/images/whatsnew_image.jpg"
+              alt="atsignal whatsnew"
+              width={0}
+              height={0}
+              sizes="20vw"
+              style={{ width: '100%', height: 'auto', borderRadius: '12px' }}
+              priority
+            />
+          </div>
+          <div style={{ flex: 1, minWidth: '300px' }}>
+            <h1 style={{ marginBottom: '0.5rem' }}>atsignal What's new</h1>
+            <p>atsignal의 새로운 기능 추가 및 개선사항과 관련된 내용을 알려드립니다.</p>
+            {/* <p>추가문구가 들어갑니다.</p> */}
+          </div>
         </div>
       </div>
 

@@ -126,9 +126,36 @@ export default function EventsPage({
     }}>
 
       <div className="hero-page">
-        <div className="hero-page-container">
-          <h1>atsignal Events</h1>
-          <p>atsignal과 관련된 다양한 세미나, 웨비나, 기타 행사 정보를 확인하실 수 있습니다.</p>
+        <div className="hero-page-container" style={{ 
+          display: 'flex', 
+          alignItems: 'flex-start', 
+          gap: '2rem',
+          flexWrap: 'wrap',
+          padding: '8rem 1rem', // padding 줄여서 위로 올림
+          paddingTop: '8rem' // 상단 padding 줄임
+        }}>
+          <div style={{ 
+            flexShrink: 0,
+            maxWidth: '20%',
+            minWidth: '150px',
+            position: 'relative',
+            marginTop: '-1rem' // 이미지만 더 위로 올림
+          }}>
+            <Image
+              src="/images/event_image.jpg"
+              alt="atsignal event"
+              width={0}
+              height={0}
+              sizes="20vw"
+              style={{ width: '100%', height: 'auto', borderRadius: '12px' }}
+              priority
+            />
+          </div>
+          <div style={{ flex: 1, minWidth: '300px' }}>
+            <h1 style={{ marginBottom: '0.5rem' }}>atsignal Events</h1>
+            <p>atsignal과 관련된 다양한 세미나, 웨비나, 기타 행사 정보를 확인하실 수 있습니다.</p>
+            {/* <p>추가문구가 들어갑니다.</p> */}
+          </div>
         </div>
       </div>
 

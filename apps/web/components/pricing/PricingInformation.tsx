@@ -3,6 +3,7 @@
 import type { CSSProperties } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import ContactModal from '@/components/common/ContactModal';
+import Image from 'next/image';
 
 interface PricingInformationProps {
   locale: string;
@@ -167,11 +168,38 @@ export default function PricingInformation({ locale: _locale }: PricingInformati
 
   return (
     <div className="pricing-root">
+
       <div className="hero-page">
-        <div className="hero-page-container">
-          <h1>atsignal pricing</h1>
-          <p>월간 추적 이벤트(event)수 기준으로 계산되는 명확하고 투명한 가격 구조.</p>
-          <p>수집 로그 규모에 따라 가장 적합한 요금제를 선택하세요.</p>
+        <div className="hero-page-container" style={{ 
+          display: 'flex', 
+          alignItems: 'flex-start', 
+          gap: '2rem',
+          flexWrap: 'wrap',
+          padding: '8rem 1rem', // padding 줄여서 위로 올림
+          paddingTop: '8rem' // 상단 padding 줄임
+        }}>
+          <div style={{ 
+            flexShrink: 0,
+            maxWidth: '20%',
+            minWidth: '150px',
+            position: 'relative',
+            marginTop: '-1rem' // 이미지만 더 위로 올림
+          }}>
+            <Image
+              src="/images/pricing_image.jpg"
+              alt="atsignal whatsnew"
+              width={0}
+              height={0}
+              sizes="20vw"
+              style={{ width: '100%', height: 'auto', borderRadius: '12px' }}
+              priority
+            />
+          </div>
+          <div style={{ flex: 1, minWidth: '300px' }}>
+            <h1 style={{ marginBottom: '0.5rem' }}>atsignal pricing</h1>
+            <p>월간 추적 이벤트(event)수 기준으로 계산되는 명확하고 투명한 가격 구조.</p>
+            <p>수집 로그 규모에 따라 가장 적합한 요금제를 선택하세요.</p>
+          </div>
         </div>
       </div>
 

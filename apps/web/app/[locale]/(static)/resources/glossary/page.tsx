@@ -5,6 +5,7 @@ import { getPublicGlossaries, getPublicGlossaryCategories } from '@/lib/resource
 import type { Glossary, GlossaryCategory } from '@/lib/admin/types';
 import { GlossarySearch } from '@/components/resources/glossary/GlossarySearch';
 import { GlossaryList } from '@/components/resources/glossary/GlossaryList';
+import Image from 'next/image';
 
 interface PageProps {
   params: Promise<{
@@ -196,10 +197,36 @@ export default function GlossaryPage({ params }: PageProps) {
     }}>
 
       <div className="hero-page">
-        <div className="hero-page-container">
-          <h1>atsignal Glossary</h1>
-          <p>Analytics 전반에서 사용되는 다양한 용어들을 정리하였습니다.</p>
-          <p>관련 문서가 존재하는 경우 해당 링크를 선택하시면 좀더 구체적인 사례를 보실 수 있습니다.</p>
+        <div className="hero-page-container" style={{ 
+          display: 'flex', 
+          alignItems: 'flex-start', 
+          gap: '2rem',
+          flexWrap: 'wrap',
+          padding: '8rem 1rem', // padding 줄여서 위로 올림
+          paddingTop: '8rem' // 상단 padding 줄임
+        }}>
+          <div style={{ 
+            flexShrink: 0,
+            maxWidth: '20%',
+            minWidth: '150px',
+            position: 'relative',
+            marginTop: '-1rem' // 이미지만 더 위로 올림
+          }}>
+            <Image
+              src="/images/glossary_image.jpg"
+              alt="atsignal glossary"
+              width={0}
+              height={0}
+              sizes="20vw"
+              style={{ width: '100%', height: 'auto', borderRadius: '12px' }}
+              priority
+            />
+          </div>
+          <div style={{ flex: 1, minWidth: '300px' }}>
+            <h1 style={{ marginBottom: '0.5rem' }}>atsignal Glossary</h1>
+            <p>Analytics 전반에서 사용되는 다양한 용어들을 정리하였습니다.</p>
+            <p>관련 문서가 존재하는 경우 해당 링크를 선택하시면 좀더 구체적인 사례를 보실 수 있습니다.</p>
+          </div>
         </div>
       </div>
 
