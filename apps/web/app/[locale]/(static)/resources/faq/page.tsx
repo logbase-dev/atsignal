@@ -6,6 +6,7 @@ import { FAQAccordion } from '@/components/resources/faq/FAQAccordion';
 import { FAQCardView } from '@/components/resources/faq/FAQCardView';
 import { getPublicFAQs, getPublicFAQCategories } from '@/lib/resources/faq/faqService';
 import type { FAQ, FAQCategory } from '@/lib/admin/types';
+import Image from 'next/image';
 
 interface PageProps {
   params: Promise<{
@@ -181,10 +182,36 @@ export default function FAQPage({ params }: PageProps) {
     }}>
 
       <div className="hero-page">
-        <div className="hero-page-container">
-          <h1>atsignal FAQ</h1>
-          <p>많은 분들이 atsignal에 대하여 궁금해하는 항목을 정리해두었습니다.</p>
-          {/* <p>수집 로그 규모에 따라 가장 적합한 요금제를 선택하세요.</p> */}
+        <div className="hero-page-container" style={{ 
+          display: 'flex', 
+          alignItems: 'flex-start', 
+          gap: '2rem',
+          flexWrap: 'wrap',
+          padding: '8rem 1rem', // padding 줄여서 위로 올림
+          paddingTop: '8rem' // 상단 padding 줄임
+        }}>
+          <div style={{ 
+            flexShrink: 0,
+            maxWidth: '20%',
+            minWidth: '150px',
+            position: 'relative',
+            marginTop: '-1rem' // 이미지만 더 위로 올림
+          }}>
+            <Image
+              src="/images/faq_image.jpg"
+              alt="atsignal faq"
+              width={0}
+              height={0}
+              sizes="20vw"
+              style={{ width: '100%', height: 'auto', borderRadius: '12px' }}
+              priority
+            />
+          </div>
+          <div style={{ flex: 1, minWidth: '300px' }}>
+            <h1 style={{ marginBottom: '0.5rem' }}>atsignal FAQ</h1>
+            <p>많은 분들이 atsignal에 대하여 궁금해하는 항목을 정리해두었습니다.</p>
+            {/* <p>수집 로그 규모에 따라 가장 적합한 요금제를 선택하세요.</p> */}
+          </div>
         </div>
       </div>
 
