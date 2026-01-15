@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/firebase-admin';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * 공개 WhatsNew 목록 API
  * GET /api/product/whatsnews

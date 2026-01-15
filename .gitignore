@@ -52,3 +52,6 @@ apps/web/public/videos/UF 시스템 아키텍처.mp4
 
 # Kiro AI assistant files
 .kiro/
+
+# Development-related documents
+document/
