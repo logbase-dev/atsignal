@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { getAdminById } from '@/lib/admin/adminService.server';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/admin/auth/me
  * 현재 로그인한 관리자 정보 조회
