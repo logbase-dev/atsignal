@@ -148,8 +148,16 @@ export function PageEditorForm({
         contentKo: '',
         contentEn: '',
       });
-      setEditorType('toast');
-      setSaveFormat(site === 'web' ? 'html' : 'markdown');
+      
+      // 사이트별 기본 설정
+      setEditorType('toast'); // 모든 사이트에서 Toast UI Editor 사용
+      if (site === 'web') {
+        setSaveFormat('html'); // Web 사이트: HTML 저장
+      } else if (site === 'docs') {
+        setSaveFormat('markdown'); // Docs 사이트: Markdown 저장
+      } else {
+        setSaveFormat('markdown'); // 기본값: Markdown 저장
+      }
       return;
     }
 
@@ -165,7 +173,16 @@ export function PageEditorForm({
       contentEn: contentSource.en || '',
     });
     setEditorType(initialPage.editorType || 'toast');
-    setSaveFormat(initialPage.saveFormat || 'markdown');
+    
+    // 기존 페이지 수정 시에도 사이트별 기본 저장 형식 적용
+    let defaultSaveFormat: 'markdown' | 'html' = 'markdown';
+    if (site === 'web') {
+      defaultSaveFormat = 'html';
+    } else if (site === 'docs') {
+      defaultSaveFormat = 'markdown';
+    }
+    
+    setSaveFormat(initialPage.saveFormat || defaultSaveFormat);
   }, [initialPage, searchParams, menuOptions, site]);
 
   const isEmptyContent = (content: string): boolean => {

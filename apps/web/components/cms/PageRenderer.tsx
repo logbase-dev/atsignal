@@ -26,7 +26,7 @@ export default function PageRenderer({
   return (
     <div className={`page-renderer-wrapper ${contentIsHTML ? 'no-toc' : ''}`}>
       <article className="page-renderer-content">
-        <header style={{ marginBottom: '2rem' }}>
+        {/* <header style={{ marginBottom: '2rem' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
             <h1 style={{ fontSize: '2.5rem', fontWeight: 800, margin: 0 }}>{title}</h1>
             {isPreview && (
@@ -49,13 +49,13 @@ export default function PageRenderer({
               마지막 업데이트 {new Date(updatedAt).toLocaleString('ko-KR')}
             </p>
           )}
-        </header>
+        </header> */}
         <div
           className="prose prose-lg max-w-none"
           style={{
             fontSize: '1.05rem',
             lineHeight: 1.75,
-            color: '#111827',
+            // color: '#111827',
           }}
         >
           {contentIsHTML ? (
