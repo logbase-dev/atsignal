@@ -55,3 +55,6 @@ apps/web/public/videos/UF 시스템 아키텍처.mp4
 
 # Development-related documents
 document/
+
+#macOS가 자동으로 생성하는 숨김 파일
+.DS_Store
