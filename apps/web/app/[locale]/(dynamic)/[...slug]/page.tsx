@@ -4,27 +4,29 @@ import PageRenderer from '@/components/cms/PageRenderer';
 import { getPageById, getPageBySlug } from '@/lib/cms/getPage';
 
 interface PageProps {
-  params: {
+  params: Promise<{
     locale: string;
     slug: string[];
-  };
-  searchParams?: {
+  }>;
+  searchParams?: Promise<{
     draftId?: string;
     preview?: string;
-  };
+  }>;
 }
 
+// 항상 동적 렌더링 (최신 데이터 즉시 반영)
 export const dynamic = 'force-dynamic';
 
 export default async function DynamicPage({ params, searchParams }: PageProps) {
-  const { locale, slug } = params;
+  const { locale, slug } = await params;
   const slugPath = slug.map(decodeURIComponent).join('/');
+  const search = await searchParams;
   // draftId가 있으면 미리보기 모드로 간주 (draftMode 쿠키가 없어도 작동)
-  const preview = (draftMode().isEnabled || searchParams?.draftId) && searchParams?.draftId;
+  const preview = (draftMode().isEnabled || search?.draftId) && search?.draftId;
 
   let page =
-    preview && searchParams?.draftId
-      ? await getPageById(searchParams.draftId)
+    preview && search?.draftId
+      ? await getPageById(search.draftId)
       : await getPageBySlug('web', slugPath);
 
   if (!page) {

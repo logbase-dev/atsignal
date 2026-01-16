@@ -31,7 +31,7 @@ function getWebOrigin(): string {
       return envOrigin;
     }
     // 프로덕션 환경 기본값
-    const defaultOrigin = 'https://web-ssr--atsignal.asia-east1.hosted.app';
+    const defaultOrigin = 'https://web-ssr--atsignal-landing-dev-e8547.asia-east1.hosted.app';
     console.log('[Preview] Web origin using default:', defaultOrigin, '(env was:', envOrigin, ')');
     return defaultOrigin;
   }
@@ -39,7 +39,7 @@ function getWebOrigin(): string {
   const serverOrigin = process.env.NEXT_PUBLIC_WEB_PREVIEW_ORIGIN || process.env.NEXT_PUBLIC_WEB_URL || 'http://localhost:3000';
   // 잘못된 origin 필터링
   if (serverOrigin.includes('0.0.0.0')) {
-    return 'https://web-ssr--atsignal.asia-east1.hosted.app';
+    return 'https://web-ssr--atsignal-landing-dev-e8547.asia-east1.hosted.app';
   }
   return serverOrigin;
 }
@@ -78,7 +78,7 @@ function getDocsOrigin(): string {
       return envOrigin;
     }
     // 프로덕션 환경 기본값 (docs는 별도 App Hosting 인스턴스 사용)
-    const defaultOrigin = 'https://docs-ssr--atsignal.asia-east1.hosted.app';
+    const defaultOrigin = 'https://docs-ssr--atsignal-landing-dev-e8547.asia-east1.hosted.app';
     console.log('[Preview] Docs origin using default:', defaultOrigin, '(env was:', envOrigin, ')');
     return defaultOrigin;
   }
@@ -86,7 +86,7 @@ function getDocsOrigin(): string {
   const serverOrigin = process.env.NEXT_PUBLIC_DOCS_PREVIEW_ORIGIN || process.env.NEXT_PUBLIC_DOCS_URL || 'http://localhost:3001';
   // 잘못된 origin 필터링
   if (serverOrigin.includes('0.0.0.0')) {
-    return 'https://docs-ssr--atsignal.asia-east1.hosted.app';
+    return 'https://docs-ssr--atsignal-landing-dev-e8547.asia-east1.hosted.app';
   }
   return serverOrigin;
 }
