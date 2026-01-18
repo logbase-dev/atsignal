@@ -109,6 +109,19 @@ export function buildPreviewUrl(site: Site, slug: string, locale: 'ko' | 'en', d
   previewUrl.searchParams.set('locale', locale);
   previewUrl.searchParams.set('draftId', draftId);
   previewUrl.searchParams.set('preview', '1');
+  
+  // 디버깅 로그 추가
+  console.log('[Preview Debug]', {
+    site,
+    slug,
+    locale,
+    draftId,
+    base,
+    finalUrl: previewUrl.toString(),
+    hostname: typeof window !== 'undefined' ? window.location.hostname : 'server',
+    protocol: typeof window !== 'undefined' ? window.location.protocol : 'server'
+  });
+  
   return previewUrl.toString();
 }
 
