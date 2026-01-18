@@ -27,5 +27,15 @@ export async function GET(request: NextRequest) {
   const target = new URL(`/${locale}/${normalizedSlug}`, request.url);
   target.searchParams.set('preview', '1');
   target.searchParams.set('draftId', draftId);
+  
+  // 디버깅 로그 추가
+  console.log('[Preview API Debug]', {
+    requestUrl: request.url,
+    normalizedSlug,
+    locale,
+    draftId,
+    targetUrl: target.toString()
+  });
+  
   return NextResponse.redirect(target);
 }
