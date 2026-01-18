@@ -20,3 +20,6 @@ env:
     value: "794647285878"
   - variable: NEXT_PUBLIC_FIREBASE_APP_ID
     value: 1:794647285878:web:c227551781a8099c19cf57
+  # Preview Configuration
+  - variable: NEXT_PUBLIC_PREVIEW_SECRET
+    value: atsignal-preview
