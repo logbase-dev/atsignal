@@ -1,8 +1,9 @@
 # Firebase App Hosting configuration for docs app
 runtime: nodejs20
 
-buildCommand: npm install && npm run build
-runCommand: npm start
+# pnpm을 사용하여 빌드 (Firebase App Hosting)
+buildCommand: pnpm install && pnpm run build
+runCommand: pnpm start
 
 # Firebase 환경 변수
 env:

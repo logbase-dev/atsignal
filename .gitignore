@@ -58,3 +58,10 @@ document/
 
 #macOS가 자동으로 생성하는 숨김 파일
 .DS_Store
+
+# Munus Export Script 파일
+export-menus.js
+
+# logbase Firebase App Hosting configuration file
+apps/docs/apphosting.yaml-logbase
+apps/web/apphosting.yaml-logbase

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
-import { getSubscribers, getSubscriberCount } from "../../lib/stiee/client";
-import { StibeeApiError } from "../../lib/stiee/types";
+import { getSubscribers, getSubscriberCount } from "../../lib/stibee/client";
+import { StibeeApiError } from "../../lib/stibee/types";
+import * as functions from 'firebase-functions';
 
 // 쿠키 파싱 헬퍼
 function getAuthToken(req: Request): string | undefined {
@@ -22,6 +23,17 @@ export async function handle(request: Request, response: Response) {
   }
 
   try {
+    // 🔍 환경 변수 디버깅
+    const config = functions.config();
+    console.log("[newsletter/subscribers] Functions config 확인:", {
+      STIBEE_API_KEY: config.stibee?.api_key ? "설정됨" : "없음",
+      STIBEE_LIST_ID: config.stibee?.list_id ? "설정됨" : "없음",
+      STIBEE_API_BASE_URL: config.stibee?.api_base_url || "기본값 사용",
+      NODE_ENV: process.env.NODE_ENV,
+      FUNCTIONS_EMULATOR: process.env.FUNCTIONS_EMULATOR,
+      GCLOUD_PROJECT: process.env.GCLOUD_PROJECT
+    });
+
     // ✅ 에뮬레이터에서는 항상 개발 모드로 처리 (쿠키 검증 생략)
     // 프로덕션 배포 시에만 실제 쿠키 검증 수행
     const isProduction = process.env.GCLOUD_PROJECT && 

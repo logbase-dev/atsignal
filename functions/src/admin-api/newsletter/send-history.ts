@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { getEmailHistory, getEmailHistoryCount, getEmailStatistics } from "../../lib/stiee/client";
-import { StibeeApiError } from "../../lib/stiee/types";
+import { getEmailHistory, getEmailHistoryCount, getEmailStatistics } from "../../lib/stibee/client";
+import { StibeeApiError } from "../../lib/stibee/types";
 
 // 쿠키 파싱 헬퍼
 function getAuthToken(req: Request): string | undefined {

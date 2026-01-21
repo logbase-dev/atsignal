@@ -45,7 +45,10 @@ const sharp_1 = __importDefault(require("sharp"));
  * - images/editor/* → thumbnail, medium, large 생성
  * - images/original/* → 필요 시 최적화 (선택)
  */
-exports.processImage = functions.storage
+exports.processImage = functions
+    .region('asia-northeast3')
+    .storage
+    .bucket() // 기본 버킷 사용
     .object()
     .onFinalize(async (object) => {
     const filePath = object.name;

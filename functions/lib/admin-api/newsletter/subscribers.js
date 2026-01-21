@@ -1,8 +1,42 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handle = handle;
-const client_1 = require("../../lib/stiee/client");
-const types_1 = require("../../lib/stiee/types");
+const client_1 = require("../../lib/stibee/client");
+const types_1 = require("../../lib/stibee/types");
+const functions = __importStar(require("firebase-functions"));
 // 쿠키 파싱 헬퍼
 function getAuthToken(req) {
     const cookieHeader = req.headers.cookie;
@@ -20,6 +54,16 @@ async function handle(request, response) {
         return;
     }
     try {
+        // 🔍 환경 변수 디버깅
+        const config = functions.config();
+        console.log("[newsletter/subscribers] Functions config 확인:", {
+            STIBEE_API_KEY: config.stibee?.api_key ? "설정됨" : "없음",
+            STIBEE_LIST_ID: config.stibee?.list_id ? "설정됨" : "없음",
+            STIBEE_API_BASE_URL: config.stibee?.api_base_url || "기본값 사용",
+            NODE_ENV: process.env.NODE_ENV,
+            FUNCTIONS_EMULATOR: process.env.FUNCTIONS_EMULATOR,
+            GCLOUD_PROJECT: process.env.GCLOUD_PROJECT
+        });
         // ✅ 에뮬레이터에서는 항상 개발 모드로 처리 (쿠키 검증 생략)
         // 프로덕션 배포 시에만 실제 쿠키 검증 수행
         const isProduction = process.env.GCLOUD_PROJECT &&
