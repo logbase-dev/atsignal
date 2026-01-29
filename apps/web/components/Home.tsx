@@ -649,7 +649,7 @@ export default function Home({ locale }: HomeProps) {
               <p className="card-description">
                 퍼널 분석, A/B 테스트, UX 개선 등 제품 개발에 필요한 모든 데이터 분석 도구를 제공합니다.
               </p>
-              <Link href={pathToUrl("/Solutions/By Team/Product/Funnel", currentLocale)} className="card-link">
+              <Link href={pathToUrl("/solution/by-team/product/funnel", currentLocale)} className="card-link">
                 제품 솔루션 보기 →
               </Link>
             </div>
@@ -663,7 +663,7 @@ export default function Home({ locale }: HomeProps) {
               <p className="card-description">
                 AARRR 프레임워크, 코호트 분석, 어트리뷰션 모델링으로 마케팅 성과를 정확히 측정하세요.
               </p>
-               <Link href={pathToUrl("/Solutions/By Team/Marketing/AARRR", currentLocale)} className="card-link">
+               <Link href={pathToUrl("/solution/by-team/marketing/aarrr", currentLocale)} className="card-link">
                 마케팅 솔루션 보기 →
               </Link>
             </div>
@@ -677,7 +677,7 @@ export default function Home({ locale }: HomeProps) {
               <p className="card-description">
                 로그 모니터링, 에러 추적, Core Web Vitals 측정으로 안정적인 서비스를 운영하세요.
               </p>
-               <Link href={pathToUrl("/Solutions/By Team/Engineering/Log Monitoring", currentLocale)} className="card-link">
+               <Link href={pathToUrl("/solution/by-team/engineering/log-monitoring", currentLocale)} className="card-link">
                 엔지니어링 솔루션 보기 →
               </Link>
             </div>
