@@ -7,6 +7,7 @@ import { WhatsNewSearch } from '@/components/product/whatsnew/WhatsNewSearch';
 import { WhatsNewAccordion } from '@/components/product/whatsnew/WhatsNewAccordion';
 import { WhatsNewPagination } from '@/components/product/whatsnew/WhatsNewPagination';
 import Image from 'next/image';
+import { sendGAEvent } from '@next/third-parties/google';
 
 interface PageProps {
   params: Promise<{
@@ -99,6 +100,12 @@ export default function WhatsNewPage({ params }: PageProps) {
   }, [loadWhatsNews]);
 
   const handleSearch = () => {
+  // 2/6 새벽 김현득 추가
+    sendGAEvent({
+        event: 'search',
+        search_term: searchInput
+    });
+  // 김현득 추가 end
     setSearchQuery(searchInput);
     setCurrentPage(1); // 검색 시 첫 페이지로 이동
   };
