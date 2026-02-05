@@ -1,5 +1,9 @@
 'use client';
 
+// 2차 추가 2/6 새벽 by 김현득
+import { sendGAEvent } from '@next/third-parties/google';
+// end by 김현득
+
 interface WhatsNewSearchProps {
   locale: string;
   searchInput: string;
