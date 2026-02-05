@@ -1,7 +1,7 @@
 'use client';
 
 // 2차 추가 2/6 새벽 by 김현득
-import { sendGAEvent } from '@next/third-parties/google';
+//import { sendGAEvent } from '@next/third-parties/google';
 // end by 김현득
 
 interface WhatsNewSearchProps {
@@ -22,16 +22,16 @@ export function WhatsNewSearch({
   onClearSearch,
 }: WhatsNewSearchProps) {
 //3차 시도
-//  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-//    if (e.key === 'Enter') onSearch();
-//  };
-// 위의 코드를 아래로 변경 by 김현득 2/6 새벽
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') { 
-      sendGAEvent({event: 'search', search_term: searchInput});
-      onSearch();
-    };
+    if (e.key === 'Enter') onSearch();
   };
+// 위의 코드를 아래로 변경 by 김현득 2/6 새벽
+//  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+//    if (e.key === 'Enter') { 
+//      sendGAEvent({event: 'search', search_term: searchInput});
+//      onSearch();
+//    };
+//  };
 // 변경부분 end by 김현득
 
   return (
