@@ -6,6 +6,9 @@ import type { Glossary, GlossaryCategory } from '@/lib/admin/types';
 import { GlossarySearch } from '@/components/resources/glossary/GlossarySearch';
 import { GlossaryList } from '@/components/resources/glossary/GlossaryList';
 import Image from 'next/image';
+// 2/6 19:55 김현득 추가
+import { sendGAEvent } from '@next/third-parties/google';
+// 2/6 19:55 김현득 추가 end
 
 interface PageProps {
   params: Promise<{
@@ -35,8 +38,17 @@ export default function GlossaryPage({ params }: PageProps) {
   const itemsPerPage = 20;
 
   // 검색 핸들러
+// // 아래는 2/6 20:17경 코멘트 처리 by 김현득
+//  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+//    if (e.key === 'Enter') handleSearch();
+//  };
+// 아래는 2/6 20:17경 반영 by 김현득
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') handleSearch();
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSearch();
+// 2/6 20:17경 반영 by 김현득 end
+    }
   };
 
   // 한글 자음별 해당 글자 범위 정의
@@ -179,6 +191,12 @@ export default function GlossaryPage({ params }: PageProps) {
   }, [loadGlossaries]);
 
   const handleSearch = () => {
+// 2/6 20:00 김현득 추가
+    sendGAEvent(
+      "event", 'search', {
+      search_term: searchInput,
+    });
+// 2/6 20:00 김현득 추가 end
     setCurrentPage(1); // 검색 시 첫 페이지로 이동
     setSearchQuery(searchInput);
   };

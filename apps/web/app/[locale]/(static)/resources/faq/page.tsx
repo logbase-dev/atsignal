@@ -156,12 +156,12 @@ export default function FAQPage({ params }: PageProps) {
   }, [loadFAQs]);
 
   const handleSearch = () => {
-  // 2/6 오후3:00 김현득 추가
+// 2/6 오후3:00 김현득 추가
     sendGAEvent(
       "event", 'search', {
       search_term: searchInput,
     });
-  // 2/6 오후3:00 김현득 추가 end
+// 2/6 오후3:00 김현득 추가 end
     setSearchQuery(searchInput);
   };
 
@@ -171,8 +171,17 @@ export default function FAQPage({ params }: PageProps) {
     setSelectedCategoryId('all'); // 카테고리 필터도 초기화
   };
 
+//  이벤트중복 발생 유발하므로 코멘트 처리한 다음 부분으로 변경
+//  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+//    if (e.key === 'Enter') handleSearch();
+//  };
+// 아래는 2/6 19:25경 반영 by 김현득
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') handleSearch();
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSearch();
+// 2/6 19:25경 반영 by 김현득 end
+    }
   };
 
   const handleCategoryChange = (categoryId: string) => {

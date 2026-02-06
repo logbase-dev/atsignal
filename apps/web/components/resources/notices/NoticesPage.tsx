@@ -5,6 +5,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import type { Notice } from '@/lib/admin/types';
 import { getPublicNotices } from '@/lib/public/noticeService';
+// 2/6 19:46 김현득 추가
+import { sendGAEvent } from '@next/third-parties/google';
+// 2/6 19:46 김현득 추가 end
 
 interface Props {
   locale: 'ko' | 'en';
@@ -81,6 +84,12 @@ export default function NoticesPage({
   };
 
   const handleSearch = () => {
+// 김현득 추가 2/6 19:45
+    sendGAEvent(
+      "event", 'search', {
+      search_term: searchText,
+    });
+// 김현득 추가 2/6 19:45 end
     setPage(1);
     loadNotices(1, searchText);
   };
@@ -198,6 +207,9 @@ export default function NoticesPage({
                 onChange={(e) => setSearchText(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
+// 2/6 중복이벤트 방지 코드 반영 by 김현득
+                    e.preventDefault();
+// 2/6 중복이벤트 방지 코드 반영 by 김현득 end
                     handleSearch();
                   }
                 }}

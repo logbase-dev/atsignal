@@ -36,8 +36,18 @@ export function GlossarySearch({
   // 카테고리 접기/펼치기 상태
   const [isCategoryExpanded, setIsCategoryExpanded] = useState(false);
 
+//
+//  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+//    if (e.key === 'Enter') onSearch();
+//  };
+
+// 아래는 2/6 20:06경 반영 by 김현득
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') onSearch();
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      onSearch();
+// 2/6 20:06경 반영 by 김현득 end
+    }
   };
 
   return (

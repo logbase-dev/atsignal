@@ -107,12 +107,12 @@ export default function BlogsPage({
   };
 
   const handleSearch = () => {
-  // 2/6 오후 3:28에 김현득 추가
+// 2/6 오후 3:28에 김현득 추가
     sendGAEvent(
       "event", 'search', {
       search_term: searchText,
     });
-  // 2/6 오후 3:28에 김현득 추가 end    
+// 2/6 오후 3:28에 김현득 추가 end    
     setPage(1);
     loadBlogs(1, searchText, selectedCategory);
   };
@@ -468,6 +468,9 @@ export default function BlogsPage({
                 onChange={(e) => setSearchText(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
+// 2/6 중복이벤트 방지 코드 반영 by 김현득
+                    e.preventDefault();
+// 2/6 중복이벤트 방지 코드 반영 by 김현득 end
                     handleSearch();
                   }
                 }}
