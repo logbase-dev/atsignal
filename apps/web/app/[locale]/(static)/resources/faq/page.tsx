@@ -7,6 +7,9 @@ import { FAQCardView } from '@/components/resources/faq/FAQCardView';
 import { getPublicFAQs, getPublicFAQCategories } from '@/lib/resources/faq/faqService';
 import type { FAQ, FAQCategory } from '@/lib/admin/types';
 import Image from 'next/image';
+// 2/6 오후3:15 김현득 추가
+import { sendGAEvent } from '@next/third-parties/google';
+// 2/6 오후3:15 김현득 추가 end
 
 interface PageProps {
   params: Promise<{
