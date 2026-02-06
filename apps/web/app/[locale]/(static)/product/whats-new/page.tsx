@@ -100,13 +100,7 @@ export default function WhatsNewPage({ params }: PageProps) {
   }, [loadWhatsNews]);
 
   const handleSearch = () => {
-  // 2/6 새벽 김현득 추가후 오전8:25에 변경
-  //  sendGAEvent({
-  //      event: 'search',
-  //      search_term: searchInput
-  //  });
-  // 김현득 추가 end
-  // 오전8:25에 아래로 변경
+  // 오전8:25에 아래로 변경하여 추가
     sendGAEvent(
       "event", 'search', {
       search_term: searchInput,
