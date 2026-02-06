@@ -5,6 +5,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import type { BlogPost } from '@/lib/admin/types';
 import { getPublicBlogs, getPublicFeaturedBlogs } from '@/lib/public/blogService';
+// 2/6 3:28 김현득 추가
+import { sendGAEvent } from '@next/third-parties/google';
+// 2/6 3:28 김현득 추가 end
 
 interface Props {
   locale: 'ko' | 'en';
@@ -104,6 +107,12 @@ export default function BlogsPage({
   };
 
   const handleSearch = () => {
+  // 2/6 오후 3:28에 김현득 추가
+    sendGAEvent(
+      "event", 'search', {
+      search_term: searchText,
+    });
+  // 2/6 오후 3:28에 김현득 추가 end    
     setPage(1);
     loadBlogs(1, searchText, selectedCategory);
   };
