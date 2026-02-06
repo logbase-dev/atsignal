@@ -153,6 +153,12 @@ export default function FAQPage({ params }: PageProps) {
   }, [loadFAQs]);
 
   const handleSearch = () => {
+  // 2/6 오전3:00 김현득 추가
+    sendGAEvent(
+      "event", 'search', {
+      search_term: searchInput,
+    });
+  // 2/6 오전3:00 김현득 추가 end
     setSearchQuery(searchInput);
   };
 
