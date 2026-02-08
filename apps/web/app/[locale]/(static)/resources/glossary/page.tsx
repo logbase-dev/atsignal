@@ -43,13 +43,17 @@ export default function GlossaryPage({ params }: PageProps) {
 //    if (e.key === 'Enter') handleSearch();
 //  };
 // 아래는 2/6 20:17경 반영 by 김현득
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleSearch();
-// 2/6 20:17경 반영 by 김현득 end
-    }
-  };
+
+// 이후에 2/8 18:26에 아래 함수 코멘트 처리함
+//  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+//    if (e.key === 'Enter') {
+//      e.preventDefault();
+//      handleSearch();
+
+// // 2/6 20:17경 반영 by 김현득 end
+//    }
+//  };
+// 2/8 18:26 코멘트 처리 end
 
   // 한글 자음별 해당 글자 범위 정의
   const getKoreanCharRange = (consonant: string): [string, string] => {
