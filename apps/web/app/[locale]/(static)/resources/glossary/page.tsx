@@ -200,8 +200,6 @@ export default function GlossaryPage({ params }: PageProps) {
       "event", 'search', {
       search_term: searchInput,
     });
-// test code 2/8 19:40 김현득
-    console.trace('handleSearch called');
 // 2/6 20:00 김현득 추가 end
     setCurrentPage(1); // 검색 시 첫 페이지로 이동
     setSearchQuery(searchInput);

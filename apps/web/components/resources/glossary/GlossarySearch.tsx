@@ -45,9 +45,6 @@ export function GlossarySearch({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-// 2/8 19:20에 김현득이 추가 (확인용 코드)
-      e.stopPropagation();
-// 2/8 19:20에 김현득이 추가 (여전히 enter 디폴트 submit이 발생하는 것 같아서, 부모 문제인듯)
       onSearch();
 // 2/6 20:06경 반영 by 김현득 end
     }
