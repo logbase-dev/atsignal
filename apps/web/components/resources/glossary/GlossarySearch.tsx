@@ -43,6 +43,8 @@ export function GlossarySearch({
 
 // 아래는 2/6 20:06경 반영 by 김현득
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+// 2/9 추가
+    if (e.nativeEvent.isComposing) return;
     if (e.key === 'Enter') {
       e.preventDefault();
       onSearch();

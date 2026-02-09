@@ -88,6 +88,7 @@ export default function NoticesPage({
     sendGAEvent(
       "event", 'search', {
       search_term: searchText,
+      page_path: window.location.pathname, // 추가 라인 2/9
     });
 // 김현득 추가 2/6 19:45 end
     setPage(1);
@@ -206,6 +207,8 @@ export default function NoticesPage({
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
                 onKeyDown={(e) => {
+// 2/9 추가
+                  if (e.nativeEvent.isComposing) return;
                   if (e.key === 'Enter') {
 // 2/6 중복이벤트 방지 코드 반영 by 김현득
                     e.preventDefault();

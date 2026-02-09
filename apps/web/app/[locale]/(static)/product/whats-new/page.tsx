@@ -104,6 +104,7 @@ export default function WhatsNewPage({ params }: PageProps) {
     sendGAEvent(
       "event", 'search', {
       search_term: searchInput,
+      page_path: window.location.pathname, // 추가 라인 2/9
     });
   // 오전8:25 변경분 end
     setSearchQuery(searchInput);

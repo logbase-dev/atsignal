@@ -111,6 +111,7 @@ export default function BlogsPage({
     sendGAEvent(
       "event", 'search', {
       search_term: searchText,
+      page_path: window.location.pathname, // 추가 라인 2/9
     });
 // 2/6 오후 3:28에 김현득 추가 end    
     setPage(1);
@@ -467,6 +468,8 @@ export default function BlogsPage({
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
                 onKeyDown={(e) => {
+// 2/9 추가
+                  if (e.nativeEvent.isComposing) return;
                   if (e.key === 'Enter') {
 // 2/6 중복이벤트 방지 코드 반영 by 김현득
                     e.preventDefault();

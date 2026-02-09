@@ -199,6 +199,7 @@ export default function GlossaryPage({ params }: PageProps) {
     sendGAEvent(
       "event", 'search', {
       search_term: searchInput,
+      page_path: window.location.pathname, // 추가 라인 2/9
     });
 // 2/6 20:00 김현득 추가 end
     setCurrentPage(1); // 검색 시 첫 페이지로 이동

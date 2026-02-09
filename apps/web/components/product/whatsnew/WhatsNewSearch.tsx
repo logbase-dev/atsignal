@@ -20,6 +20,8 @@ export function WhatsNewSearch({
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
 //  if (e.key === 'Enter') onSearch();
+// 2/9 추가
+    if (e.nativeEvent.isComposing) return;
 // 이벤트 중복 방지를 위해 위의 코드에 e.preventDefault() 반영 by 김현득 2/6 17:20
     if (e.key === 'Enter') {
       e.preventDefault();

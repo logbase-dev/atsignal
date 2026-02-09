@@ -160,6 +160,7 @@ export default function FAQPage({ params }: PageProps) {
     sendGAEvent(
       "event", 'search', {
       search_term: searchInput,
+      page_path: window.location.pathname, // 추가 라인 2/9
     });
 // 2/6 오후3:00 김현득 추가 end
     setSearchQuery(searchInput);
@@ -177,6 +178,8 @@ export default function FAQPage({ params }: PageProps) {
 //  };
 // 아래는 2/6 19:25경 반영 by 김현득
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+// 2/9 추가
+    if (e.nativeEvent.isComposing) return;
     if (e.key === 'Enter') {
       e.preventDefault();
       handleSearch();
