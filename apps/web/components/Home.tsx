@@ -493,7 +493,9 @@ export default function Home({ locale }: HomeProps) {
       </section>
 
       {/* signal main-image Section */}
-      <section className="section section-gray">
+{/* 김현득 2/12 수정 */}
+{/*      <section className="section section-gray"> */}
+      <section className="section section-white-top">
         <div className="section-container">
           <img
             src="/images/signal-main-image.png"

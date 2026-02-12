@@ -435,10 +435,18 @@ body:not(.admin-mode) .dropdown-item:hover {
   --main-bg: #0a0a0a;
   --section-white-bg: #1a1a1a;
   --section-gray-bg: #0f0f0f;
+  --section-white-top-bg: #ffffff; /* 김현득 추가 */
   --card-bg: #1f1f1f;
   --text-primary: #ededed;
   --text-secondary: #a0a0a0;
+  --text-black: #222222; /* 김현득 추가 */
   --border-color: #2a2a2a;
+}
+
+/* 김현득 추가 */
+.dark-mode .section-white-top {
+  background: var(--section-white-top-bg);
+  color: var(--text-black);
 }
 
 .dark-mode .main {
