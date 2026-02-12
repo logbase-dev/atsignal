@@ -533,7 +533,7 @@ export default function Home({ locale }: HomeProps) {
               <div className="stat-label">가용성</div>
             </div>
             <div className="number-card" style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#20bdff', marginBottom: '0.5rem', boxShadow: '0 20px 45px rgba(0, 0, 0, 0.25)' }}>
+              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#20bdff', marginBottom: '0.5rem'}}>
                 &lt; {statsValues.responseTime}ms
               </div>
               <div className="stat-label">평균 응답 시간</div>
