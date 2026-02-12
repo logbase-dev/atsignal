@@ -520,19 +520,19 @@ export default function Home({ locale }: HomeProps) {
         <div className="section-container">
           <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
             <div className="number-card" style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#20bdff', marginBottom: '0.5rem', boxShadow: '0 20px 45px rgba(0, 0, 0, 0.25)' }}>
+              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#20bdff', marginBottom: '0.5rem' }}>
                 {(statsValues.events / 1000000).toFixed(1)}M+
               </div>
               <div className="stat-label">이벤트/초 처리</div>
             </div>
             <div className="number-card" style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#20bdff', marginBottom: '0.5rem', boxShadow: '0 20px 45px rgba(0, 0, 0, 0.25)' }}>
+              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#20bdff', marginBottom: '0.5rem' }}>
                 {statsValues.availability.toFixed(2)}%
               </div>
               <div className="stat-label">가용성</div>
             </div>
             <div className="number-card" style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#20bdff', marginBottom: '0.5rem', boxShadow: '0 20px 45px rgba(0, 0, 0, 0.25)' }}>
+              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#20bdff', marginBottom: '0.5rem' }}>
                 &lt; {statsValues.responseTime}ms
               </div>
               <div className="stat-label">평균 응답 시간</div>
