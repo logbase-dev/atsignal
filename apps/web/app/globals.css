@@ -825,7 +825,9 @@ body:not(.admin-mode) .dropdown-item:hover {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(180deg, rgba(225, 246, 255, 0.92) 0%, rgba(180, 231, 255, 0.9) 100%);
+  background: linear-gradient(180deg,#b4e7ff 0%, #ffffff 100%);
+/* 위 라인으로 2/12 김현득 변경
+/*  background: linear-gradient(180deg, rgba(225, 246, 255, 0.92) 0%, rgba(180, 231, 255, 0.9) 100%); */
   z-index: 0;
 }
 
