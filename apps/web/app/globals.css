@@ -1142,8 +1142,14 @@ body:not(.admin-mode) .dropdown-item:hover {
 
 .btn-primary {
   padding: 0.75rem 2rem;
-  background: white;
-  color: var(--blue-600);
+/*  background: white; */
+/* 2/12 김현득 아래 색상으로 변경 */
+  background: black;
+
+/*  color: var(--blue-600);  */
+/* 2/12 김현득 아래 색상으로 변경 */
+  color: var(--main-100);
+
   font-weight: 700;
   font-size: 1.1rem;
   border-radius: 9999px;
@@ -1153,7 +1159,9 @@ body:not(.admin-mode) .dropdown-item:hover {
 }
 
 .btn-primary:hover {
-  background: var(--blue-50);
+/*  background: var(--blue-50); */
+/* 2/12 김현득 아래 색상으로 변경 */
+  background: var(--gray-600);
 }
 
 .btn-secondary {

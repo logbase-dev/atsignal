@@ -516,7 +516,8 @@ export default function Home({ locale }: HomeProps) {
       {/* Stats Section */}
 {/* 김현득 2/12 수정 아래 박스안 3개 텍스트 컬러도 #ffffff에서 #20bdff로 변경*/}
 {/*      <section className="section section-gray"> */}
-      <section className="section section-gray">
+{/*      <section ref={statsSectionRef} className="section section-gray"> */}
+      <section ref={statsSectionRef} className="section section-gray-light-top">
         <div className="section-container">
           <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
             <div className="number-card" style={{ textAlign: 'center' }}>
