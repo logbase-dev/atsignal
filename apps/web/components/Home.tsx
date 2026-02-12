@@ -514,23 +514,25 @@ export default function Home({ locale }: HomeProps) {
       </section>
 
       {/* Stats Section */}
-      <section ref={statsSectionRef} className="section section-gray">
+{/* 김현득 2/12 수정 아래 박스안 3개 텍스트 컬러도 #ffffff에서 #20bdff로 변경*/}
+{/*      <section className="section section-gray"> */}
+      <section className="section section-gray-light-top">
         <div className="section-container">
           <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
             <div className="card" style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#FFFFFF', marginBottom: '0.5rem' }}>
+              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#20bdff', marginBottom: '0.5rem' }}>
                 {(statsValues.events / 1000000).toFixed(1)}M+
               </div>
               <div className="stat-label">이벤트/초 처리</div>
             </div>
             <div className="card" style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#FFFFFF', marginBottom: '0.5rem' }}>
+              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#20bdff', marginBottom: '0.5rem' }}>
                 {statsValues.availability.toFixed(2)}%
               </div>
               <div className="stat-label">가용성</div>
             </div>
             <div className="card" style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#FFFFFF', marginBottom: '0.5rem' }}>
+              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#20bdff', marginBottom: '0.5rem' }}>
                 &lt; {statsValues.responseTime}ms
               </div>
               <div className="stat-label">평균 응답 시간</div>

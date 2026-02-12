@@ -436,10 +436,12 @@ body:not(.admin-mode) .dropdown-item:hover {
   --section-white-bg: #1a1a1a;
   --section-gray-bg: #0f0f0f;
   --section-white-top-bg: #ffffff; /* 김현득 추가 */
+  --section-gray-light-top-bg: #f7f8f9; /* 김현득 추가 */
   --card-bg: #1f1f1f;
   --text-primary: #ededed;
   --text-secondary: #a0a0a0;
   --text-black: #222222; /* 김현득 추가 */
+  --text-explain: #374553; /* 김현득 추가 */
   --border-color: #2a2a2a;
 }
 
@@ -448,6 +450,11 @@ body:not(.admin-mode) .dropdown-item:hover {
   background: var(--section-white-top-bg);
   color: var(--text-black);
 }
+.dark-mode .section-gray-light-top {
+  background: var(--section-gray-light-top-bg);
+  color: var(--text-explain);
+}
+/* 김현득 추가 end */
 
 .dark-mode .main {
   background: var(--main-bg);
