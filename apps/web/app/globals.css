@@ -1260,7 +1260,7 @@ body:not(.admin-mode) .dropdown-item:hover {
 /* 2/12 김현득 추가 */
 .number-card {
   position: relative;
-  padding: 1.5rem;
+/*  padding: 1.5rem; */
   background: var(--gray-white);
   border-radius: 0.5rem;
   overflow: hidden;
