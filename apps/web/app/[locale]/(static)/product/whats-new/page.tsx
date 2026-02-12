@@ -153,7 +153,9 @@ export default function WhatsNewPage({ params }: PageProps) {
             maxWidth: '20%',
             minWidth: '150px',
             position: 'relative',
-            marginTop: '-1rem' // 이미지만 더 위로 올림
+            marginTop: '-1rem', // 이미지만 더 위로 올림
+// 2/12 김현득 마진 조정. 오른 쪽으로 조금 이동
+            marginLeft: '1rem'
           }}>
             <Image
               src="/images/whatsnew_image.jpg"

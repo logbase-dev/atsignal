@@ -19,7 +19,7 @@ export default async function SolutionsPage({ params }: PageProps) {
         {/* Hero 섹션 div default start */}
         <div className="hero-page">
             <div className="hero-page-container" style={{ display: 'flex', alignItems: 'flex-start', gap: '2rem', flexWrap: 'wrap', padding: '8rem 1rem', paddingTop: '8rem' }}>
-            <div style={{ flexShrink: 0, maxWidth: '20%', minWidth: '150px', position: 'relative', marginTop: '-1rem' }}>
+            <div style={{ flexShrink: 0, maxWidth: '20%', minWidth: '150px', position: 'relative', marginTop: '-1rem', marginLeft: '1rem' }}>
                 <img
                 src="/images/blog_image.jpg"
                 alt="atsignal blogs"
