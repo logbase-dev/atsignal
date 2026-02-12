@@ -1162,6 +1162,8 @@ body:not(.admin-mode) .dropdown-item:hover {
 /*  background: var(--blue-50); */
 /* 2/12 김현득 아래 색상으로 변경 */
   background: var(--gray-600);
+/* 2/21 김현득 아래 라인 추가 */
+  transform: translateY(-1px);
 }
 
 .btn-secondary {
