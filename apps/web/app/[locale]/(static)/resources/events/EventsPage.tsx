@@ -170,8 +170,9 @@ export default function EventsPage({
         {/* 메인 이벤트 */}
         {initialMainEvent && (
           <section style={{ 
-            backgroundColor: 'var(--main-500)',
-            borderRadius: '0 0 30px 30px',
+/*            backgroundColor: 'var(--main-500)', */
+            backgroundColor: 'white',
+            borderRadius: '0 0 60px 60px',
             padding: '5rem 0',
             position: 'relative',
             zIndex: 2,
@@ -287,7 +288,8 @@ export default function EventsPage({
         {/* 서브 이벤트 */}
         {initialSubEvents.length > 0 && (
           <section style={{ 
-            backgroundColor: 'var(--main-400)',
+/*            backgroundColor: 'var(--main-400)', */
+            backgroundColor: 'var(--gray-200)',
             borderRadius: '0 0 30px 30px',
             padding: '7rem 0',
             marginTop: '-30px',
@@ -454,7 +456,8 @@ export default function EventsPage({
         {/* 기타 이벤트 */}
         {otherEvents.length > 0 && (
           <section style={{
-            backgroundColor: 'var(--main-300)',
+/*            backgroundColor: 'var(--main-300)', */
+            backgroundColor: 'var(--gray-200)',
             borderRadius: '0 0 30px 30px',
             padding: '7rem 0 4rem',
             marginTop: '-30px',
