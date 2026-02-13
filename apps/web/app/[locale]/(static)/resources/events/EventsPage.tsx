@@ -172,7 +172,7 @@ export default function EventsPage({
           <section style={{ 
 /*            backgroundColor: 'var(--main-500)', */
             backgroundColor: 'white',
-            borderRadius: '0 0 60px 60px',
+            borderRadius: '0 0 30px 30px',
             padding: '5rem 0',
             position: 'relative',
             zIndex: 2,
