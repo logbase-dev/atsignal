@@ -515,24 +515,23 @@ export default function Home({ locale }: HomeProps) {
 
       {/* Stats Section */}
 {/* 김현득 2/12 수정 아래 박스안 3개 텍스트 컬러도 #ffffff에서 #20bdff로 변경*/}
-{/*      <section className="section section-gray"> */}
-      <section ref={statsSectionRef} className="section section-gray">
-{/*      <section ref={statsSectionRef} className="section section-white-top"> */}
-        <div className="section-container">
-          <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
-            <div className="number-card" style={{ textAlign: 'center' }}>
+{/*      <section ref={statsSectionRef} className="section section-gray"> */}
+      <section ref={statsSectionRef} className="section section-white-top">
+        <div className="section-container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 2rem' }}>
+          <div className="grid" style={{ justifyContent: 'center', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+            <div className="number-card" style={{ textAlign: 'center', boxShadow: '0 20px 45px rgba(0, 0, 0, 0.25)'}}>
               <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#20bdff', marginBottom: '0.5rem' }}>
                 {(statsValues.events / 1000000).toFixed(1)}M+
               </div>
               <div className="stat-label">이벤트/초 처리</div>
             </div>
-            <div className="number-card" style={{ textAlign: 'center' }}>
+            <div className="number-card" style={{ textAlign: 'center', boxShadow: '0 20px 45px rgba(0, 0, 0, 0.25)' }}>
               <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#20bdff', marginBottom: '0.5rem' }}>
                 {statsValues.availability.toFixed(2)}%
               </div>
               <div className="stat-label">가용성</div>
             </div>
-            <div className="number-card" style={{ textAlign: 'center' }}>
+            <div className="number-card" style={{ textAlign: 'center', boxShadow: '0 20px 45px rgba(0, 0, 0, 0.25)' }}>
               <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#20bdff', marginBottom: '0.5rem'}}>
                 &lt; {statsValues.responseTime}ms
               </div>
@@ -543,7 +542,8 @@ export default function Home({ locale }: HomeProps) {
       </section>
 
       {/* Features Section */}
-      <section className="section section-white">
+{/*      <section className="section section-white"> */}
+      <section className="section section-gray-light-top">
         <div className="section-container">
           <div className="features-layout">
             {/* Left Sidebar - Fixed */}
@@ -599,7 +599,8 @@ export default function Home({ locale }: HomeProps) {
                     width: '3rem', 
                     height: '3rem', 
                     borderRadius: '0.5rem', 
-                    background: 'linear-gradient(135deg, var(--blue-600), var(--blue-700))',
+/*                    background: 'linear-gradient(135deg, var(--blue-600), var(--blue-700))' */
+                    background: '#20bdff', /* 2/12 김현득 수정 */
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -610,7 +611,7 @@ export default function Home({ locale }: HomeProps) {
                   }}>
                     {feature.number}
                   </div>
-                  <h3 className="card-title">
+                  <h3 className="card-title" style={{ color: 'var(--text-black)' }}>
                     {feature.title}
                   </h3>
                   <p className="card-description">
@@ -641,45 +642,45 @@ export default function Home({ locale }: HomeProps) {
       <section className="section section-gray">
         <div className="section-container">
           <h2 className="section-title">
-            팀별 솔루션
+            조직별 솔루션
           </h2>
           <div className="grid">
-            <div className="card">
+            <div className="card-black">
               <img 
                 src="/images/fi_263142.svg" 
                 alt="프로덕트 조직 아이콘" 
                 style={{ width: '48px', height: '48px', marginBottom: '1rem' }}
               />
               <h3 className="card-title">프로덕트 조직</h3>
-              <p className="card-description">
+              <p className="card-description" style={{ color: '#c5c8ce' }}>
                 퍼널 분석, A/B 테스트, UX 개선 등 제품 개발에 필요한 모든 데이터 분석 도구를 제공합니다.
               </p>
               <Link href={pathToUrl("/solution/by-team/product/funnel", currentLocale)} className="card-link">
                 제품 솔루션 보기 →
               </Link>
             </div>
-            <div className="card">
+            <div className="card-black">
               <img 
                 src="/images/fi_263126.svg" 
                 alt="마케팅 조직 아이콘" 
                 style={{ width: '48px', height: '48px', marginBottom: '1rem' }}
               />
               <h3 className="card-title">마케팅 조직</h3>
-              <p className="card-description">
+              <p className="card-description" style={{ color: '#c5c8ce'}}>
                 AARRR 프레임워크, 코호트 분석, 어트리뷰션 모델링으로 마케팅 성과를 정확히 측정하세요.
               </p>
                <Link href={pathToUrl("/solution/by-team/marketing/aarrr", currentLocale)} className="card-link">
                 마케팅 솔루션 보기 →
               </Link>
             </div>
-            <div className="card">
+            <div className="card-black">
               <img 
                 src="/images/fi_263074.svg" 
                 alt="테크 & 개발 조직 아이콘" 
                 style={{ width: '48px', height: '48px', marginBottom: '1rem' }}
               />
               <h3 className="card-title">테크 & 개발 조직</h3>
-              <p className="card-description">
+              <p className="card-description" style={{ color: '#c5c8ce' }}>
                 로그 모니터링, 에러 추적, Core Web Vitals 측정으로 안정적인 서비스를 운영하세요.
               </p>
                <Link href={pathToUrl("/solution/by-team/engineering/log-monitoring", currentLocale)} className="card-link">

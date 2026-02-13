@@ -434,10 +434,13 @@ body:not(.admin-mode) .dropdown-item:hover {
 .dark-mode {
   --main-bg: #0a0a0a;
   --section-white-bg: #1a1a1a;
-  --section-gray-bg: #0f0f0f;
+/*  --section-gray-bg: #0f0f0f; */
+  --section-gray-bg: #121417; /* 김현득 추가 2/12 */
   --section-white-top-bg: #ffffff; /* 김현득 추가 */
   --section-gray-light-top-bg: #f7f8f9; /* 김현득 추가 */
-  --card-bg: #1f1f1f;
+  --section-gray-middle-top-bg: #e9ebee; /* 김현득 추가 */
+/*  --card-bg: #1f1f1f; */
+  --card-bg: #e9ebee; /* 김현득 추가 */
   --text-primary: #ededed;
   --text-secondary: #a0a0a0;
   --text-black: #222222; /* 김현득 추가 */
@@ -445,7 +448,12 @@ body:not(.admin-mode) .dropdown-item:hover {
   --border-color: #2a2a2a;
 }
 
-/* 김현득 추가 */
+/* 김현득 추가 2/13 */
+.section-white-top {
+  background-color: #ffffff;
+}
+
+/* 김현득 추가 2/12 */
 .dark-mode .section-white-top {
   background: var(--section-white-top-bg);
   color: var(--text-black);
@@ -454,6 +462,11 @@ body:not(.admin-mode) .dropdown-item:hover {
   background: var(--section-gray-light-top-bg);
   color: var(--text-explain);
 }
+.dark-mode .section-gray-middle-top {
+  background: var(--section-gray-middle-top-bg);
+  color: var(--text-explain);
+}
+
 /* 김현득 추가 end */
 
 .dark-mode .main {
@@ -487,7 +500,8 @@ body:not(.admin-mode) .dropdown-item:hover {
 }
 
 .dark-mode .card-description {
-  color: var(--text-secondary);
+/*  color: var(--text-secondary); */
+  color: var(--text-explain);
 }
 
 .dark-mode .section-title {
@@ -665,7 +679,8 @@ body:not(.admin-mode) .dropdown-item:hover {
 /* Benefit Item */
 .benefit-item {
   padding: 1rem 1.25rem; /* lowered height ~30% */
-  background: white;
+/*  background: white; */
+  background: var(--gray-100);
   border-radius: 0.5rem;
   border: 1px solid var(--gray-200);
   display: flex;
@@ -675,7 +690,8 @@ body:not(.admin-mode) .dropdown-item:hover {
 }
 
 .dark-mode .benefit-item {
-  background: var(--card-bg);
+/*  background: var(--card-bg); */
+  background: var(--gray-900);
   border-color: var(--border-color);
 }
 
@@ -745,8 +761,8 @@ body:not(.admin-mode) .dropdown-item:hover {
 }
 
 .dark-mode .benefit-icon {
-  background: rgba(0, 161, 239, 0.2);
-  color: var(--main-400);
+  background: rgba(0, 161, 239, 0.3);
+  color: var(--main-600);
 }
 
 .benefit-text {
@@ -1269,6 +1285,7 @@ body:not(.admin-mode) .dropdown-item:hover {
 
 /* 2/12 김현득 추가 */
 .number-card {
+  width: 300px;
   position: relative;
   padding: 1.5rem;
   background: var(--gray-white);
@@ -1276,6 +1293,19 @@ body:not(.admin-mode) .dropdown-item:hover {
   overflow: hidden;
   transition: transform 0.3s ease;
 }
+
+/* 2/13 김현득 추가 */
+.card-black {
+  position: relative;
+  padding: 1.5rem;
+  background: var(--gray-900);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+/*  opacity: 5%; */
+}
+
+
 
 .card::before {
   content: '';
@@ -1715,7 +1745,8 @@ body:not(.admin-mode) .dropdown-item:hover {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  align-items: center;
+/*  align-items: center; */
+  align-items: flex-start;
   text-align: center;
 }
 
@@ -1738,7 +1769,9 @@ body:not(.admin-mode) .dropdown-item:hover {
   font-size: 0.875rem;
   line-height: 1.6;
   max-width: 26rem;
-  text-align: center;
+/*  text-align: center; */
+  text-align: left;
+  padding-left: 0.7rem;
 }
 
 .footer-links {
@@ -1862,7 +1895,8 @@ body:not(.admin-mode) .dropdown-item:hover {
 }
 
 .dark-mode .features-sidebar {
-  background: #000000;
+/*  background: #000000; */
+  background: #F7F8F9;
 }
 
 .features-sidebar::-webkit-scrollbar {
@@ -1912,7 +1946,8 @@ body:not(.admin-mode) .dropdown-item:hover {
 }
 
 .feature-nav-item:hover {
-  color: var(--text-primary);
+/*  color: var(--text-primary); */
+  color: var(--text-black);
   background: rgba(0, 161, 239, 0.1);
 }
 
@@ -1983,8 +2018,12 @@ body:not(.admin-mode) .dropdown-item:hover {
 
 .feature-card {
   padding: 2rem;
+/*
   background: var(--gray-50);
-  border-radius: 0.5rem;
+*/
+/* 2/12 김현득 아래 색상으로 변경 */
+  background: var(--gray-white);
+  border-radius: 1rem;
   min-height: 200px;
   scroll-margin-top: 2rem;
   width: 500px;
