@@ -40,6 +40,7 @@ interface HeaderProps {
 export default function Header({ menuTree }: HeaderProps) {
   const pathname = usePathname();
   const locale = getLocaleFromPath(pathname);
+/* 2/14 김현득 주석 처리후 아래 좌표로 변경
   const notchPathD = `
     M 0 0
     C 11 0 22 15.5 34.13 40.5
@@ -47,6 +48,16 @@ export default function Header({ menuTree }: HeaderProps) {
     L 1368 72
     C 1378.98 72 1393.2 65.5 1405.87 40.5
     C 1418.04 15.5 1429.02 0 1440 0
+    Z
+  `;
+*/
+  const notchPathD = `
+    M 0 0
+    C 21 9 21 19 21 36 
+    C 21 58 26 70 48 72 
+    L 1392 72 
+    C 1414 70 1419 58 1419 36 
+    C 1419 19 1419 9 1440 0
     Z
   `;
   const [openDropdowns, setOpenDropdowns] = useState<Set<string>>(new Set());

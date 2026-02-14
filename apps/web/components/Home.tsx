@@ -659,7 +659,7 @@ export default function Home({ locale }: HomeProps) {
                 퍼널 분석, A/B 테스트, UX 개선 등 제품 개발에 필요한 모든 데이터 분석 도구를 제공합니다.
               </p>
               <Link href={pathToUrl("/solution/by-team/product/funnel", currentLocale)} className="card-link">
-                제품 솔루션 보기 →
+                프로덕트 솔루션 보기 →
               </Link>
             </div>
             <div className="card-black">
