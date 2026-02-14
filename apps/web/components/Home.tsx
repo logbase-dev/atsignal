@@ -646,10 +646,13 @@ export default function Home({ locale }: HomeProps) {
           </h2>
           <div className="grid">
             <div className="card-black">
+{/*                src="/images/fi_263142.svg" */}
+{/* png파일 검정색 선 화이트로 변경 filter: invert 추가 */}
               <img 
-                src="/images/fi_263142.svg" 
+
+                src="/images/app_product_manager.png"
                 alt="프로덕트 조직 아이콘" 
-                style={{ width: '48px', height: '48px', marginBottom: '1rem' }}
+                style={{ width: '48px', height: '48px', marginBottom: '1rem', filter: 'invert(100%) ' }}
               />
               <h3 className="card-title">프로덕트 조직</h3>
               <p className="card-description" style={{ color: '#c5c8ce' }}>
@@ -660,10 +663,12 @@ export default function Home({ locale }: HomeProps) {
               </Link>
             </div>
             <div className="card-black">
+{/*                src="/images/fi_263126.svg" */}
               <img 
-                src="/images/fi_263126.svg" 
+
+                src="/images/rate_marketing.png"
                 alt="마케팅 조직 아이콘" 
-                style={{ width: '48px', height: '48px', marginBottom: '1rem' }}
+                style={{ width: '48px', height: '48px', marginBottom: '1rem', filter: 'invert(100%)' }}
               />
               <h3 className="card-title">마케팅 조직</h3>
               <p className="card-description" style={{ color: '#c5c8ce'}}>
@@ -674,10 +679,12 @@ export default function Home({ locale }: HomeProps) {
               </Link>
             </div>
             <div className="card-black">
+{/*                src="/images/fi_263074.svg" */}
               <img 
-                src="/images/fi_263074.svg" 
+
+                src="/images/devops_bw.png"
                 alt="테크 & 개발 조직 아이콘" 
-                style={{ width: '48px', height: '48px', marginBottom: '1rem' }}
+                style={{ width: '48px', height: '48px', marginBottom: '1rem', filter: 'invert(100%)' }}
               />
               <h3 className="card-title">테크 & 개발 조직</h3>
               <p className="card-description" style={{ color: '#c5c8ce' }}>
