@@ -198,7 +198,7 @@ export default function Header({ navItems, locale, searchIndex }: HeaderProps) {
 
 <div style={logoCircleStyle}>
   {/* /는 public 폴더를 의미합니다 */}
-  <img src="/at-sign-docs.png" alt="로고"     style={{ 
+  <img src="/favicon.png" alt="로고"     style={{ 
       width: '100%',     // div 너비에 맞춤
       height: '100%',    // div 높이에 맞춤
       objectFit: 'cover', // 이미지가 원에 꽉 차게 조절
@@ -209,7 +209,7 @@ export default function Header({ navItems, locale, searchIndex }: HeaderProps) {
 </div>
 {/* 현득 end */}
 
-              <span style={logoTextStyle}>atsignal</span>
+              <span style={{...logoTextStyle, color: '#00a1ef'}}>atsignal</span>
             </Link>
             <span style={docsLabelStyle}>DOCUMENTATION</span>
           </div>

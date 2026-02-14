@@ -211,7 +211,7 @@ export default function Footer({ menus = [] }: FooterProps) {
           })}
         </div>
         <div style={footerBottomStyle}>
-          <p style={footerCopyrightStyle}>© {currentYear} AtSignal. All rights reserved.</p>
+          <p style={footerCopyrightStyle}>© {currentYear} atsignal. All rights reserved.</p>
         </div>
       </div>
     </footer>
