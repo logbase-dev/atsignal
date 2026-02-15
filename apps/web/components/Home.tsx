@@ -701,7 +701,7 @@ export default function Home({ locale }: HomeProps) {
       {/* Benefits Section */}
       <section className="section section-white">
         <div className="section-container">
-          <h2 className="section-title benefits-title">atsignal을 선택하는 이유</h2>
+          <h2 className="section-title benefits-title">atsignal이 당신의 비즈니스에 꼭 필요한 이유</h2>
           <div className="benefits-layout">
             <div
               className="benefits-visual-wrapper"
@@ -745,7 +745,7 @@ export default function Home({ locale }: HomeProps) {
             <div className="card">
               <h3 className="card-title">전환율 30% 향상</h3>
               <p className="card-description">
-                "AtSignal의 퍼널 분석을 통해 구매 프로세스의 병목 지점을 발견하고 개선하여 전환율을 30% 향상시켰습니다."
+                "atsignal의 퍼널 분석을 통해 구매 프로세스의 병목 지점을 발견하고 개선하여 전환율을 30% 향상시켰습니다."
               </p>
               <div className="testimonial-author">
                 - 이커머스 기업 A사

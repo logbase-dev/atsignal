@@ -330,7 +330,7 @@ export default function Header({ menuTree }: HeaderProps) {
               <Link href={`/${locale}`} className="logo notch-logo">
                 <img
                   src="/images/logo.svg"
-                  alt="AtSignal"
+                  alt="atsignal"
                   className="logo-image"
                 />
               </Link>

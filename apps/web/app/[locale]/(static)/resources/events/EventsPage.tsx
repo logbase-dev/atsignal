@@ -29,7 +29,7 @@ export default function EventsPage({
   const texts = {
     ko: {
       title: '이벤트',
-      subtitle: 'AtSignal의 최신 이벤트와 소식을 확인하세요',
+      subtitle: 'atsignal의 최신 이벤트와 소식을 확인하세요',
       mainEvent: '메인 이벤트',
       subEvents: '주요 이벤트',
       otherEvents: '기타 이벤트',
@@ -42,7 +42,7 @@ export default function EventsPage({
     },
     en: {
       title: 'Events',
-      subtitle: 'Check out the latest events and news from AtSignal',
+      subtitle: 'Check out the latest events and news from atsignal',
       mainEvent: 'Main Event',
       subEvents: 'Featured Events',
       otherEvents: 'Other Events',

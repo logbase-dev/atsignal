@@ -132,7 +132,7 @@ export default function Footer({ menus = [] }: FooterProps) {
             <Link href={`/${locale}`} className="footer-logo">
               <img
                 src="/images/logo.svg"
-                alt="AtSignal"
+                alt="atsignal"
                 className="footer-logo-image"
               />
             </Link>
