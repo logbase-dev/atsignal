@@ -1,6 +1,7 @@
 packages:
-  - apps/*
-  - functions
+  - "apps/web"
+  - "apps/docs"
+  - "functions"
 
 onlyBuiltDependencies:
   - esbuild
