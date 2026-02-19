@@ -108,6 +108,7 @@ export default function BlogPostViewPage({ params }: { params: { id: string } })
   }, [post?.saveFormat]);
 
   // 렌더된 본문 DOM에서 TOC 추출 (마크다운·HTML 공통, rehype-slug id와 일치)
+  // 관리자 페이지는 로딩 후 본문+ToastViewer가 동시 마운트되므로 HTML일 때 지연·재시도 적용
   const contentIsHTML = post?.saveFormat === 'html';
   useEffect(() => {
     if (!post?.content) {
@@ -115,19 +116,16 @@ export default function BlogPostViewPage({ params }: { params: { id: string } })
       return;
     }
 
-    const timer = setTimeout(() => {
+    const extractToc = (): TOCItem[] => {
       const container = contentRef.current;
-      if (!container) return;
-
+      if (!container) return [];
       const headings = container.querySelectorAll<HTMLHeadingElement>('h1, h2, h3, h4, h5, h6');
       const items: TOCItem[] = [];
       const usedIds = new Set<string>();
-
       headings.forEach((el, index) => {
         const level = parseInt(el.tagName.charAt(1), 10);
         const text = (el.textContent || '').trim();
         let id = (el.getAttribute('id') || '').trim();
-
         if (!id) {
           id = slugFromText(text, index);
           let uniqueId = id;
@@ -142,14 +140,31 @@ export default function BlogPostViewPage({ params }: { params: { id: string } })
         } else {
           usedIds.add(id);
         }
-
         items.push({ id, text, level });
       });
+      return items;
+    };
 
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
+    const runExtract = (isRetry: boolean) => {
+      const items = extractToc();
       setToc(items);
-    }, contentIsHTML ? 400 : 100);
+      // HTML(ToastViewer)는 렌더가 늦을 수 있음: 첫 시도에 항목이 없으면 한 번 더 시도
+      if (!isRetry && contentIsHTML && items.length === 0) {
+        retryTimer = setTimeout(() => {
+          const retryItems = extractToc();
+          if (retryItems.length > 0) setToc(retryItems);
+        }, 500);
+      }
+    };
 
-    return () => clearTimeout(timer);
+    const initialDelay = contentIsHTML ? 800 : 100;
+    const timer = setTimeout(() => runExtract(false), initialDelay);
+
+    return () => {
+      clearTimeout(timer);
+      if (retryTimer != null) clearTimeout(retryTimer);
+    };
   }, [post?.content, post?.id, contentIsHTML]);
 
   if (loading) {
