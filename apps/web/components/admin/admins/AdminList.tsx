@@ -7,12 +7,12 @@ import type { Admin } from '@/lib/admin/types';
 interface AdminListProps {
   admins: Admin[];
   loading: boolean;
-  onDelete: (id: string) => Promise<void>;
+  onToggleEnabled: (admin: Admin) => Promise<void>;
   searchQuery: string;
   onSearchChange: (query: string) => void;
 }
 
-export function AdminList({ admins, loading, onDelete, searchQuery, onSearchChange }: AdminListProps) {
+export function AdminList({ admins, loading, onToggleEnabled, searchQuery, onSearchChange }: AdminListProps) {
   const router = useRouter();
   const [searchInput, setSearchInput] = useState(searchQuery);
 
@@ -33,14 +33,14 @@ export function AdminList({ admins, loading, onDelete, searchQuery, onSearchChan
     if (admin.id) router.push(`/admin/admins/${admin.id}`);
   };
 
-  const handleDelete = async (admin: Admin) => {
+  const handleToggleEnabled = async (admin: Admin) => {
     if (!admin.id) return;
     const action = admin.enabled ? '비활성화' : '활성화';
     if (!confirm(`정말 ${action}하시겠습니까?`)) return;
     try {
-      await onDelete(admin.id);
+      await onToggleEnabled(admin);
     } catch (error) {
-      console.error('Failed to delete admin:', error);
+      console.error('Failed to toggle admin:', error);
       alert(`${action}에 실패했습니다.`);
     }
   };
@@ -147,7 +147,7 @@ export function AdminList({ admins, loading, onDelete, searchQuery, onSearchChan
                       <button style={btn('#3b82f6')} onClick={() => handleEdit(admin)} type="button">
                         수정
                       </button>
-                      <button style={btn(admin.enabled ? '#dc2626' : '#059669')} onClick={() => void handleDelete(admin)} type="button">
+                      <button style={btn(admin.enabled ? '#dc2626' : '#059669')} onClick={() => void handleToggleEnabled(admin)} type="button">
                         {admin.enabled ? '비활성화' : '활성화'}
                       </button>
                       <button style={btn('#6b7280')} onClick={() => handleViewLogs(admin)} type="button">
