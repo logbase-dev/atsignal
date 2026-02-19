@@ -137,7 +137,7 @@ export default function Footer({ menus = [] }: FooterProps) {
               />
             </Link>
             <p className="footer-description">
-              Nethru의 데이터 수집(웹/모바일앱 로그)기술,<br />
+              <span style={{ color: '#ff9e4a', fontWeight: 'bold' }}>NETHRU</span>의 데이터 수집(웹/모바일앱 로그)기술,<br />
               고객중심관점의 분석 기술, 노하우가 집약된<br />
               통합 행동데이터 플랫폼
             </p>
