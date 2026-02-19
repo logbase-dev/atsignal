@@ -175,8 +175,8 @@ export default function BlogPostViewPage({ params }: { params: { id: string } })
       }, 5000);
     };
 
-    // 첫 시도: MD는 100ms, HTML(ToastViewer)는 400ms 지연 후 수집. 0개면 observer 부착.
-    const initialDelay = contentIsHTML ? 400 : 100;
+    // 첫 시도: MD는 100ms, HTML(ToastViewer)는 800ms 지연 후 수집. 0개면 observer 부착.
+    const initialDelay = contentIsHTML ? 800 : 100;
     const initialTimer = setTimeout(() => {
       if (cancelled) return;
       if (trySetToc()) return;
