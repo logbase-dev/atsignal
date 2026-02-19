@@ -107,14 +107,17 @@ export default function BlogPostViewPage({ params }: { params: { id: string } })
     }
   }, [post?.saveFormat]);
 
-  // 렌더된 본문 DOM에서 TOC 추출 (마크다운·HTML 공통, rehype-slug id와 일치)
-  // 관리자 페이지는 로딩 후 본문+ToastViewer가 동시 마운트되므로 HTML일 때 지연·재시도 적용
+  // 렌더된 본문 DOM에서 TOC 추출 (마크다운·HTML 공통). 하이브리드: 지연 첫 시도 후 0개면 MutationObserver로 추가 수집.
   const contentIsHTML = post?.saveFormat === 'html';
   useEffect(() => {
     if (!post?.content) {
       setToc([]);
       return;
     }
+
+    let cancelled = false;
+    let observer: MutationObserver | null = null;
+    let maxTimer: ReturnType<typeof setTimeout> | null = null;
 
     const extractToc = (): TOCItem[] => {
       const container = contentRef.current;
@@ -145,25 +148,46 @@ export default function BlogPostViewPage({ params }: { params: { id: string } })
       return items;
     };
 
-    let retryTimer: ReturnType<typeof setTimeout> | null = null;
-    const runExtract = (isRetry: boolean) => {
+    const trySetToc = (): boolean => {
+      if (cancelled) return false;
       const items = extractToc();
-      setToc(items);
-      // HTML(ToastViewer)는 렌더가 늦을 수 있음: 첫 시도에 항목이 없으면 한 번 더 시도
-      if (!isRetry && contentIsHTML && items.length === 0) {
-        retryTimer = setTimeout(() => {
-          const retryItems = extractToc();
-          if (retryItems.length > 0) setToc(retryItems);
-        }, 500);
+      if (items.length > 0) {
+        setToc(items);
+        return true;
       }
+      return false;
     };
 
-    const initialDelay = contentIsHTML ? 800 : 100;
-    const timer = setTimeout(() => runExtract(false), initialDelay);
+    const attachObserver = () => {
+      if (cancelled) return;
+      const container = contentRef.current;
+      if (!container) return;
+      observer = new MutationObserver(() => {
+        if (cancelled) return;
+        if (trySetToc() && observer) {
+          observer.disconnect();
+          if (maxTimer) clearTimeout(maxTimer);
+        }
+      });
+      observer.observe(container, { childList: true, subtree: true });
+      maxTimer = setTimeout(() => {
+        if (observer) observer.disconnect();
+      }, 5000);
+    };
+
+    // 첫 시도: MD는 100ms, HTML(ToastViewer)는 400ms 지연 후 수집. 0개면 observer 부착.
+    const initialDelay = contentIsHTML ? 400 : 100;
+    const initialTimer = setTimeout(() => {
+      if (cancelled) return;
+      if (trySetToc()) return;
+      attachObserver();
+    }, initialDelay);
 
     return () => {
-      clearTimeout(timer);
-      if (retryTimer != null) clearTimeout(retryTimer);
+      cancelled = true;
+      clearTimeout(initialTimer);
+      if (observer) observer.disconnect();
+      if (maxTimer) clearTimeout(maxTimer);
     };
   }, [post?.content, post?.id, contentIsHTML]);
 
