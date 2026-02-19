@@ -9,10 +9,10 @@ if (admin.apps.length === 0) {
       const useEmulator = process.env.FIREBASE_AUTH_EMULATOR_HOST || process.env.FIRESTORE_EMULATOR_HOST;
       
       if (useEmulator) {
-        // 에뮬레이터 사용 시
+        // 에뮬레이터 사용 시 (env 필수, 배포별로 다른 프로젝트 사용)
         admin.initializeApp({
-          projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'atsignal',
-          storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || 'atsignal.firebasestorage.app',
+          projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID,
+          storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
         });
         console.log('[Firebase Admin] 개발 환경 초기화 완료 (에뮬레이터 사용)');
       } else {
@@ -22,15 +22,15 @@ if (admin.apps.length === 0) {
         if (serviceAccount) {
           admin.initializeApp({
             credential: admin.credential.cert(JSON.parse(serviceAccount)),
-            projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'atsignal',
-            storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || 'atsignal.firebasestorage.app',
+            projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID,
+            storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
           });
           console.log('[Firebase Admin] 개발 환경 초기화 완료 (Service Account Key 사용)');
         } else {
-          // ADC 사용
+          // ADC 사용 (env 없으면 credential에서 프로젝트 추론)
           admin.initializeApp({
-            projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'atsignal',
-            storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || 'atsignal.firebasestorage.app',
+            projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID,
+            storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
             credential: admin.credential.applicationDefault(),
           });
           console.log('[Firebase Admin] 개발 환경 초기화 완료 (ADC 사용)');
