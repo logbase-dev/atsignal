@@ -4,7 +4,7 @@ runtime: nodejs20
 # pnpm을 사용하여 빌드 (Firebase App Hosting)
 buildCommand: pnpm install && pnpm run build
 # runCommand: pnpm start
-runCommand: sh -c "cd .next/standalone && node server.js"
+runCommand: node apps/docs/.next/standalone/server.js
 
 # Firebase 환경 변수
 env:
