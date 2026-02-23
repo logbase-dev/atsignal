@@ -113,6 +113,27 @@ export default function BlogPage() {
     setCurrentPage(1);
   };
 
+  /** HTML·마크다운 제거 후 요약용 평문 반환 (목록 미리보기용) */
+  const toPlainTextForPreview = (raw: string, maxLen: number = 80): string => {
+    if (!raw || typeof raw !== 'string') return '';
+    let s = raw
+      .replace(/<[^>]*>/g, '')
+      .replace(/^#{1,6}\s+/gm, '')
+      .replace(/\*\*([^*]+)\*\*/g, '$1')
+      .replace(/\*([^*]+)\*/g, '$1')
+      .replace(/__([^_]+)__/g, '$1')
+      .replace(/_([^_]+)_/g, '$1')
+      .replace(/`([^`]+)`/g, '$1')
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+      .replace(/^\s*[-*+]\s+/gm, '')
+      .replace(/^\s*\d+\.\s+/gm, '')
+      .replace(/^\s*>\s+/gm, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (s.length <= maxLen) return s;
+    return s.substring(0, maxLen) + '...';
+  };
+
   const handleDelete = async (id: string) => {
     if (confirm('정말 삭제하시겠습니까?')) {
       try {
@@ -425,9 +446,9 @@ export default function BlogPage() {
                             overflow: 'hidden',
                           }}>
                             {post.excerpt?.ko || post.excerpt?.en || 
-                             (post.content?.ko || post.content?.en ? 
-                              (post.content.ko || post.content.en || '').replace(/<[^>]*>/g, '').substring(0, 80) + '...' : 
-                              '내용이 없습니다.')}
+                             (post.content?.ko || post.content?.en 
+                              ? toPlainTextForPreview(post.content?.ko || post.content?.en || '', 80) 
+                              : '내용이 없습니다.')}
                           </p>
 
                           {/* 메타 정보 */}

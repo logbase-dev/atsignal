@@ -154,6 +154,27 @@ export default function BlogsPage({
     return field[locale] || field.ko || '';
   };
 
+  /** HTML·마크다운 제거 후 요약용 평문 반환 (목록 미리보기용) */
+  const toPlainTextForPreview = (raw: string, maxLen: number = 100): string => {
+    if (!raw || typeof raw !== 'string') return '';
+    let s = raw
+      .replace(/<[^>]*>/g, '')                           // HTML 태그 제거
+      .replace(/^#{1,6}\s+/gm, '')                        // # 헤더 제거
+      .replace(/\*\*([^*]+)\*\*/g, '$1')                 // **볼드**
+      .replace(/\*([^*]+)\*/g, '$1')                     // *이탤릭*
+      .replace(/__([^_]+)__/g, '$1')
+      .replace(/_([^_]+)_/g, '$1')
+      .replace(/`([^`]+)`/g, '$1')                       // `코드`
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')           // [텍스트](url)
+      .replace(/^\s*[-*+]\s+/gm, '')                     // 리스트 마커
+      .replace(/^\s*\d+\.\s+/gm, '')
+      .replace(/^\s*>\s+/gm, '')                         // 인용
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (s.length <= maxLen) return s;
+    return s.substring(0, maxLen) + '...';
+  };
+
   const getCategoryName = (categoryId: string) => {
     const category = categories.find(c => c.id === categoryId);
     return getLocalizedText(category?.name) || '미분류';
@@ -353,9 +374,9 @@ export default function BlogsPage({
                               overflow: 'hidden',
                             }}>
                               {getLocalizedText(blog.excerpt) || 
-                               (getLocalizedText(blog.content) ? 
-                                getLocalizedText(blog.content).replace(/<[^>]*>/g, '').substring(0, 100) + '...' : 
-                                '내용이 없습니다.')}
+                               (getLocalizedText(blog.content) 
+                                ? toPlainTextForPreview(getLocalizedText(blog.content), 100) 
+                                : '내용이 없습니다.')}
                             </p>
 
                             {/* 메타 정보 */}

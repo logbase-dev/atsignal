@@ -175,17 +175,33 @@ export default function BlogPostViewPage({ params }: { params: { id: string } })
       }, 5000);
     };
 
-    // 첫 시도: MD는 100ms, HTML(ToastViewer)는 800ms 지연 후 수집. 0개면 observer 부착.
-    const initialDelay = contentIsHTML ? 800 : 100;
-    const initialTimer = setTimeout(() => {
+    // 첫 시도: MD 100ms, HTML(ToastViewer)는 1500ms (배포 환경 대비). 0개면 observer 부착 + 고정 간격 재시도.
+    const initialDelay = contentIsHTML ? 1500 : 100;
+    const retryDelays = contentIsHTML ? [2500, 4000, 6000] : [500, 1000];
+    const retryTimers: ReturnType<typeof setTimeout>[] = [];
+
+    const runFirstOrScheduleRetries = () => {
       if (cancelled) return;
       if (trySetToc()) return;
       attachObserver();
-    }, initialDelay);
+      retryDelays.forEach((delay) => {
+        const t = setTimeout(() => {
+          if (cancelled) return;
+          if (trySetToc() && observer) {
+            observer.disconnect();
+            if (maxTimer) clearTimeout(maxTimer);
+          }
+        }, delay);
+        retryTimers.push(t);
+      });
+    };
+
+    const initialTimer = setTimeout(runFirstOrScheduleRetries, initialDelay);
 
     return () => {
       cancelled = true;
       clearTimeout(initialTimer);
+      retryTimers.forEach((t) => clearTimeout(t));
       if (observer) observer.disconnect();
       if (maxTimer) clearTimeout(maxTimer);
     };
