@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/firebase-admin';
 
+// 항상 최신 카테고리 반환 (캐시 비활성화)
+export const dynamic = 'force-dynamic';
+
 /**
  * 공개 FAQ 카테고리 목록 API
  * GET /api/resources/faq-categories
