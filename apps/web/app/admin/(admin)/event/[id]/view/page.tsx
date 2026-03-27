@@ -6,6 +6,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getEventById } from '@/lib/admin/eventService';
 import type { Event } from '@/lib/admin/types';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeSlug from 'rehype-slug';
 
 export default function EventViewPage() {
   const params = useParams();
@@ -403,7 +406,7 @@ export default function EventViewPage() {
           )}
         </div>
 
-        {/* 상세 내용 */}
+        {/* 상세 내용 - 마크다운 렌더링 */}
         {event.content?.ko && (
           <div style={{ marginBottom: '2rem' }}>
             <h2 style={{
@@ -414,7 +417,7 @@ export default function EventViewPage() {
             }}>
               상세 내용
             </h2>
-            <div 
+            <div
               style={{
                 color: '#374151',
                 lineHeight: '1.7',
@@ -424,10 +427,33 @@ export default function EventViewPage() {
                 borderRadius: '8px',
                 border: '1px solid #e9ecef',
               }}
-              dangerouslySetInnerHTML={{ 
-                __html: event.content.ko.replace(/\n/g, '<br />') 
-              }}
-            />
+            >
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeSlug]}
+                components={{
+                  img: ({ src, alt, ...props }) => (
+                    <img
+                      src={src}
+                      alt={alt || ''}
+                      style={{ maxWidth: '100%', height: 'auto', borderRadius: '8px', margin: '0.5rem 0' }}
+                      {...props}
+                    />
+                  ),
+                  p: ({ children }) => <p style={{ marginBottom: '1rem' }}>{children}</p>,
+                  h1: ({ children }) => <h1 style={{ fontSize: '1.75rem', fontWeight: 700, marginTop: '1.5rem', marginBottom: '0.75rem' }}>{children}</h1>,
+                  h2: ({ children }) => <h2 style={{ fontSize: '1.5rem', fontWeight: 600, marginTop: '1.25rem', marginBottom: '0.5rem' }}>{children}</h2>,
+                  h3: ({ children }) => <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginTop: '1rem', marginBottom: '0.5rem' }}>{children}</h3>,
+                  ul: ({ children }) => <ul style={{ marginBottom: '1rem', paddingLeft: '1.5rem' }}>{children}</ul>,
+                  ol: ({ children }) => <ol style={{ marginBottom: '1rem', paddingLeft: '1.5rem' }}>{children}</ol>,
+                  a: ({ href, children, ...props }) => (
+                    <a href={href} style={{ color: '#0070f3', textDecoration: 'underline' }} {...props}>{children}</a>
+                  ),
+                }}
+              >
+                {event.content.ko}
+              </ReactMarkdown>
+            </div>
           </div>
         )}
 

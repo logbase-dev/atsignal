@@ -7,6 +7,9 @@ import { FAQCardView } from '@/components/resources/faq/FAQCardView';
 import { getPublicFAQs, getPublicFAQCategories } from '@/lib/resources/faq/faqService';
 import type { FAQ, FAQCategory } from '@/lib/admin/types';
 import Image from 'next/image';
+// 2/6 오후3:15 김현득 추가
+import { sendGAEvent } from '@next/third-parties/google';
+// 2/6 오후3:15 김현득 추가 end
 
 interface PageProps {
   params: Promise<{
@@ -153,6 +156,13 @@ export default function FAQPage({ params }: PageProps) {
   }, [loadFAQs]);
 
   const handleSearch = () => {
+// 2/6 오후3:00 김현득 추가
+    sendGAEvent(
+      "event", 'search', {
+      search_term: searchInput,
+      page_path: window.location.pathname, // 추가 라인 2/9
+    });
+// 2/6 오후3:00 김현득 추가 end
     setSearchQuery(searchInput);
   };
 
@@ -162,8 +172,19 @@ export default function FAQPage({ params }: PageProps) {
     setSelectedCategoryId('all'); // 카테고리 필터도 초기화
   };
 
+//  이벤트중복 발생 유발하므로 코멘트 처리한 다음 부분으로 변경
+//  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+//    if (e.key === 'Enter') handleSearch();
+//  };
+// 아래는 2/6 19:25경 반영 by 김현득
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') handleSearch();
+// 2/9 추가
+    if (e.nativeEvent.isComposing) return;
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSearch();
+// 2/6 19:25경 반영 by 김현득 end
+    }
   };
 
   const handleCategoryChange = (categoryId: string) => {
@@ -195,7 +216,9 @@ export default function FAQPage({ params }: PageProps) {
             maxWidth: '20%',
             minWidth: '150px',
             position: 'relative',
-            marginTop: '-1rem' // 이미지만 더 위로 올림
+            marginTop: '-1rem', // 이미지만 더 위로 올림
+// 2/12 김현득 마진 조정. 오른 쪽으로 조금 이동
+            marginLeft: '1rem'
           }}>
             <Image
               src="/images/faq_image.jpg"

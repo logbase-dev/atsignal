@@ -5,6 +5,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import type { BlogPost } from '@/lib/admin/types';
 import { getPublicBlogs, getPublicFeaturedBlogs } from '@/lib/public/blogService';
+// 2/6 3:28 김현득 추가
+import { sendGAEvent } from '@next/third-parties/google';
+// 2/6 3:28 김현득 추가 end
 
 interface Props {
   locale: 'ko' | 'en';
@@ -104,6 +107,13 @@ export default function BlogsPage({
   };
 
   const handleSearch = () => {
+// 2/6 오후 3:28에 김현득 추가
+    sendGAEvent(
+      "event", 'search', {
+      search_term: searchText,
+      page_path: window.location.pathname, // 추가 라인 2/9
+    });
+// 2/6 오후 3:28에 김현득 추가 end    
     setPage(1);
     loadBlogs(1, searchText, selectedCategory);
   };
@@ -144,6 +154,27 @@ export default function BlogsPage({
     return field[locale] || field.ko || '';
   };
 
+  /** HTML·마크다운 제거 후 요약용 평문 반환 (목록 미리보기용) */
+  const toPlainTextForPreview = (raw: string, maxLen: number = 100): string => {
+    if (!raw || typeof raw !== 'string') return '';
+    let s = raw
+      .replace(/<[^>]*>/g, '')                           // HTML 태그 제거
+      .replace(/^#{1,6}\s+/gm, '')                        // # 헤더 제거
+      .replace(/\*\*([^*]+)\*\*/g, '$1')                 // **볼드**
+      .replace(/\*([^*]+)\*/g, '$1')                     // *이탤릭*
+      .replace(/__([^_]+)__/g, '$1')
+      .replace(/_([^_]+)_/g, '$1')
+      .replace(/`([^`]+)`/g, '$1')                       // `코드`
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')           // [텍스트](url)
+      .replace(/^\s*[-*+]\s+/gm, '')                     // 리스트 마커
+      .replace(/^\s*\d+\.\s+/gm, '')
+      .replace(/^\s*>\s+/gm, '')                         // 인용
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (s.length <= maxLen) return s;
+    return s.substring(0, maxLen) + '...';
+  };
+
   const getCategoryName = (categoryId: string) => {
     const category = categories.find(c => c.id === categoryId);
     return getLocalizedText(category?.name) || '미분류';
@@ -170,7 +201,9 @@ export default function BlogsPage({
             maxWidth: '20%',
             minWidth: '150px',
             position: 'relative',
-            marginTop: '-1rem' // 이미지만 더 위로 올림
+            marginTop: '-1rem', // 이미지만 더 위로 올림
+// 2/12 김현득 마진 조정. 오른 쪽으로 조금 이동
+            marginLeft: '1rem'            
           }}>
             <Image
               src="/images/blog_image.jpg"
@@ -341,9 +374,9 @@ export default function BlogsPage({
                               overflow: 'hidden',
                             }}>
                               {getLocalizedText(blog.excerpt) || 
-                               (getLocalizedText(blog.content) ? 
-                                getLocalizedText(blog.content).replace(/<[^>]*>/g, '').substring(0, 100) + '...' : 
-                                '내용이 없습니다.')}
+                               (getLocalizedText(blog.content) 
+                                ? toPlainTextForPreview(getLocalizedText(blog.content), 100) 
+                                : '내용이 없습니다.')}
                             </p>
 
                             {/* 메타 정보 */}
@@ -458,7 +491,12 @@ export default function BlogsPage({
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
                 onKeyDown={(e) => {
+// 2/9 추가
+                  if (e.nativeEvent.isComposing) return;
                   if (e.key === 'Enter') {
+// 2/6 중복이벤트 방지 코드 반영 by 김현득
+                    e.preventDefault();
+// 2/6 중복이벤트 방지 코드 반영 by 김현득 end
                     handleSearch();
                   }
                 }}

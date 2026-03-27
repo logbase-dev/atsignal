@@ -27,7 +27,7 @@ export default async function LocalePage({ params }: PageProps) {
     },
     {
       title: 'Onboarding guide',
-      description: 'AtSignal 시작하기 가이드',
+      description: '@signal 시작하기 가이드',
       href: `/${locale}/onboarding-guide`,
       icon: '🚀',
     },
@@ -66,9 +66,9 @@ export default async function LocalePage({ params }: PageProps) {
   return (
     <div style={containerStyle}>
       <div className="docs-hero">
-        <h1 className="docs-hero-title">AtSignal Documentation</h1>
+        <h1 className="docs-hero-title"> <span style={{color: '#20bdff'}}>@signal</span> Documentation</h1>
         <p className="docs-hero-description">
-          통합 행동데이터 플랫폼 AtSignal의 완전한 문서를 찾아보세요.
+          통합 행동데이터 분석 플랫폼 @signal의 완전한 문서를 참조하세요.
         </p>
       </div>
 
@@ -87,7 +87,7 @@ export default async function LocalePage({ params }: PageProps) {
         <div className="docs-popular-list">
           <Link href={`/${locale}/onboarding-guide/getting-started`} className="docs-popular-item" style={popularItemStyle}>
             <span style={popularItemTitleStyle}>시작하기</span>
-            <span style={popularItemDescStyle}>AtSignal을 처음 사용하는 경우</span>
+            <span style={popularItemDescStyle}>atsignal을 처음 사용하는 경우</span>
           </Link>
           <Link href={`/${locale}/api/authentication`} className="docs-popular-item" style={popularItemStyle}>
             <span style={popularItemTitleStyle}>인증 가이드</span>

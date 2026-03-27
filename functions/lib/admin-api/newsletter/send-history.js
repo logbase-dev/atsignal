@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handle = handle;
-const client_1 = require("../../lib/stiee/client");
-const types_1 = require("../../lib/stiee/types");
+const client_1 = require("../../lib/stibee/client");
+const types_1 = require("../../lib/stibee/types");
 // 쿠키 파싱 헬퍼
 function getAuthToken(req) {
     const cookieHeader = req.headers.cookie;

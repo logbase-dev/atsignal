@@ -12,6 +12,16 @@ const nextConfig = {
   },
   distDir: '.next',
   trailingSlash: false,
+  // Admin API를 Functions로 프록시
+  async rewrites() {
+    const functionsUrl = process.env.NEXT_PUBLIC_FUNCTIONS_URL || 'https://asia-northeast3-atsignal-landing-dev-e8547.cloudfunctions.net';
+    return [
+      {
+        source: '/admin-api/:path*',
+        destination: `${functionsUrl}/api/:path*`,
+      },
+    ];
+  },
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,

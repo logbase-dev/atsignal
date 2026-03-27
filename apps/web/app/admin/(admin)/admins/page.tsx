@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AdminList } from '@/components/admin/admins/AdminList';
 import type { Admin } from '@/lib/admin/types';
-import { getAdmins, toggleAdminEnabled } from '@/lib/admin/adminService';
+import { getAdmins, toggleAdminEnabled, updateAdmin } from '@/lib/admin/adminService';
 
 export default function AdminsPage() {
   const router = useRouter();
@@ -31,8 +31,13 @@ export default function AdminsPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    await toggleAdminEnabled(id);
+  const handleToggleEnabled = async (admin: Admin) => {
+    if (!admin.id) return;
+    if (admin.enabled) {
+      await toggleAdminEnabled(admin.id);
+    } else {
+      await updateAdmin(admin.id, { name: admin.name, enabled: true });
+    }
     await loadAdmins();
   };
 
@@ -65,7 +70,7 @@ export default function AdminsPage() {
         <div style={{ padding: '1rem', marginBottom: '1rem', backgroundColor: '#fef2f2', color: '#b91c1c', borderRadius: '0.5rem' }}>{error}</div>
       ) : null}
 
-      <AdminList admins={admins} loading={loading} onDelete={handleDelete} searchQuery={searchQuery} onSearchChange={setSearchQuery} />
+      <AdminList admins={admins} loading={loading} onToggleEnabled={handleToggleEnabled} searchQuery={searchQuery} onSearchChange={setSearchQuery} />
     </div>
   );
 }

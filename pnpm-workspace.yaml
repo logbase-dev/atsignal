@@ -1,3 +1,9 @@
 packages:
-  - "apps/*"
+  - "apps/web"
+  - "apps/docs"
   - "functions"
+
+onlyBuiltDependencies:
+  - esbuild
+  - protobufjs
+  - sharp

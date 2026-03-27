@@ -12,15 +12,14 @@ interface PageProps {
     locale: string;
     slug: string[];
   }>;
-  // 정적 사이트 생성 모드에서는 searchParams 사용 불가
-  // searchParams?: Promise<{
-  //   draftId?: string;
-  //   preview?: string;
-  // }>;
+  searchParams?: Promise<{
+    draftId?: string;
+    preview?: string;
+  }>;
 }
 
-// 정적 사이트 생성을 위해 force-dynamic 제거
-// export const dynamic = 'force-dynamic';
+// 항상 동적 렌더링 (최신 데이터 즉시 반영)
+export const dynamic = 'force-dynamic';
 
 // 메뉴 트리 구조 생성 헬퍼 함수
 function buildMenuTree(menus: any[]): any[] {
@@ -107,14 +106,16 @@ export async function generateStaticParams() {
   }
 }
 
-export default async function DynamicPage({ params }: PageProps) {
+export default async function DynamicPage({ params, searchParams }: PageProps) {
   const { locale, slug } = await params;
   const slugPath = slug.map(decodeURIComponent).join('/');
-  // 정적 사이트 생성 모드에서는 preview 비활성화
-  const preview = false;
+  const search = await searchParams;
+  const preview = (draftMode().isEnabled || search?.draftId) && search?.draftId;
 
-  // 정적 사이트 생성 모드에서는 항상 slug로 페이지 가져오기
-  let page = await getPageBySlug('docs', slugPath);
+  // preview 모드이고 draftId가 있으면 해당 ID로 페이지 가져오기
+  let page = preview 
+    ? await getPageById(preview)
+    : await getPageBySlug('docs', slugPath);
 
   if (!page) {
     notFound();

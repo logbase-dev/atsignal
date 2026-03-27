@@ -70,7 +70,7 @@ export default function Navigation({ className = '' }: NavigationProps) {
     <nav className={`bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 ${className}`}>
       <div className="p-4">
         <Link href={`/${locale}`} className="block mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">AtSignal</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">atsignal</h1>
         </Link>
         <div className="space-y-1">
           {renderMenuItems(menuTree)}

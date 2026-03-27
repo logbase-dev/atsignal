@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const t = translations[locale as keyof typeof translations]?.privacy ?? translations.ko.privacy;
   
   return {
-    title: `${t.title} - AtSignal`,
+    title: `${t.title} - atsignal`,
     description: t.intro,
   };
 }

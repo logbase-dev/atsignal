@@ -3,7 +3,7 @@ import CompanyAboutUs from '@/components/company/CompanyAboutUs';
 
 export const metadata: Metadata = {
   title: "회사 소개 — atsignal",
-  description: "AtSignal 회사 소개 및 연혁",
+  description: "atsignal 회사 소개 및 연혁",
 };
 
 interface PageProps {

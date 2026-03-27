@@ -19,11 +19,12 @@ export function getPublicApiUrl(path: string): string {
 
   // 프로덕션 환경에서 서버 사이드 렌더링 시 절대 URL 필요
   if (typeof window === 'undefined') {
-    // 서버 사이드에서는 배포된 도메인의 절대 URL 사용
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL 
+    // NEXT_PUBLIC_SITE_URL이 있으면 해당 도메인, 없으면 같은 앱(자기 자신) 호출
+    // → 배포별로 자신의 API/Firestore를 사용 (다른 프로젝트 URL로 요청하지 않음)
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
       ? process.env.NEXT_PUBLIC_SITE_URL
-      : 'https://web-ssr--atsignal.asia-east1.hosted.app'; // Firebase App Hosting 기본 도메인
-    
+      : `http://127.0.0.1:${process.env.PORT || 3000}`;
+
     return `${baseUrl}/api/${cleanPath}`;
   }
 

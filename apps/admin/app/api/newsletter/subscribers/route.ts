@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { getSubscribers, getSubscriberCount } from '@/lib/stiee/client';
-import { StibeeApiError } from '@/lib/stiee/types';
+import { getSubscribers, getSubscriberCount } from '@/lib/stibee/client';
+import { StibeeApiError } from '@/lib/stibee/types';
 
 /**
  * GET /api/newsletter/subscribers

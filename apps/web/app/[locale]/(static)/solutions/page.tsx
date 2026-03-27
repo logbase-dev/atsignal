@@ -1,8 +1,8 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Solutions - AtSignal",
-  description: "AtSignal 솔루션 소개",
+  title: "Solutions - atsignal",
+  description: "atsignal 솔루션 소개",
 };
 
 interface PageProps {

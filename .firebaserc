@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "default": "atsignal",
+    "logbase-dev": "atsignal",
+    "dev": "atsignal-landing-dev-e8547"
+  }
+}

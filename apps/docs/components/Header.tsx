@@ -190,10 +190,26 @@ export default function Header({ navItems, locale, searchIndex }: HeaderProps) {
         <div style={topHeaderContainerStyle}>
           <div style={logoSectionStyle}>
             <Link href={`/${locale}`} style={logoLinkStyle}>
-              <div style={logoCircleStyle}>
+{/* 현득
+              <div style={logoCircleStyle}> 
                 <span style={logoIconStyle}>@</span>
               </div>
-              <span style={logoTextStyle}>atsignal</span>
+*/}
+
+<div style={logoCircleStyle}>
+  {/* /는 public 폴더를 의미합니다 */}
+  <img src="/favicon.png" alt="로고"     style={{ 
+      width: '100%',     // div 너비에 맞춤
+      height: '100%',    // div 높이에 맞춤
+      objectFit: 'cover', // 이미지가 원에 꽉 차게 조절
+//      color: '#00a1ef', 
+//      backgroundColor: '#ffffff',
+      marginRight: '-20px'
+    }}  />
+</div>
+{/* 현득 end */}
+
+              <span style={{...logoTextStyle, color: '#00a1ef'}}>atsignal</span>
             </Link>
             <span style={docsLabelStyle}>DOCUMENTATION</span>
           </div>
@@ -389,7 +405,8 @@ const logoCircleStyle: React.CSSProperties = {
   width: '32px',
   height: '32px',
   borderRadius: '50%',
-  backgroundColor: '#2563eb',
+// 현득 backgroundColor: '#2563eb',
+  backgroundColor: '#ffffff',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -404,7 +421,8 @@ const logoIconStyle: React.CSSProperties = {
 const logoTextStyle: React.CSSProperties = {
   fontSize: '1.125rem',
   fontWeight: 600,
-  color: '#2563eb',
+// 현득 color: '#2563eb',
+  color: '#007dc7',
 };
 
 const docsLabelStyle: React.CSSProperties = {

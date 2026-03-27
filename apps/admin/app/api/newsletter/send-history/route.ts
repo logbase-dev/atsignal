@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { getEmailHistory, getEmailHistoryCount, getEmailStatistics } from '@/lib/stiee/client';
-import { StibeeApiError } from '@/lib/stiee/types';
+import { getEmailHistory, getEmailHistoryCount, getEmailStatistics } from '@/lib/stibee/client';
+import { StibeeApiError } from '@/lib/stibee/types';
 
 /**
  * GET /api/newsletter/send-history

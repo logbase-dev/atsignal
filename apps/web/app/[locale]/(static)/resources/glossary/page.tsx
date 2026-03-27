@@ -6,6 +6,9 @@ import type { Glossary, GlossaryCategory } from '@/lib/admin/types';
 import { GlossarySearch } from '@/components/resources/glossary/GlossarySearch';
 import { GlossaryList } from '@/components/resources/glossary/GlossaryList';
 import Image from 'next/image';
+// 2/6 19:55 김현득 추가
+import { sendGAEvent } from '@next/third-parties/google';
+// 2/6 19:55 김현득 추가 end
 
 interface PageProps {
   params: Promise<{
@@ -35,9 +38,22 @@ export default function GlossaryPage({ params }: PageProps) {
   const itemsPerPage = 20;
 
   // 검색 핸들러
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') handleSearch();
-  };
+// // 아래는 2/6 20:17경 코멘트 처리 by 김현득
+//  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+//    if (e.key === 'Enter') handleSearch();
+//  };
+// 아래는 2/6 20:17경 반영 by 김현득
+
+// 이후에 2/8 18:26에 아래 함수 코멘트 처리함
+//  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+//    if (e.key === 'Enter') {
+//      e.preventDefault();
+//      handleSearch();
+
+// // 2/6 20:17경 반영 by 김현득 end
+//    }
+//  };
+// 2/8 18:26 코멘트 처리 end
 
   // 한글 자음별 해당 글자 범위 정의
   const getKoreanCharRange = (consonant: string): [string, string] => {
@@ -179,6 +195,13 @@ export default function GlossaryPage({ params }: PageProps) {
   }, [loadGlossaries]);
 
   const handleSearch = () => {
+// 2/6 20:00 김현득 추가
+    sendGAEvent(
+      "event", 'search', {
+      search_term: searchInput,
+      page_path: window.location.pathname, // 추가 라인 2/9
+    });
+// 2/6 20:00 김현득 추가 end
     setCurrentPage(1); // 검색 시 첫 페이지로 이동
     setSearchQuery(searchInput);
   };
@@ -210,7 +233,9 @@ export default function GlossaryPage({ params }: PageProps) {
             maxWidth: '20%',
             minWidth: '150px',
             position: 'relative',
-            marginTop: '-1rem' // 이미지만 더 위로 올림
+            marginTop: '-1rem', // 이미지만 더 위로 올림
+// 2/12 김현득 마진 조정. 오른 쪽으로 조금 이동
+            marginLeft: '1rem'
           }}>
             <Image
               src="/images/glossary_image.jpg"

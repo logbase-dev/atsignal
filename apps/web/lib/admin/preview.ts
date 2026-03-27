@@ -4,17 +4,18 @@ import type { Site } from './types';
 function getWebOrigin(): string {
   // 클라이언트 사이드: 로컬 개발 환경 감지
   if (typeof window !== 'undefined') {
-    // 로컬 개발 환경인지 확인 (더 명확하게)
+    // App Hosting 환경 감지 (hostname이 0.0.0.0이지만 실제로는 프로덕션)
     const hostname = window.location.hostname;
+    const isAppHosting = hostname === '0.0.0.0' && window.location.protocol === 'https:';
+    
+    // 실제 로컬 개발 환경인지 확인
     const isLocalDev = 
-      hostname === 'localhost' || 
-      hostname === '127.0.0.1' ||
-      hostname === '0.0.0.0' ||
-      hostname.includes('localhost') ||
-      hostname.startsWith('127.') ||
-      hostname.startsWith('192.168.') ||
-      hostname.startsWith('10.') ||
-      !hostname.includes('.');
+      (hostname === 'localhost' || 
+       hostname === '127.0.0.1' ||
+       hostname.startsWith('127.') ||
+       hostname.startsWith('192.168.') ||
+       hostname.startsWith('10.')) &&
+      !isAppHosting; // App Hosting이 아닌 경우만
     
     if (isLocalDev) {
       // 로컬 개발 환경: 무조건 현재 origin 사용
@@ -23,7 +24,7 @@ function getWebOrigin(): string {
       return localOrigin;
     }
     
-    // 프로덕션 환경: 환경변수 우선, 없으면 프로덕션 기본값
+    // 프로덕션 환경 (App Hosting 포함): 환경변수 우선, 없으면 프로덕션 기본값
     const envOrigin = process.env.NEXT_PUBLIC_WEB_PREVIEW_ORIGIN || process.env.NEXT_PUBLIC_WEB_URL;
     // 잘못된 origin 필터링 (0.0.0.0, localhost 등)
     if (envOrigin && !envOrigin.includes('0.0.0.0') && !envOrigin.includes('localhost') && envOrigin.startsWith('http')) {
@@ -31,7 +32,7 @@ function getWebOrigin(): string {
       return envOrigin;
     }
     // 프로덕션 환경 기본값
-    const defaultOrigin = 'https://web-ssr--atsignal.asia-east1.hosted.app';
+    const defaultOrigin = 'https://web-ssr--atsignal-landing-dev-e8547.asia-east1.hosted.app';
     console.log('[Preview] Web origin using default:', defaultOrigin, '(env was:', envOrigin, ')');
     return defaultOrigin;
   }
@@ -39,7 +40,7 @@ function getWebOrigin(): string {
   const serverOrigin = process.env.NEXT_PUBLIC_WEB_PREVIEW_ORIGIN || process.env.NEXT_PUBLIC_WEB_URL || 'http://localhost:3000';
   // 잘못된 origin 필터링
   if (serverOrigin.includes('0.0.0.0')) {
-    return 'https://web-ssr--atsignal.asia-east1.hosted.app';
+    return 'https://web-ssr--atsignal-landing-dev-e8547.asia-east1.hosted.app';
   }
   return serverOrigin;
 }
@@ -48,17 +49,18 @@ function getWebOrigin(): string {
 function getDocsOrigin(): string {
   // 클라이언트 사이드: 로컬 개발 환경 감지
   if (typeof window !== 'undefined') {
-    // 로컬 개발 환경인지 확인 (더 명확하게)
+    // App Hosting 환경 감지 (hostname이 0.0.0.0이지만 실제로는 프로덕션)
     const hostname = window.location.hostname;
+    const isAppHosting = hostname === '0.0.0.0' && window.location.protocol === 'https:';
+    
+    // 실제 로컬 개발 환경인지 확인
     const isLocalDev = 
-      hostname === 'localhost' || 
-      hostname === '127.0.0.1' ||
-      hostname === '0.0.0.0' ||
-      hostname.includes('localhost') ||
-      hostname.startsWith('127.') ||
-      hostname.startsWith('192.168.') ||
-      hostname.startsWith('10.') ||
-      !hostname.includes('.');
+      (hostname === 'localhost' || 
+       hostname === '127.0.0.1' ||
+       hostname.startsWith('127.') ||
+       hostname.startsWith('192.168.') ||
+       hostname.startsWith('10.')) &&
+      !isAppHosting; // App Hosting이 아닌 경우만
     
     if (isLocalDev) {
       // 로컬 개발 환경: 현재 origin 사용 (docs는 보통 3001 포트)
@@ -70,7 +72,7 @@ function getDocsOrigin(): string {
       return localOrigin;
     }
     
-    // 프로덕션 환경: 환경변수 우선, 없으면 프로덕션 기본값
+    // 프로덕션 환경 (App Hosting 포함): 환경변수 우선, 없으면 프로덕션 기본값
     const envOrigin = process.env.NEXT_PUBLIC_DOCS_PREVIEW_ORIGIN || process.env.NEXT_PUBLIC_DOCS_URL;
     // 잘못된 origin 필터링 (0.0.0.0, localhost 등)
     if (envOrigin && !envOrigin.includes('0.0.0.0') && !envOrigin.includes('localhost') && envOrigin.startsWith('http')) {
@@ -78,7 +80,7 @@ function getDocsOrigin(): string {
       return envOrigin;
     }
     // 프로덕션 환경 기본값 (docs는 별도 App Hosting 인스턴스 사용)
-    const defaultOrigin = 'https://docs-ssr--atsignal.asia-east1.hosted.app';
+    const defaultOrigin = 'https://docs-ssr--atsignal-landing-dev-e8547.asia-east1.hosted.app';
     console.log('[Preview] Docs origin using default:', defaultOrigin, '(env was:', envOrigin, ')');
     return defaultOrigin;
   }
@@ -86,7 +88,7 @@ function getDocsOrigin(): string {
   const serverOrigin = process.env.NEXT_PUBLIC_DOCS_PREVIEW_ORIGIN || process.env.NEXT_PUBLIC_DOCS_URL || 'http://localhost:3001';
   // 잘못된 origin 필터링
   if (serverOrigin.includes('0.0.0.0')) {
-    return 'https://docs-ssr--atsignal.asia-east1.hosted.app';
+    return 'https://docs-ssr--atsignal-landing-dev-e8547.asia-east1.hosted.app';
   }
   return serverOrigin;
 }
@@ -107,6 +109,19 @@ export function buildPreviewUrl(site: Site, slug: string, locale: 'ko' | 'en', d
   previewUrl.searchParams.set('locale', locale);
   previewUrl.searchParams.set('draftId', draftId);
   previewUrl.searchParams.set('preview', '1');
+  
+  // 디버깅 로그 추가
+  console.log('[Preview Debug]', {
+    site,
+    slug,
+    locale,
+    draftId,
+    base,
+    finalUrl: previewUrl.toString(),
+    hostname: typeof window !== 'undefined' ? window.location.hostname : 'server',
+    protocol: typeof window !== 'undefined' ? window.location.protocol : 'server'
+  });
+  
   return previewUrl.toString();
 }
 

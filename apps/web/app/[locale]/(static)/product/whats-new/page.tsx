@@ -7,6 +7,7 @@ import { WhatsNewSearch } from '@/components/product/whatsnew/WhatsNewSearch';
 import { WhatsNewAccordion } from '@/components/product/whatsnew/WhatsNewAccordion';
 import { WhatsNewPagination } from '@/components/product/whatsnew/WhatsNewPagination';
 import Image from 'next/image';
+import { sendGAEvent } from '@next/third-parties/google';
 
 interface PageProps {
   params: Promise<{
@@ -99,6 +100,13 @@ export default function WhatsNewPage({ params }: PageProps) {
   }, [loadWhatsNews]);
 
   const handleSearch = () => {
+  // 오전8:25에 아래로 변경하여 추가
+    sendGAEvent(
+      "event", 'search', {
+      search_term: searchInput,
+      page_path: window.location.pathname, // 추가 라인 2/9
+    });
+  // 오전8:25 변경분 end
     setSearchQuery(searchInput);
     setCurrentPage(1); // 검색 시 첫 페이지로 이동
   };
@@ -145,7 +153,9 @@ export default function WhatsNewPage({ params }: PageProps) {
             maxWidth: '20%',
             minWidth: '150px',
             position: 'relative',
-            marginTop: '-1rem' // 이미지만 더 위로 올림
+            marginTop: '-1rem', // 이미지만 더 위로 올림
+// 2/12 김현득 마진 조정. 오른 쪽으로 조금 이동
+            marginLeft: '1rem'
           }}>
             <Image
               src="/images/whatsnew_image.jpg"

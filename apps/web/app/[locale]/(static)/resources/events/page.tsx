@@ -13,10 +13,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = params;
   
   return {
-    title: locale === 'ko' ? '이벤트 | AtSignal' : 'Events | AtSignal',
+    title: locale === 'ko' ? '이벤트 | atsignal' : 'Events | atsignal',
     description: locale === 'ko' 
-      ? 'AtSignal의 최신 이벤트와 소식을 확인하세요.' 
-      : 'Check out the latest events and news from AtSignal.',
+      ? 'atsignal의 최신 이벤트와 소식을 확인하세요.' 
+      : 'Check out the latest events and news from atsignal.',
   };
 }
 

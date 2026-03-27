@@ -29,7 +29,7 @@ export default function EventsPage({
   const texts = {
     ko: {
       title: '이벤트',
-      subtitle: 'AtSignal의 최신 이벤트와 소식을 확인하세요',
+      subtitle: 'atsignal의 최신 이벤트와 소식을 확인하세요',
       mainEvent: '메인 이벤트',
       subEvents: '주요 이벤트',
       otherEvents: '기타 이벤트',
@@ -42,7 +42,7 @@ export default function EventsPage({
     },
     en: {
       title: 'Events',
-      subtitle: 'Check out the latest events and news from AtSignal',
+      subtitle: 'Check out the latest events and news from atsignal',
       mainEvent: 'Main Event',
       subEvents: 'Featured Events',
       otherEvents: 'Other Events',
@@ -139,7 +139,9 @@ export default function EventsPage({
             maxWidth: '20%',
             minWidth: '150px',
             position: 'relative',
-            marginTop: '-1rem' // 이미지만 더 위로 올림
+            marginTop: '-1rem', // 이미지만 더 위로 올림
+// 2/12 김현득 마진 조정. 오른 쪽으로 조금 이동
+            marginLeft: '1rem'
           }}>
             <Image
               src="/images/event_image.jpg"
@@ -168,7 +170,8 @@ export default function EventsPage({
         {/* 메인 이벤트 */}
         {initialMainEvent && (
           <section style={{ 
-            backgroundColor: 'var(--main-500)',
+/*            backgroundColor: 'var(--main-500)', */
+            backgroundColor: 'white',
             borderRadius: '0 0 30px 30px',
             padding: '5rem 0',
             position: 'relative',
@@ -285,7 +288,8 @@ export default function EventsPage({
         {/* 서브 이벤트 */}
         {initialSubEvents.length > 0 && (
           <section style={{ 
-            backgroundColor: 'var(--main-400)',
+/*            backgroundColor: 'var(--main-400)', */
+            backgroundColor: 'var(--gray-200)',
             borderRadius: '0 0 30px 30px',
             padding: '7rem 0',
             marginTop: '-30px',
@@ -452,7 +456,8 @@ export default function EventsPage({
         {/* 기타 이벤트 */}
         {otherEvents.length > 0 && (
           <section style={{
-            backgroundColor: 'var(--main-300)',
+/*            backgroundColor: 'var(--main-300)', */
+            backgroundColor: 'var(--gray-200)',
             borderRadius: '0 0 30px 30px',
             padding: '7rem 0 4rem',
             marginTop: '-30px',

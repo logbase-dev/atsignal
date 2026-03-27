@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
@@ -26,6 +26,7 @@ interface TOCItem {
 
 export default function BlogPostViewPage({ params }: { params: { id: string } }) {
   const router = useRouter();
+  const contentRef = useRef<HTMLDivElement>(null);
   const [post, setPost] = useState<BlogPost | null>(null);
   const [relatedPostsByCategory, setRelatedPostsByCategory] = useState<Record<string, BlogPost[]>>({});
   const [categories, setCategories] = useState<BlogCategory[]>([]);
@@ -33,28 +34,13 @@ export default function BlogPostViewPage({ params }: { params: { id: string } })
   const [error, setError] = useState<string | null>(null);
   const [toc, setToc] = useState<TOCItem[]>([]);
 
-  // 마크다운에서 TOC 추출
-  const extractTOC = (markdown: string): TOCItem[] => {
-    const lines = markdown.split('\n');
-    const tocItems: TOCItem[] = [];
-    
-    lines.forEach((line) => {
-      const match = line.match(/^(#{1,6})\s+(.+)$/);
-      if (match) {
-        const level = match[1].length;
-        const text = match[2].trim();
-        // rehype-slug가 생성하는 ID 형식과 동일하게
-        const id = text
-          .toLowerCase()
-          .replace(/[^\w\s-]/g, '')
-          .replace(/\s+/g, '-')
-          .replace(/-+/g, '-')
-          .trim();
-        tocItems.push({ id, text, level });
-      }
-    });
-    
-    return tocItems;
+  // 제목에서 slug 생성 (id 없을 때 사용, 한글 등 유지)
+  const slugFromText = (text: string, index: number): string => {
+    const s = (text || '')
+      .trim()
+      .replace(/\s+/g, '-')
+      .replace(/^[-]+|[-]+$/g, '');
+    return s || `heading-${index}`;
   };
 
   useEffect(() => {
@@ -100,12 +86,6 @@ export default function BlogPostViewPage({ params }: { params: { id: string } })
       });
       
       setRelatedPostsByCategory(postsByCategory);
-      
-      // TOC 추출 (마크다운인 경우에만)
-      if (postData.saveFormat !== 'html') {
-        const content = postData.content?.ko || postData.content?.en || '';
-        setToc(extractTOC(content));
-      }
     } catch (e: any) {
       console.error('Failed to load blog post:', e);
       setError(e.message || '블로그 포스트를 불러오는데 실패했습니다.');
@@ -126,6 +106,106 @@ export default function BlogPostViewPage({ params }: { params: { id: string } })
       }
     }
   }, [post?.saveFormat]);
+
+  // 렌더된 본문 DOM에서 TOC 추출 (마크다운·HTML 공통). 하이브리드: 지연 첫 시도 후 0개면 MutationObserver로 추가 수집.
+  const contentIsHTML = post?.saveFormat === 'html';
+  useEffect(() => {
+    if (!post?.content) {
+      setToc([]);
+      return;
+    }
+
+    let cancelled = false;
+    let observer: MutationObserver | null = null;
+    let maxTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const extractToc = (): TOCItem[] => {
+      const container = contentRef.current;
+      if (!container) return [];
+      const headings = container.querySelectorAll<HTMLHeadingElement>('h1, h2, h3, h4, h5, h6');
+      const items: TOCItem[] = [];
+      const usedIds = new Set<string>();
+      headings.forEach((el, index) => {
+        const level = parseInt(el.tagName.charAt(1), 10);
+        const text = (el.textContent || '').trim();
+        let id = (el.getAttribute('id') || '').trim();
+        if (!id) {
+          id = slugFromText(text, index);
+          let uniqueId = id;
+          let n = 0;
+          while (usedIds.has(uniqueId)) {
+            n += 1;
+            uniqueId = `${id}-${n}`;
+          }
+          usedIds.add(uniqueId);
+          el.id = uniqueId;
+          id = uniqueId;
+        } else {
+          usedIds.add(id);
+        }
+        items.push({ id, text, level });
+      });
+      return items;
+    };
+
+    const trySetToc = (): boolean => {
+      if (cancelled) return false;
+      const items = extractToc();
+      if (items.length > 0) {
+        setToc(items);
+        return true;
+      }
+      return false;
+    };
+
+    const attachObserver = () => {
+      if (cancelled) return;
+      const container = contentRef.current;
+      if (!container) return;
+      observer = new MutationObserver(() => {
+        if (cancelled) return;
+        if (trySetToc() && observer) {
+          observer.disconnect();
+          if (maxTimer) clearTimeout(maxTimer);
+        }
+      });
+      observer.observe(container, { childList: true, subtree: true });
+      maxTimer = setTimeout(() => {
+        if (observer) observer.disconnect();
+      }, 5000);
+    };
+
+    // 첫 시도: MD 100ms, HTML(ToastViewer)는 1500ms (배포 환경 대비). 0개면 observer 부착 + 고정 간격 재시도.
+    const initialDelay = contentIsHTML ? 1500 : 100;
+    const retryDelays = contentIsHTML ? [2500, 4000, 6000] : [500, 1000];
+    const retryTimers: ReturnType<typeof setTimeout>[] = [];
+
+    const runFirstOrScheduleRetries = () => {
+      if (cancelled) return;
+      if (trySetToc()) return;
+      attachObserver();
+      retryDelays.forEach((delay) => {
+        const t = setTimeout(() => {
+          if (cancelled) return;
+          if (trySetToc() && observer) {
+            observer.disconnect();
+            if (maxTimer) clearTimeout(maxTimer);
+          }
+        }, delay);
+        retryTimers.push(t);
+      });
+    };
+
+    const initialTimer = setTimeout(runFirstOrScheduleRetries, initialDelay);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(initialTimer);
+      retryTimers.forEach((t) => clearTimeout(t));
+      if (observer) observer.disconnect();
+      if (maxTimer) clearTimeout(maxTimer);
+    };
+  }, [post?.content, post?.id, contentIsHTML]);
 
   if (loading) {
     return (
@@ -162,7 +242,6 @@ export default function BlogPostViewPage({ params }: { params: { id: string } })
 
   const categoryName = categories.find((c) => c.id === post.categoryId)?.name?.ko || '미분류';
   const content = post.content?.ko || post.content?.en || '';
-  const contentIsHTML = post.saveFormat === 'html';
   const editorType = post.editorType || 'toast';
 
   return (
@@ -202,8 +281,8 @@ export default function BlogPostViewPage({ params }: { params: { id: string } })
         </div>
       </div>
 
-      {/* 3단 레이아웃 (HTML인 경우 TOC 제외) */}
-      <div style={{ display: 'grid', gridTemplateColumns: contentIsHTML ? '250px minmax(0, 800px)' : '250px minmax(0, 800px) 250px', gap: '2rem', justifyContent: 'center' }}>
+      {/* 3단 레이아웃 (좌측 추천포스트 + 본문 + 우측 TOC) */}
+      <div style={{ display: 'grid', gridTemplateColumns: '250px minmax(0, 800px) 250px', gap: '2rem', justifyContent: 'center' }}>
         {/* 좌측: 카테고리별 추천 포스트 */}
         <aside style={{ position: 'sticky', top: '2rem', height: 'fit-content' }}>
           {categories.length === 0 ? (
@@ -347,6 +426,7 @@ export default function BlogPostViewPage({ params }: { params: { id: string } })
 
             {/* 본문 */}
             <div
+              ref={contentRef}
               style={{
                 fontSize: '1.125rem',
                 lineHeight: '1.8',
@@ -502,52 +582,50 @@ export default function BlogPostViewPage({ params }: { params: { id: string } })
           </article>
         </main>
 
-        {/* 우측: TOC (마크다운인 경우에만 표시) */}
-        {!contentIsHTML && (
-          <aside style={{ position: 'sticky', top: '2rem', height: 'fit-content' }}>
-            <div style={{ backgroundColor: '#fff', borderRadius: '0.5rem', padding: '1.5rem', border: '1px solid #e5e7eb' }}>
-              <h3 style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '1rem', color: '#111827' }}>
-                목차
-              </h3>
-              {toc.length === 0 ? (
-                <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>목차가 없습니다.</p>
-              ) : (
-                <nav>
-                  <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                    {toc.map((item) => (
-                      <li
-                        key={item.id}
+        {/* 우측: TOC (마크다운·HTML 공통, 렌더된 제목에서 추출) */}
+        <aside style={{ position: 'sticky', top: '2rem', height: 'fit-content' }}>
+          <div style={{ backgroundColor: '#fff', borderRadius: '0.5rem', padding: '1.5rem', border: '1px solid #e5e7eb' }}>
+            <h3 style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '1rem', color: '#111827' }}>
+              목차
+            </h3>
+            {toc.length === 0 ? (
+              <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>목차가 없습니다.</p>
+            ) : (
+              <nav>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                  {toc.map((item) => (
+                    <li
+                      key={item.id}
+                      style={{
+                        marginBottom: '0.5rem',
+                        paddingLeft: `${(item.level - 1) * 1}rem`,
+                      }}
+                    >
+                      <a
+                        href={`#${item.id}`}
                         style={{
-                          marginBottom: '0.5rem',
-                          paddingLeft: `${(item.level - 1) * 1}rem`,
+                          color: '#6b7280',
+                          textDecoration: 'none',
+                          fontSize: item.level === 1 ? '0.875rem' : '0.75rem',
+                          fontWeight: item.level <= 2 ? 600 : 400,
+                          display: 'block',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.color = '#0070f3';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.color = '#6b7280';
                         }}
                       >
-                        <a
-                          href={`#${item.id}`}
-                          style={{
-                            color: '#6b7280',
-                            textDecoration: 'none',
-                            fontSize: item.level === 1 ? '0.875rem' : '0.75rem',
-                            fontWeight: item.level <= 2 ? 600 : 400,
-                            display: 'block',
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.color = '#0070f3';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.color = '#6b7280';
-                          }}
-                        >
-                          {item.text}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </nav>
-              )}
-            </div>
-          </aside>
-        )}
+                        {item.text}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            )}
+          </div>
+        </aside>
       </div>
     </div>
   );

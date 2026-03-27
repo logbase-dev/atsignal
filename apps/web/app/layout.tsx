@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { headers } from "next/headers";
+// 김현득 추가 (1/24)
+import { GoogleAnalytics } from '@next/third-parties/google';
+
 import "./globals.css";
 import Splash from "@/components/Splash";
 import { getMenusByLocale } from "@/lib/cms/getMenus";
@@ -11,9 +14,10 @@ import { buildMenuTree } from "@/utils/menu";
 import { menuData } from "@/data/menu";
 import WebLayoutWrapper from "@/components/WebLayoutWrapper";
 
+// 김현득이 메타 타이틀 및 디스크립션 수정. 타이틀에 웹/앱 로그, 분석 추가. 디스크립션에 Product Analytics 추가
 export const metadata: Metadata = {
-  title: "atsignal - 통합 행동데이터 플랫폼",
-  description: "Nethru의 데이터분석 기술과 노하우가 집약된 통합 행동데이터 플랫폼",
+  title: "atsignal - 웹/앱 로그 통합 행동데이터 분석 플랫폼",
+  description: "Nethru의 데이터분석 기술과 노하우가 집약된 행동데이터 및 Product Analytics 플랫폼",
   icons: {
     icon: '/assets/img/favicon.png', // 또는 '/images/favicon.png'
   },
@@ -99,6 +103,7 @@ export default async function RootLayout({
   const headersList = await headers();
   const isAdminPath = headersList.get('x-is-admin') === 'true';
 
+// 김현득: 맨 아래에 GoogleAnalytics 항목 추가 1/24  
   return (
     <html lang="ko">
       <body
@@ -108,6 +113,8 @@ export default async function RootLayout({
         <WebLayoutWrapper menuTree={menuTree} footerMenus={footerMenus}>
             {children}
         </WebLayoutWrapper>
+
+        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || ""} />
       </body>
     </html>
   );

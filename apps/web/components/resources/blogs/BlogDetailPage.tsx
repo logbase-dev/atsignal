@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
@@ -31,6 +31,7 @@ interface Props {
 
 export default function BlogDetailPage({ locale, blog, categories }: Props) {
   const router = useRouter();
+  const contentRef = useRef<HTMLDivElement>(null);
   const [toc, setToc] = useState<TOCItem[]>([]);
   const [relatedPostsByCategory, setRelatedPostsByCategory] = useState<Record<string, BlogPost[]>>({});
   
@@ -178,29 +179,61 @@ export default function BlogDetailPage({ locale, blog, categories }: Props) {
     }
   };
 
-  // 마크다운에서 TOC 추출
-  const extractTOC = (markdown: string): TOCItem[] => {
-    const lines = markdown.split('\n');
-    const tocItems: TOCItem[] = [];
-    
-    lines.forEach((line) => {
-      const match = line.match(/^(#{1,6})\s+(.+)$/);
-      if (match) {
-        const level = match[1].length;
-        const text = match[2].trim();
-        // rehype-slug가 생성하는 ID 형식과 동일하게
-        const id = text
-          .toLowerCase()
-          .replace(/[^\w\s-]/g, '')
-          .replace(/\s+/g, '-')
-          .replace(/-+/g, '-')
-          .trim();
-        tocItems.push({ id, text, level });
-      }
-    });
-    
-    return tocItems;
+  const content = blog?.content?.[locale] || blog?.content?.ko || '';
+  const contentIsHTML = blog?.saveFormat === 'html';
+
+  // 제목에서 slug 생성 (id 없을 때 사용, 한글 등 유지)
+  const slugFromText = (text: string, index: number): string => {
+    const s = (text || '')
+      .trim()
+      .replace(/\s+/g, '-')
+      .replace(/^[-]+|[-]+$/g, '');
+    return s || `heading-${index}`;
   };
+
+  // 렌더된 본문 DOM에서 TOC 추출 (마크다운·HTML 공통, rehype-slug id와 일치)
+  useEffect(() => {
+    if (!blog?.content) {
+      setToc([]);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      const container = contentRef.current;
+      if (!container) return;
+
+      const headings = container.querySelectorAll<HTMLHeadingElement>('h1, h2, h3, h4, h5, h6');
+      const items: TOCItem[] = [];
+      const usedIds = new Set<string>();
+
+      headings.forEach((el, index) => {
+        const level = parseInt(el.tagName.charAt(1), 10);
+        const text = (el.textContent || '').trim();
+        let id = (el.getAttribute('id') || '').trim();
+
+        if (!id) {
+          id = slugFromText(text, index);
+          let uniqueId = id;
+          let n = 0;
+          while (usedIds.has(uniqueId)) {
+            n += 1;
+            uniqueId = `${id}-${n}`;
+          }
+          usedIds.add(uniqueId);
+          el.id = uniqueId;
+          id = uniqueId;
+        } else {
+          usedIds.add(id);
+        }
+
+        items.push({ id, text, level });
+      });
+
+      setToc(items);
+    }, contentIsHTML ? 400 : 100); // HTML(ToastViewer)는 렌더 지연 후 추출
+
+    return () => clearTimeout(timer);
+  }, [blog?.content, locale, contentIsHTML]);
 
   // Toast UI Viewer CSS를 클라이언트에서만 동적으로 로드
   useEffect(() => {
@@ -222,12 +255,6 @@ export default function BlogDetailPage({ locale, blog, categories }: Props) {
         // @ts-ignore - CSS 파일 타입 선언 없음
         require('@toast-ui/editor/dist/toastui-editor-viewer.css');
       }
-    }
-
-    // TOC 추출 (마크다운인 경우에만)
-    if (blog?.saveFormat !== 'html') {
-      const content = blog?.content?.[locale] || blog?.content?.ko || '';
-      setToc(extractTOC(content));
     }
 
     // 카테고리별 추천 포스트 로드
@@ -300,9 +327,6 @@ export default function BlogDetailPage({ locale, blog, categories }: Props) {
     return getLocalizedText(category?.name) || '미분류';
   };
 
-  const content = blog?.content?.[locale] || blog?.content?.ko || '';
-  const contentIsHTML = blog?.saveFormat === 'html';
-
   return (
     <div style={{ 
       minHeight: '100vh', 
@@ -351,7 +375,7 @@ export default function BlogDetailPage({ locale, blog, categories }: Props) {
         {/* 레이아웃 (3단: 좌측 추천포스트 + 가운데 본문 + 우측 TOC) */}
         <div style={{ 
           display: 'grid', 
-          gridTemplateColumns: contentIsHTML ? '250px minmax(0, 800px)' : '250px minmax(0, 800px) 250px', 
+          gridTemplateColumns: '250px minmax(0, 800px) 250px', 
           gap: '2rem', 
           justifyContent: 'center' 
         }}>
@@ -672,11 +696,14 @@ export default function BlogDetailPage({ locale, blog, categories }: Props) {
               )}
 
               {/* 본문 */}
-              <div style={{
-                fontSize: '1.125rem',
-                lineHeight: '1.8',
-                color: '#111827',
-              }}>
+              <div
+                ref={contentRef}
+                style={{
+                  fontSize: '1.125rem',
+                  lineHeight: '1.8',
+                  color: '#111827',
+                }}
+              >
                 {contentIsHTML ? (
                   <div style={{ marginTop: '1rem' }}>
                     <ToastViewer initialValue={content || ''} />
@@ -826,9 +853,8 @@ export default function BlogDetailPage({ locale, blog, categories }: Props) {
             </article>
           </main>
 
-          {/* 우측: TOC (마크다운인 경우에만 표시) */}
-          {!contentIsHTML && (
-            <aside style={{ position: 'sticky', top: '2rem', height: 'fit-content' }}>
+          {/* 우측: TOC (마크다운·HTML 공통, 렌더된 제목에서 추출) */}
+          <aside style={{ position: 'sticky', top: '2rem', height: 'fit-content' }}>
               <div style={{ 
                 backgroundColor: '#fff', 
                 borderRadius: '12px', 
@@ -882,7 +908,6 @@ export default function BlogDetailPage({ locale, blog, categories }: Props) {
                 )}
               </div>
             </aside>
-          )}
         </div>
       </div>
     </div>
